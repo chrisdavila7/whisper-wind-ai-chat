@@ -28,9 +28,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     glowIntensity: 0.7,
     neuronSize: { min: 3, max: 8 },
     
-    // New traveling node settings
+    // Traveling node settings - slower by 65%
     travelingNodeCount: 15,
-    travelingNodeSpeed: { min: 0.3, max: 0.8 },
+    travelingNodeSpeed: { min: 0.105, max: 0.28 }, // Reduced by 65% from {min: 0.3, max: 0.8}
     travelingNodeGlowDuration: 800, // How long the glow effect lasts in ms
   };
 
@@ -608,7 +608,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     initializeNeurons();
     createBranches();
     createConnections();
-    initializeTravelingNodes(); // Initialize traveling nodes
+    initializeTravelingNodes();
     animationFrameId = requestAnimationFrame(render);
   }
   
