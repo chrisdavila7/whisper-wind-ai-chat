@@ -14,7 +14,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     },
     connectionColor: 'rgba(59, 130, 246, 0.4)',
     
-    // Organic parameters with increased spacing
+    // Organic parameters with increased spacing (35% more)
     neuronCount: 20, // Reduced count for less visual clutter
     minConnections: 2, // Reduced for less clutter
     maxConnections: 6, // Reduced for less clutter
@@ -27,12 +27,29 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: 0.7,
     neuronSize: { min: 3, max: 8 },
+    
+    // New traveling node settings
+    travelingNodeCount: 15,
+    travelingNodeSpeed: { min: 0.3, max: 0.8 },
+    travelingNodeGlowDuration: 800, // How long the glow effect lasts in ms
   };
 
   // State
   let neurons: Neuron[] = [];
+  let travelingNodes: TravelingNode[] = [];
   let animationFrameId: number;
   let lastPulseTime = 0;
+  
+  // Interface for traveling nodes
+  interface TravelingNode {
+    x: number;
+    y: number;
+    targetNeuron: Neuron;
+    progress: number;  // 0 to 1, representing progress to target
+    speed: number;
+    width: number;
+    active: boolean;
+  }
   
   // Initialize neurons with improved distribution and more spacing
   function initializeNeurons() {
@@ -47,9 +64,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       // Use cosine for y to distribute more evenly
       const phi = Math.acos(1 - 2 * i_normalized);
       
-      // Spread neurons out further (0.9 instead of 0.45)
-      const x = 0.5 + 0.9 * Math.sin(phi) * Math.cos(theta);
-      const y = 0.5 + 0.9 * Math.sin(phi) * Math.sin(theta);
+      // Spread neurons out further (1.215 instead of 0.9 - 35% more spacing)
+      const x = 0.5 + 1.215 * Math.sin(phi) * Math.cos(theta);
+      const y = 0.5 + 1.215 * Math.sin(phi) * Math.sin(theta);
       
       // Add slight random variation to avoid perfect patterns
       const jitterX = (Math.random() - 0.5) * 0.1;
@@ -65,6 +82,68 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         pulseStrength: 0,
       });
     }
+  }
+  
+  // Initialize traveling nodes
+  function initializeTravelingNodes() {
+    travelingNodes = [];
+    
+    for (let i = 0; i < config.travelingNodeCount; i++) {
+      createNewTravelingNode();
+    }
+  }
+  
+  // Create a new traveling node from edge to a random neuron
+  function createNewTravelingNode() {
+    if (neurons.length === 0) return;
+    
+    // Select random target neuron
+    const targetNeuron = neurons[Math.floor(Math.random() * neurons.length)];
+    
+    // Start from edge of screen at random position
+    let startX = 0;
+    let startY = 0;
+    
+    // Determine which edge to start from
+    const edge = Math.floor(Math.random() * 4);
+    switch(edge) {
+      case 0: // Top edge
+        startX = Math.random() * canvas.width;
+        startY = 0;
+        break;
+      case 1: // Right edge
+        startX = canvas.width;
+        startY = Math.random() * canvas.height;
+        break;
+      case 2: // Bottom edge
+        startX = Math.random() * canvas.width;
+        startY = canvas.height;
+        break;
+      case 3: // Left edge
+        startX = 0;
+        startY = Math.random() * canvas.height;
+        break;
+    }
+    
+    // Find a connection width to match
+    let connectionWidth = 0.5;
+    if (targetNeuron.connections.length > 0) {
+      const randomConnection = targetNeuron.connections[
+        Math.floor(Math.random() * targetNeuron.connections.length)
+      ];
+      connectionWidth = randomConnection.width;
+    }
+    
+    travelingNodes.push({
+      x: startX,
+      y: startY,
+      targetNeuron,
+      progress: 0,
+      speed: config.travelingNodeSpeed.min + 
+        Math.random() * (config.travelingNodeSpeed.max - config.travelingNodeSpeed.min),
+      width: connectionWidth,
+      active: true
+    });
   }
   
   // Create branches for neurons
@@ -275,6 +354,62 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     if (neuron.pulseStrength < 0.05) neuron.pulseStrength = 0;
   }
   
+  // Draw and update traveling nodes
+  function updateAndDrawTravelingNodes(timestamp: number) {
+    for (let i = 0; i < travelingNodes.length; i++) {
+      const node = travelingNodes[i];
+      if (!node.active) continue;
+      
+      // Update progress
+      node.progress += node.speed / 100;
+      
+      // Calculate current position (linear interpolation for simplicity)
+      node.x = (1 - node.progress) * node.x + node.progress * node.targetNeuron.x;
+      node.y = (1 - node.progress) * node.y + node.progress * node.targetNeuron.y;
+      
+      // Check if node has reached target
+      const distanceToTarget = Math.sqrt(
+        Math.pow(node.x - node.targetNeuron.x, 2) + 
+        Math.pow(node.y - node.targetNeuron.y, 2)
+      );
+      
+      if (distanceToTarget < node.targetNeuron.size || node.progress >= 1) {
+        // Trigger glow effect on neuron
+        node.targetNeuron.pulseStrength = 1;
+        
+        // Reset node
+        node.active = false;
+        
+        // Create a new node to replace this one
+        setTimeout(() => {
+          createNewTravelingNode();
+        }, Math.random() * 1000);
+        
+        continue;
+      }
+      
+      // Draw traveling node
+      ctx.fillStyle = config.connectionColor;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Add small glow effect to traveling node
+      const nodeGlow = ctx.createRadialGradient(
+        node.x, node.y, node.width * 0.5,
+        node.x, node.y, node.width * 2
+      );
+      
+      nodeGlow.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+      nodeGlow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+      
+      ctx.fillStyle = nodeGlow;
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, node.width * 2, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  
   // Draw organic branches
   function drawBranches(neuron: Neuron, timestamp: number) {
     neuron.branches.forEach(branch => {
@@ -448,6 +583,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       });
     });
     
+    // Update and draw traveling nodes
+    updateAndDrawTravelingNodes(timestamp);
+    
     // Draw neurons on top
     neurons.forEach(drawNeuron);
     
@@ -470,6 +608,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     initializeNeurons();
     createBranches();
     createConnections();
+    initializeTravelingNodes(); // Initialize traveling nodes
     animationFrameId = requestAnimationFrame(render);
   }
   
