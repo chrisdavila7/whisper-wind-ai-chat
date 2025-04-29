@@ -1,16 +1,19 @@
 
-import { NextResponse } from 'next/server';
 import { Message } from '../../../types/message';
 
 // This is a server-side mock for streaming responses
 export async function POST(request: Request) {
   try {
-    const { messages } = await request.json();
+    const requestData = await request.json();
+    const messages = requestData.messages;
     
     if (!messages || !Array.isArray(messages)) {
-      return NextResponse.json(
-        { error: 'Invalid request: messages array is required' },
-        { status: 400 }
+      return new Response(
+        JSON.stringify({ error: 'Invalid request: messages array is required' }),
+        { 
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
       );
     }
 
@@ -65,9 +68,12 @@ export async function POST(request: Request) {
     
   } catch (error) {
     console.error('Error in chat API route:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+    return new Response(
+      JSON.stringify({ error: 'Internal server error' }),
+      { 
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      }
     );
   }
 }
