@@ -3,7 +3,7 @@
 
 import { lazy, Suspense } from 'react';
 
-// Dynamically import the ChatWindow component to avoid server/client mismatches
+// Dynamically import the NeuralBackground component to avoid server/client mismatches
 const NeuralBackground = lazy(() => import('../components/NeuralBackground'));
 
 export default function Home() {
