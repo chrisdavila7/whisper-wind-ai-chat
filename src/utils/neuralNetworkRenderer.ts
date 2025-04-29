@@ -12,7 +12,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       core: 'rgba(219, 234, 254, 0.9)' // Light blue core
     },
     connectionColor: 'rgba(59, 130, 246, 0.4)',
-    signalColor: 'rgba(219, 234, 254, 0.9)',
     
     // Organic parameters with increased spacing
     neuronCount: 20, // Reduced count for less visual clutter
@@ -27,13 +26,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: 0.7,
     neuronSize: { min: 3, max: 8 },
-    signalSize: { min: 1, max: 2 }, // Reduced to match path width
-    signalSpeed: { min: 0.0008, max: 0.0024 }, // Slowed down by 60%
   };
 
   // State
   let neurons: Neuron[] = [];
-  let signals: Signal[] = [];
   let animationFrameId: number;
   let lastPulseTime = 0;
   
@@ -241,36 +237,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Create a new signal on a random connection
-  function createSignal() {
-    // Count all connections across neurons
-    const allConnections: Connection[] = [];
-    neurons.forEach(neuron => {
-      neuron.connections.forEach(connection => {
-        allConnections.push(connection);
-      });
-    });
-    
-    if (allConnections.length === 0) return;
-    
-    const connectionIndex = Math.floor(Math.random() * allConnections.length);
-    const connection = allConnections[connectionIndex];
-    
-    signals.push({
-      id: signals.length,
-      connection,
-      position: 0,
-      speed: config.signalSpeed.min + Math.random() * 
-        (config.signalSpeed.max - config.signalSpeed.min),
-      size: config.signalSize.min + Math.random() * 
-        (config.signalSize.max - config.signalSize.min),
-      intensity: 0.7 + Math.random() * 0.3
-    });
-    
-    // Make source neuron pulse
-    connection.source.pulseStrength = 1;
-  }
-  
   // Draw a neuron with glow effect
   function drawNeuron(neuron: Neuron) {
     // Draw glow if neuron is pulsing
@@ -464,46 +430,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Draw a signal moving along a connection with size matching the path width
-  function drawSignal(signal: Signal, timestamp: number) {
-    const { connection, position, size, intensity } = signal;
-    
-    // Calculate position along the path
-    const point = getPositionAlongPath(connection, position);
-    
-    // Draw signal glow with size matching path width
-    const glowRadius = connection.width * 2; // Make glow just slightly larger than the path
-    const glow = ctx.createRadialGradient(
-      point.x, point.y, 0,
-      point.x, point.y, glowRadius
-    );
-    
-    glow.addColorStop(0, `rgba(219, 234, 254, ${intensity * 0.9})`);
-    glow.addColorStop(1, 'rgba(219, 234, 254, 0)');
-    
-    ctx.fillStyle = glow;
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw signal core matching path width
-    ctx.fillStyle = config.signalColor;
-    ctx.beginPath();
-    ctx.arc(point.x, point.y, connection.width, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Update signal position - slower by 60%
-    signal.position += signal.speed;
-    
-    // If signal reaches target neuron
-    if (signal.position >= 1) {
-      connection.target.pulseStrength = intensity;
-      return true; // Signal has completed its journey
-    }
-    
-    return false;
-  }
-  
   // Main render function
   function render(timestamp: number) {
     // Clear canvas with slight trail effect for smoother animation
@@ -521,15 +447,16 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       });
     });
     
-    // Draw signals and remove completed ones
-    signals = signals.filter(signal => !drawSignal(signal, timestamp));
-    
     // Draw neurons on top
     neurons.forEach(drawNeuron);
     
-    // Generate new signals periodically
+    // Apply occasional random pulses to neurons
     if (timestamp - lastPulseTime > config.pulseInterval) {
-      createSignal();
+      // Randomly pulse a neuron
+      if (neurons.length > 0) {
+        const randomNeuron = neurons[Math.floor(Math.random() * neurons.length)];
+        randomNeuron.pulseStrength = 1;
+      }
       lastPulseTime = timestamp;
     }
     

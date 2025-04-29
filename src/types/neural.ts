@@ -36,15 +36,6 @@ export interface Connection {
   flowPhase: number;
 }
 
-export interface Signal {
-  id: number;
-  connection: Connection;
-  position: number; // 0-1, position along the connection
-  speed: number;
-  size: number;
-  intensity: number; // For glow effect
-}
-
 export interface Point {
   x: number;
   y: number;
