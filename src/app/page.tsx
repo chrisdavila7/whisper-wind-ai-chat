@@ -4,7 +4,6 @@
 import { lazy, Suspense } from 'react';
 
 // Dynamically import the ChatWindow component to avoid server/client mismatches
-const ChatWindow = lazy(() => import('../components/ChatWindow'));
 const NeuralBackground = lazy(() => import('../components/NeuralBackground'));
 
 export default function Home() {
@@ -12,8 +11,9 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Suspense fallback={<div>Loading...</div>}>
         <NeuralBackground />
-        <div className="w-full max-w-4xl bg-white/20 backdrop-blur-sm h-[80vh] rounded-xl shadow-lg overflow-hidden z-10">
-          <ChatWindow />
+        {/* Chat window is now invisible */}
+        <div className="w-full max-w-4xl opacity-0 h-[80vh] z-10">
+          {/* Content is invisible but still loaded */}
         </div>
       </Suspense>
     </div>
