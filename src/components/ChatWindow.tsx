@@ -19,7 +19,7 @@ const ChatWindow = () => {
 
   return (
     <div className="flex flex-col h-full max-h-full">
-      <div className="flex justify-between items-center p-4 border-b">
+      <div className="flex justify-between items-center p-4 border-b border-white/20 bg-white/20">
         <h1 className="text-xl font-semibold text-ai-text">AI Chat</h1>
         {messages.length > 0 && (
           <Button
@@ -34,10 +34,10 @@ const ChatWindow = () => {
         )}
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 bg-gray-50/20">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8">
-            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary to-ai-secondary flex items-center justify-center">
+          <div className="h-full flex flex-col items-center justify-center text-center p-8 bg-white/20 backdrop-blur-sm rounded-lg">
+            <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg 
                 xmlns="http://www.w3.org/2000/svg" 
                 width="24" 
@@ -65,7 +65,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 bg-gray-50 border-t">
+      <div className="p-4 bg-gray-50/20 border-t border-white/20">
         <ChatInput 
           onSendMessage={sendMessage} 
           isLoading={isLoading} 

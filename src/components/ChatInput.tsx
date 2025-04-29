@@ -24,7 +24,7 @@ const ChatInput = ({ onSendMessage, isLoading, onStopGeneration }: ChatInputProp
   return (
     <form 
       onSubmit={handleSubmit}
-      className="flex items-center gap-2 w-full bg-white rounded-lg p-2 shadow-md border border-gray-100"
+      className="flex items-center gap-2 w-full bg-white/20 backdrop-blur-sm rounded-lg p-2 shadow-md border border-white/20"
     >
       <Input
         value={inputValue}
@@ -40,7 +40,7 @@ const ChatInput = ({ onSendMessage, isLoading, onStopGeneration }: ChatInputProp
           type="button"
           variant="outline"
           size="icon"
-          className="text-gray-500 hover:text-red-500"
+          className="text-gray-500 hover:text-red-500 bg-white/30"
         >
           <span className="sr-only">Stop generation</span>
           <svg 
@@ -63,7 +63,7 @@ const ChatInput = ({ onSendMessage, isLoading, onStopGeneration }: ChatInputProp
           type="submit"
           disabled={!inputValue.trim()}
           size="icon"
-          className="bg-ai-primary hover:bg-ai-secondary text-white"
+          className="bg-ai-primary/80 hover:bg-ai-secondary/80 text-white"
         >
           <span className="sr-only">Send message</span>
           <Send className="h-5 w-5" />
