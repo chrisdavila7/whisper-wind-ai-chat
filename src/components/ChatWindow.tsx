@@ -1,10 +1,11 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
 import { useChat } from '../hooks/useChat';
 import { Button } from './ui/button';
 import { Trash2 } from 'lucide-react';
+import { Progress } from './ui/progress';
 
 const ChatWindow = () => {
   const {
@@ -15,6 +16,7 @@ const ChatWindow = () => {
     clearMessages
   } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [progress, setProgress] = useState(68); // Fixed fake percentage
 
   // Auto-scroll to bottom when new messages come in
   useEffect(() => {
@@ -27,6 +29,18 @@ const ChatWindow = () => {
 
   return (
     <div className="flex flex-col h-full max-h-full rounded-15">
+      <div className="absolute top-4 right-10">
+        <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-ai-text">Status</span>
+            <div className="w-32">
+              <Progress value={progress} className="h-2" />
+            </div>
+            <span className="text-xs text-ai-text/70">{progress}%</span>
+          </div>
+        </div>
+      </div>
+
       <div className="flex justify-between items-center p-4 border-b border-white/20 bg-white/20 backdrop-blur-sm rounded-t-15">
         <h1 className="text-xl font-semibold text-ai-text">AI Chat</h1>
         {messages.length > 0 && (
