@@ -9,10 +9,10 @@ const ChatWindow = lazy(() => import('../components/ChatWindow'));
 
 export default function Home() {
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-0">
       <Suspense fallback={<div>Loading...</div>}>
         <NeuralBackground />
-        <div className="w-full max-w-4xl h-[80vh] z-10">
+        <div className="w-full max-w-4xl h-[80vh] z-10 p-[30px]">
           <ChatWindow />
         </div>
       </Suspense>
