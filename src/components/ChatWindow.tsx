@@ -23,7 +23,7 @@ const ChatWindow = () => {
     }
   }, [messages]);
   return <div className="flex flex-col h-full max-h-full">
-      <div className="flex justify-between items-center p-6 border-b border-white/20 bg-white/20 backdrop-blur-sm">
+      <div className="flex justify-between items-center pt-10 border-b border-white/20 bg-white/20 backdrop-blur-sm">
         <h1 className="text-xl font-semibold text-ai-text">AI Chat</h1>
         {messages.length > 0 && <Button variant="ghost" size="sm" onClick={clearMessages} className="text-gray-500 hover:text-red-500">
             <Trash2 className="h-4 w-4 mr-1" />
