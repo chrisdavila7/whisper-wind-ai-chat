@@ -51,7 +51,7 @@ const ChatWindow = () => {
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
             </div>
-            <h2 className="text-xl font-semibold mb-2 text-ai-text">Welcome to AI Chat</h2>
+            <h2 className="text-xl font-semibold mb-2 text-slate-500">Welcome to AI Chat</h2>
             <p className="text-gray-500 max-w-sm">
               Start a conversation with the AI assistant by typing a message below.
             </p>
