@@ -14,10 +14,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     connectionColor: 'rgba(59, 130, 246, 0.4)',
     signalColor: 'rgba(219, 234, 254, 0.9)',
     
-    // Organic parameters
-    neuronCount: 30, // Increased for better coverage
-    minConnections: 3, // Increased minimum connections
-    maxConnections: 8, // Increased maximum connections
+    // Organic parameters with increased spacing
+    neuronCount: 20, // Reduced count for less visual clutter
+    minConnections: 2, // Reduced for less clutter
+    maxConnections: 6, // Reduced for less clutter
     minBranches: 2,
     maxBranches: 5,
     branchLength: { min: 30, max: 120 },
@@ -27,7 +27,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: 0.7,
     neuronSize: { min: 3, max: 8 },
-    signalSize: { min: 3, max: 6 }, // Increased for wider signals
+    signalSize: { min: 1, max: 2 }, // Reduced to match path width
     signalSpeed: { min: 0.0008, max: 0.0024 }, // Slowed down by 60%
   };
 
@@ -37,10 +37,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   let animationFrameId: number;
   let lastPulseTime = 0;
   
-  // Initialize neurons with improved distribution for 360-degree coverage
+  // Initialize neurons with improved distribution and more spacing
   function initializeNeurons() {
     neurons = [];
-    // Create neurons with better spherical distribution
+    // Create neurons with better spherical distribution and increased spacing
     for (let i = 0; i < config.neuronCount; i++) {
       // Use spherical fibonacci distribution for better 360° coverage
       const goldenRatio = (1 + Math.sqrt(5)) / 2;
@@ -49,13 +49,19 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       
       // Use cosine for y to distribute more evenly
       const phi = Math.acos(1 - 2 * i_normalized);
-      const x = 0.5 + 0.45 * Math.sin(phi) * Math.cos(theta);
-      const y = 0.5 + 0.45 * Math.sin(phi) * Math.sin(theta);
+      
+      // Spread neurons out further (0.9 instead of 0.45)
+      const x = 0.5 + 0.9 * Math.sin(phi) * Math.cos(theta);
+      const y = 0.5 + 0.9 * Math.sin(phi) * Math.sin(theta);
+      
+      // Add slight random variation to avoid perfect patterns
+      const jitterX = (Math.random() - 0.5) * 0.1;
+      const jitterY = (Math.random() - 0.5) * 0.1;
       
       neurons.push({
         id: i,
-        x: x * canvas.width,
-        y: y * canvas.height,
+        x: (x + jitterX) * canvas.width,
+        y: (y + jitterY) * canvas.height,
         size: config.neuronSize.min + Math.random() * (config.neuronSize.max - config.neuronSize.min),
         connections: [],
         branches: [],
@@ -128,7 +134,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         Math.floor(Math.random() * (config.maxConnections - config.minConnections + 1));
       
       // Divide the circle into sectors to ensure even distribution
-      const sectors = 4; // Divide into 4 sectors (90° each)
+      const sectors = 6; // Increased from 4 to 6 sectors for better coverage
       const sectorsWithConnections = Array(sectors).fill(0);
       const connectionsPerSector = Math.ceil(connectionCount / sectors);
       
@@ -458,21 +464,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Draw a signal moving along a connection with increased size
+  // Draw a signal moving along a connection with size matching the path width
   function drawSignal(signal: Signal, timestamp: number) {
     const { connection, position, size, intensity } = signal;
     
     // Calculate position along the path
     const point = getPositionAlongPath(connection, position);
     
-    // Draw signal glow with increased size (wider than path)
-    const glowRadius = size * 3.5; // Increased glow radius
+    // Draw signal glow with size matching path width
+    const glowRadius = connection.width * 2; // Make glow just slightly larger than the path
     const glow = ctx.createRadialGradient(
-      point.x, point.y, size * 0.5,
+      point.x, point.y, 0,
       point.x, point.y, glowRadius
     );
     
-    glow.addColorStop(0, `rgba(219, 234, 254, ${intensity * 0.9})`); // Increased intensity
+    glow.addColorStop(0, `rgba(219, 234, 254, ${intensity * 0.9})`);
     glow.addColorStop(1, 'rgba(219, 234, 254, 0)');
     
     ctx.fillStyle = glow;
@@ -480,10 +486,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw signal core with increased size
+    // Draw signal core matching path width
     ctx.fillStyle = config.signalColor;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, size * 1.2, 0, Math.PI * 2); // 20% wider than before
+    ctx.arc(point.x, point.y, connection.width, 0, Math.PI * 2);
     ctx.fill();
     
     // Update signal position - slower by 60%
