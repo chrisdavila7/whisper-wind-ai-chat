@@ -40,7 +40,7 @@ const NeuralBackground = () => {
   return (
     <canvas 
       ref={canvasRef}
-      className="fixed top-0 left-0 w-full h-full -z-10 bg-gray-950 blur-sm"
+      className="fixed top-0 left-0 w-full h-full -z-10 bg-gray-950 blur-sm-10"
       style={{ pointerEvents: 'none' }}
     />
   );
