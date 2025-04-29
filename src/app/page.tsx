@@ -12,7 +12,7 @@ export default function Home() {
     <div className="min-h-screen flex items-center justify-center p-0">
       <Suspense fallback={<div>Loading...</div>}>
         <NeuralBackground />
-        <div className="w-full max-w-4xl h-[80vh] z-10 p-0">
+        <div className="w-full h-[80vh] z-10 p-0">
           <ChatWindow />
         </div>
       </Suspense>
