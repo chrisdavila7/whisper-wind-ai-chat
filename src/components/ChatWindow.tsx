@@ -31,7 +31,7 @@ const ChatWindow = () => {
           </Button>}
       </div>
 
-      <div className="flex-1 overflow-y-auto pt-10 bg-gray-50/20">
+      <div className="flex-1 overflow-y-auto pt-50 bg-gray-50/20">
         {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-sm rounded-lg bg-white/0">
             <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
