@@ -80,7 +80,7 @@
   
   .typing-indicator::after {
     content: '...';
-    animation: ellipsis 1.5s infinite;
+    animation: ellipsis 2.4s infinite; /* Slowed by 60% from 1.5s to 2.4s */
   }
 
   @keyframes ellipsis {

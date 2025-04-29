@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -102,12 +101,23 @@ export default {
         }
       },
       animation: {
-        'accordion-down': 'accordion-down 0.2s ease-out',
-        'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.3s ease-out',
-        'typing': 'typing 1.5s steps(40, end)',
-        'blink': 'blink 0.7s infinite',
-        'bounce-right': 'bounce-right 1s infinite'
+        'accordion-down': 'accordion-down 0.32s ease-out', // from 0.2s to 0.32s
+        'accordion-up': 'accordion-up 0.32s ease-out', // from 0.2s to 0.32s
+        'fade-in': 'fade-in 0.48s ease-out', // from 0.3s to 0.48s
+        'fade-out': 'fade-out 0.48s ease-out', // from 0.3s to 0.48s
+        'scale-in': 'scale-in 0.32s ease-out', // from 0.2s to 0.32s
+        'scale-out': 'scale-out 0.32s ease-out', // from 0.2s to 0.32s
+        'slide-in-right': 'slide-in-right 0.48s ease-out', // from 0.3s to 0.48s
+        'slide-out-right': 'slide-out-right 0.48s ease-out', // from 0.3s to 0.48s
+        
+        // Combined Animations - also slowed down by 60%
+        'enter': 'fade-in 0.48s ease-out, scale-in 0.32s ease-out',
+        'exit': 'fade-out 0.48s ease-out, scale-out 0.32s ease-out',
+        
+        // The following animations are not part of connection flow, so also slowed down
+        'typing': 'typing 2.4s steps(40, end)', // from 1.5s to 2.4s
+        'blink': 'blink 1.12s infinite', // from 0.7s to 1.12s
+        'bounce-right': 'bounce-right 1.6s infinite' // from 1s to 1.6s
       }
     }
   },
