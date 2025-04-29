@@ -1,4 +1,5 @@
-import { Neuron, Connection, Signal, Branch, Point } from '../types/neural';
+
+import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
  * Draws and animates an organic neural network on a canvas
