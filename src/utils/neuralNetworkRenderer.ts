@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Signal, Branch, Point } from '../types/neural';
 
 /**
@@ -16,20 +15,20 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     signalColor: 'rgba(219, 234, 254, 0.9)',
     
     // Organic parameters
-    neuronCount: 25,
-    minConnections: 2,
-    maxConnections: 6,
+    neuronCount: 30, // Increased for better coverage
+    minConnections: 3, // Increased minimum connections
+    maxConnections: 8, // Increased maximum connections
     minBranches: 2,
     maxBranches: 5,
     branchLength: { min: 30, max: 120 },
     
     // Animation settings
-    flowSpeed: 0.001,
-    pulseInterval: 2000, // ms
+    flowSpeed: 0.0004, // Slowed down by 60%
+    pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: 0.7,
     neuronSize: { min: 3, max: 8 },
-    signalSize: { min: 2, max: 4 },
-    signalSpeed: { min: 0.002, max: 0.006 },
+    signalSize: { min: 3, max: 6 }, // Increased for wider signals
+    signalSpeed: { min: 0.0008, max: 0.0024 }, // Slowed down by 60%
   };
 
   // State
@@ -38,23 +37,25 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   let animationFrameId: number;
   let lastPulseTime = 0;
   
-  // Initialize neurons with random positions
+  // Initialize neurons with improved distribution for 360-degree coverage
   function initializeNeurons() {
     neurons = [];
-    // Create neurons with natural distribution
+    // Create neurons with better spherical distribution
     for (let i = 0; i < config.neuronCount; i++) {
-      // Use golden ratio for more natural distribution
-      const phi = Math.PI * (3 - Math.sqrt(5));
-      const y = 1 - (i / (config.neuronCount - 1)) * 0.8;
-      const radius = Math.sqrt(1 - y * y) * 0.8;
-      const theta = phi * i;
+      // Use spherical fibonacci distribution for better 360° coverage
+      const goldenRatio = (1 + Math.sqrt(5)) / 2;
+      const i_normalized = i / config.neuronCount;
+      const theta = 2 * Math.PI * i_normalized * goldenRatio;
       
-      const x = 0.5 + radius * Math.cos(theta);
+      // Use cosine for y to distribute more evenly
+      const phi = Math.acos(1 - 2 * i_normalized);
+      const x = 0.5 + 0.45 * Math.sin(phi) * Math.cos(theta);
+      const y = 0.5 + 0.45 * Math.sin(phi) * Math.sin(theta);
       
       neurons.push({
         id: i,
         x: x * canvas.width,
-        y: (y * 0.8 + 0.1) * canvas.height,
+        y: y * canvas.height,
         size: config.neuronSize.min + Math.random() * (config.neuronSize.max - config.neuronSize.min),
         connections: [],
         branches: [],
@@ -104,11 +105,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Create connections between neurons
+  // Create connections between neurons with better 360° coverage
   function createConnections() {
     // First ensure each neuron has at least minConnections
     neurons.forEach(neuron => {
-      // Find nearby neurons
+      // Find all other neurons
       const potentialTargets = neurons
         .filter(n => n.id !== neuron.id)
         .map(n => ({
@@ -117,49 +118,119 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             Math.pow(n.x - neuron.x, 2) + 
             Math.pow(n.y - neuron.y, 2)
           )
-        }))
-        .sort((a, b) => a.distance - b.distance);
+        }));
       
-      // Connect to closest neurons
+      // Sort by distance, but also consider neurons in all directions
+      potentialTargets.sort((a, b) => a.distance - b.distance);
+      
+      // Connect to closest neurons in different directions
       const connectionCount = config.minConnections + 
         Math.floor(Math.random() * (config.maxConnections - config.minConnections + 1));
       
-      for (let i = 0; i < Math.min(connectionCount, potentialTargets.length); i++) {
-        const target = potentialTargets[i].neuron;
-        const distance = potentialTargets[i].distance;
+      // Divide the circle into sectors to ensure even distribution
+      const sectors = 4; // Divide into 4 sectors (90° each)
+      const sectorsWithConnections = Array(sectors).fill(0);
+      const connectionsPerSector = Math.ceil(connectionCount / sectors);
+      
+      // Create connections for each sector
+      for (let sec = 0; sec < sectors; sec++) {
+        // Filter targets that fall in this sector
+        const sectorStartAngle = (sec * 2 * Math.PI) / sectors;
+        const sectorEndAngle = ((sec + 1) * 2 * Math.PI) / sectors;
         
-        // Create organic connection with multiple control points
-        const controlPointCount = 2 + Math.floor(Math.random() * 3);
-        const controlPoints: Point[] = [];
+        const targetsInSector = potentialTargets.filter(target => {
+          const angle = Math.atan2(
+            target.neuron.y - neuron.y,
+            target.neuron.x - neuron.x
+          ) + Math.PI; // Normalize to 0-2π
+          
+          return (angle >= sectorStartAngle && angle < sectorEndAngle);
+        });
         
-        for (let j = 0; j < controlPointCount; j++) {
-          const t = (j + 1) / (controlPointCount + 1);
-          // Base point along the straight line
-          const baseX = neuron.x + (target.x - neuron.x) * t;
-          const baseY = neuron.y + (target.y - neuron.y) * t;
-          
-          // Add organic variance
-          const perpX = -(target.y - neuron.y) / distance;
-          const perpY = (target.x - neuron.x) / distance;
-          const variance = (Math.random() * 0.5 - 0.25) * distance;
-          
-          controlPoints.push({
-            x: baseX + perpX * variance,
-            y: baseY + perpY * variance
-          });
+        // Connect to the closest targets in this sector
+        for (let i = 0; i < Math.min(connectionsPerSector, targetsInSector.length); i++) {
+          if (sectorsWithConnections[sec] < connectionsPerSector && 
+              targetsInSector[i] && 
+              neuron.connections.length < connectionCount) {
+            
+            const target = targetsInSector[i].neuron;
+            const distance = targetsInSector[i].distance;
+            
+            // Create organic connection with multiple control points
+            const controlPointCount = 2 + Math.floor(Math.random() * 3);
+            const controlPoints: Point[] = [];
+            
+            for (let j = 0; j < controlPointCount; j++) {
+              const t = (j + 1) / (controlPointCount + 1);
+              // Base point along the straight line
+              const baseX = neuron.x + (target.x - neuron.x) * t;
+              const baseY = neuron.y + (target.y - neuron.y) * t;
+              
+              // Add organic variance
+              const perpX = -(target.y - neuron.y) / distance;
+              const perpY = (target.x - neuron.x) / distance;
+              const variance = (Math.random() * 0.5 - 0.25) * distance;
+              
+              controlPoints.push({
+                x: baseX + perpX * variance,
+                y: baseY + perpY * variance
+              });
+            }
+            
+            const connection: Connection = {
+              id: neuron.connections.length,
+              source: neuron,
+              target: target,
+              width: 0.5 + Math.random() * 1,
+              controlPoints,
+              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
+              flowPhase: Math.random() * Math.PI * 2
+            };
+            
+            neuron.connections.push(connection);
+            sectorsWithConnections[sec]++;
+          }
         }
-        
-        const connection: Connection = {
-          id: neuron.connections.length,
-          source: neuron,
-          target: target,
-          width: 0.5 + Math.random() * 1,
-          controlPoints,
-          flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
-          flowPhase: Math.random() * Math.PI * 2
-        };
-        
-        neuron.connections.push(connection);
+      }
+      
+      // If we still need more connections, add them from any sector
+      while (neuron.connections.length < config.minConnections && potentialTargets.length > neuron.connections.length) {
+        const targetIndex = neuron.connections.length;
+        if (potentialTargets[targetIndex]) {
+          const target = potentialTargets[targetIndex].neuron;
+          const distance = potentialTargets[targetIndex].distance;
+          
+          // Create control points and connection as before
+          const controlPointCount = 2 + Math.floor(Math.random() * 3);
+          const controlPoints: Point[] = [];
+          
+          for (let j = 0; j < controlPointCount; j++) {
+            const t = (j + 1) / (controlPointCount + 1);
+            const baseX = neuron.x + (target.x - neuron.x) * t;
+            const baseY = neuron.y + (target.y - neuron.y) * t;
+            
+            const perpX = -(target.y - neuron.y) / distance;
+            const perpY = (target.x - neuron.x) / distance;
+            const variance = (Math.random() * 0.5 - 0.25) * distance;
+            
+            controlPoints.push({
+              x: baseX + perpX * variance,
+              y: baseY + perpY * variance
+            });
+          }
+          
+          const connection: Connection = {
+            id: neuron.connections.length,
+            source: neuron,
+            target: target,
+            width: 0.5 + Math.random() * 1,
+            controlPoints,
+            flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
+            flowPhase: Math.random() * Math.PI * 2
+          };
+          
+          neuron.connections.push(connection);
+        }
       }
     });
   }
@@ -387,21 +458,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Draw a signal moving along a connection
+  // Draw a signal moving along a connection with increased size
   function drawSignal(signal: Signal, timestamp: number) {
     const { connection, position, size, intensity } = signal;
     
     // Calculate position along the path
     const point = getPositionAlongPath(connection, position);
     
-    // Draw signal glow
-    const glowRadius = size * 3;
+    // Draw signal glow with increased size (wider than path)
+    const glowRadius = size * 3.5; // Increased glow radius
     const glow = ctx.createRadialGradient(
       point.x, point.y, size * 0.5,
       point.x, point.y, glowRadius
     );
     
-    glow.addColorStop(0, `rgba(219, 234, 254, ${intensity * 0.8})`);
+    glow.addColorStop(0, `rgba(219, 234, 254, ${intensity * 0.9})`); // Increased intensity
     glow.addColorStop(1, 'rgba(219, 234, 254, 0)');
     
     ctx.fillStyle = glow;
@@ -409,13 +480,13 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.arc(point.x, point.y, glowRadius, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw signal core
+    // Draw signal core with increased size
     ctx.fillStyle = config.signalColor;
     ctx.beginPath();
-    ctx.arc(point.x, point.y, size, 0, Math.PI * 2);
+    ctx.arc(point.x, point.y, size * 1.2, 0, Math.PI * 2); // 20% wider than before
     ctx.fill();
     
-    // Update signal position
+    // Update signal position - slower by 60%
     signal.position += signal.speed;
     
     // If signal reaches target neuron
