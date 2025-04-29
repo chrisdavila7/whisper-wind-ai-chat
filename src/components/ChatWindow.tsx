@@ -26,8 +26,8 @@ const ChatWindow = () => {
   }, [messages]);
 
   return (
-    <div className="flex flex-col h-full max-h-full">
-      <div className="flex justify-between items-center p-4 border-b border-white/20 bg-white/20 backdrop-blur-sm">
+    <div className="flex flex-col h-full max-h-full rounded-15">
+      <div className="flex justify-between items-center p-4 border-b border-white/20 bg-white/20 backdrop-blur-sm rounded-t-15">
         <h1 className="text-xl font-semibold text-ai-text">AI Chat</h1>
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clearMessages} className="text-gray-500 hover:text-red-500">
@@ -39,7 +39,7 @@ const ChatWindow = () => {
 
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50/20">
         {messages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-sm rounded-lg bg-white/0">
+          <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-sm rounded-15 bg-white/0">
             <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -56,7 +56,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4 bg-gray-50/20 border-t border-white/20">
+      <div className="p-4 bg-gray-50/20 border-t border-white/20 rounded-b-15">
         <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} />
       </div>
     </div>

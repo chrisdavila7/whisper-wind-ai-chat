@@ -55,6 +55,14 @@
     @apply bg-ai-background text-ai-text;
   }
 
+  /* Global rounded corners */
+  button, input, textarea, select, div[role="dialog"], .card, .popover, 
+  .dropdown-menu, .toast, .card, .alert, .dialog, .sheet, 
+  .menubar, .slider, .scroll-area, .toggle, .checkbox, .radio-group,
+  .navigation-menu, .tabs, .table, .collapsible, .hover-card, .tooltip {
+    @apply rounded-15;
+  }
+
   /* Scrollbar styling */
   ::-webkit-scrollbar {
     width: 8px;

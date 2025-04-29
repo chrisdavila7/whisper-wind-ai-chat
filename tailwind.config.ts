@@ -18,6 +18,12 @@ export default {
       }
     },
     extend: {
+      borderRadius: {
+        lg: 'var(--radius)',
+        md: 'calc(var(--radius) - 2px)',
+        sm: 'calc(var(--radius) - 4px)',
+        '15': '15px', // Added new border radius size
+      },
       colors: {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -69,11 +75,6 @@ export default {
           text: '#1A1F2C',
           accent: '#8B5CF6',
         },
-      },
-      borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)'
       },
       keyframes: {
         'accordion-down': {

@@ -13,7 +13,7 @@ const MessageBubble = ({ message }: MessageBubbleProps) => {
   
   return (
     <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in`}>
-      <div className={`relative max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-2xl ${
+      <div className={`relative max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-15 ${
         isUser 
           ? 'chat-gradient backdrop-blur-sm bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 rounded-tr-none' 
           : 'bg-white/30 backdrop-blur-sm shadow-sm rounded-tl-none'
