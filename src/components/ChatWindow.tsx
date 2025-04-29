@@ -29,7 +29,7 @@ const ChatWindow = () => {
 
   return (
     <div className="flex flex-col h-full max-h-full rounded-15">
-      <div className="absolute top-4 right-10">
+      <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-ai-text">Status</span>
@@ -41,8 +41,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      <div className="flex justify-between items-center p-4 border-b border-white/20 bg-white/20 backdrop-blur-sm rounded-t-15">
-        <h1 className="text-xl font-semibold text-ai-text">AI Chat</h1>
+      <div className="flex justify-end items-center p-4 border-b border-white/20 bg-white/20 backdrop-blur-sm rounded-t-15">
         {messages.length > 0 && (
           <Button variant="ghost" size="sm" onClick={clearMessages} className="text-gray-500 hover:text-red-500">
             <Trash2 className="h-4 w-4 mr-1" />
