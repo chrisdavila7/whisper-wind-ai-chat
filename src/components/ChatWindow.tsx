@@ -24,7 +24,7 @@ const ChatWindow = () => {
       });
     }
   }, [messages]);
-  return <div className="flex flex-col h-full max-h-full rounded-15 my-[-80px] py-0">
+  return <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
           <div className="flex items-center gap-3">
@@ -37,9 +37,14 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      
+      <div className="flex justify-end items-center p-4 rounded-t-15 border-gray-500 border-t-2 border-l-2 border-r-2">
+        {messages.length > 0 && <Button variant="ghost" size="sm" onClick={clearMessages} className="text-gray-500 hover:text-red-500">
+            <Trash2 className="h-4 w-4 mr-1" />
+            Clear chat
+          </Button>}
+      </div>
 
-      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-2 border-r-2 mx-0 px-0 border-b-2 rounded-b-15 border-t-2 rounded-t-15 pt-[20px]">
+      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-2 border-r-2 mx-0 px-0 py-[32px] border-b-2 rounded-b-15 border-t-2 rounded-t-15 my-[80px]">
         {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-md \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\nrounded-15 bg-white/0 border-15 mx-[24px] rounded-xl my-[px] py-0 px">
             <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -54,7 +59,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="my-[-140px] pt-[100px] pb-[50px]">
+      <div className="my-[-120px] py-[30px] p-t[30px]">
         <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} />
       </div>
     </div>;
