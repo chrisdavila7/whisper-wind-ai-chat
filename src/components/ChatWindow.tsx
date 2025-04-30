@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -5,6 +6,9 @@ import { useChat } from '../hooks/useChat';
 import { Button } from './ui/button';
 import { Trash2 } from 'lucide-react';
 import { Progress } from './ui/progress';
+import TabButton from './TabButton';
+import SidePanel from './SidePanel';
+
 const ChatWindow = () => {
   const {
     messages,
@@ -15,6 +19,7 @@ const ChatWindow = () => {
   } = useChat();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [progress, setProgress] = useState(68); // Fixed fake percentage
+  const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
 
   // Auto-scroll to bottom when new messages come in
   useEffect(() => {
@@ -24,7 +29,16 @@ const ChatWindow = () => {
       });
     }
   }, [messages]);
-  return <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
+
+  const toggleSidePanel = () => {
+    setIsSidePanelOpen(!isSidePanelOpen);
+  };
+
+  return (
+    <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
+      <TabButton onClick={toggleSidePanel} isOpen={isSidePanelOpen} />
+      <SidePanel isOpen={isSidePanelOpen} onClose={() => setIsSidePanelOpen(false)} />
+      
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
           <div className="flex items-center gap-3">
@@ -37,10 +51,9 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      
-
       <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[25px] mb-[120px] pb-[20px] pt[20px]">
-        {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-md \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\nrounded-15 bg-white/0 border-15 mx-[24px] rounded-xl ml-[10px] mr-[10px]">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-8 backdrop-blur-md rounded-15 bg-white/0 border-15 mx-[24px] rounded-xl ml-[10px] mr-[10px]">
             <div className="w-16 h-16 mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
@@ -50,13 +63,18 @@ const ChatWindow = () => {
             <p className="text-gray-500 max-w-sm">
               Start a conversation with the AI assistant by typing a message below.
             </p>
-          </div> : messages.map(message => <MessageBubble key={message.id} message={message} />)}
+          </div>
+        ) : (
+          messages.map(message => <MessageBubble key={message.id} message={message} />)
+        )}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="my-[-120px] py-[30px] p-t[30px] px-[240px]">
         <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} />
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ChatWindow;
