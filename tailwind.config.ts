@@ -19,6 +19,9 @@ export default {
       }
     },
     extend: {
+      fontFamily: {
+        lexend: ["Lexend", "sans-serif"],
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',

@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Lexend:wght@100;200;300;400;500;600;700;800;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -90,8 +92,8 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-ai-background text-ai-text dark:bg-[#1A1F2C] dark:text-white;
+  html, body {
+    @apply font-lexend bg-ai-background text-ai-text dark:bg-[#1A1F2C] dark:text-white;
   }
 
   /* Global rounded corners */
@@ -134,5 +136,36 @@
     0% { content: '.'; }
     33% { content: '..'; }
     66% { content: '...'; }
+  }
+
+  .font-lexend {
+    font-family: "Lexend", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+  }
+
+  .font-lexend-light {
+    @apply font-lexend;
+    font-weight: 300;
+  }
+
+  .font-lexend-regular {
+    @apply font-lexend;
+    font-weight: 400;
+  }
+
+  .font-lexend-medium {
+    @apply font-lexend;
+    font-weight: 500;
+  }
+
+  .font-lexend-semibold {
+    @apply font-lexend;
+    font-weight: 600;
+  }
+
+  .font-lexend-bold {
+    @apply font-lexend;
+    font-weight: 700;
   }
 }
