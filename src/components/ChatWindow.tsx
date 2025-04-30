@@ -37,7 +37,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      <div className="flex justify-end items-center p-4 backdrop-blur-sm rounded-t-15 border-gray-500 border-t-2 border-l-2 border-r-2 mt-15">
+      <div className="flex justify-end items-center p-4 backdrop-blur-md rounded-t-15 border-gray-500 border-t-2 border-l-2 border-r-2 mt-15">
         {messages.length > 0 && <Button variant="ghost" size="sm" onClick={clearMessages} className="text-gray-500 hover:text-red-500">
             <Trash2 className="h-4 w-4 mr-1" />
             Clear chat
