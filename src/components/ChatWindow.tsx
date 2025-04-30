@@ -69,7 +69,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="w-full max-w-4xl lg:max-w-5xl mx-auto px-4 pb-5 relative my-[-110px] relative">
+      <div className="w-full max-w-4xl lg:max-w-5xl mx-1.5 relative px-4 pb-3 relative pt-[10px] relative my-[-110px] relative">
         <div className="flex items-center gap-3">
           <Button type="button" onClick={handleToggleTTS} variant="ghost" size="icon" title={ttsEnabled ? "Disable auto text-to-speech" : "Enable auto text-to-speech"} className="flex-shrink-0 text-gray-500 hover:text-gray-700 rounded-15 bg-slate-500 hover:bg-slate-400">
             <span className="sr-only">{ttsEnabled ? "Disable TTS" : "Enable TTS"}</span>
