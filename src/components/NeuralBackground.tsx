@@ -29,6 +29,10 @@ const NeuralBackground = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
+    // Clear the canvas completely when theme changes
+    ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     // Start the animation
     const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
     

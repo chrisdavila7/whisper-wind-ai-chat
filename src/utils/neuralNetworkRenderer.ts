@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -574,7 +573,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   
   // Main render function
   function render(timestamp: number) {
-    // Clear canvas with slight trail effect for smoother animation
+    // First completely clear the canvas to prevent trail artifacts between theme changes
+    ctx.fillStyle = config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Now apply the semi-transparent overlay for the trail effect
     ctx.fillStyle = theme === 'dark' 
       ? 'rgba(2, 8, 23, 0.3)' // Semi-transparent dark background for trail effect
       : 'rgba(255, 255, 255, 0.3)'; // Semi-transparent white background for trail effect
@@ -613,6 +616,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   
   // Initialize and start animation
   function init() {
+    // Fully clear the canvas with the current theme background color first
+    ctx.fillStyle = config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     initializeNeurons();
     createBranches();
     createConnections();
