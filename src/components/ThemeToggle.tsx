@@ -20,7 +20,7 @@ const ThemeToggle = ({ variant = 'icon', className = '' }: ThemeToggleProps) => 
       size={variant === 'icon' ? 'icon' : 'default'}
       className={`${className} ${
         variant === 'icon' ? 'flex-shrink-0' : 'justify-start w-full py-6'
-      } text-gray-500 hover:text-gray-700 rounded-15 bg-slate-500 hover:bg-slate-400`}
+      } dark:text-gray-300 text-gray-700 dark:hover:text-gray-100 hover:text-gray-900 rounded-15 bg-white/20 dark:bg-slate-700/30 hover:bg-gray-200/50 dark:hover:bg-slate-600/50 backdrop-blur-sm`}
       title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (

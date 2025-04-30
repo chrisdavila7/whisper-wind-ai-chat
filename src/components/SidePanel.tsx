@@ -26,11 +26,11 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose }) => {
 
   return (
     <Drawer open={isOpen} onOpenChange={onClose} shouldScaleBackground={false}>
-      <DrawerContent className="fixed left-0 right-auto w-72 h-full rounded-r-15 rounded-l-none">
+      <DrawerContent className="fixed left-0 right-auto w-72 h-full rounded-r-15 rounded-l-none bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800">
         <DrawerHeader>
           <div className="flex items-center justify-between">
-            <DrawerTitle>Menu</DrawerTitle>
-            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8">
+            <DrawerTitle className="text-gray-800 dark:text-gray-200">Menu</DrawerTitle>
+            <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 text-gray-600 dark:text-gray-400">
               <X className="h-4 w-4" />
             </Button>
           </div>
@@ -40,7 +40,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose }) => {
             <Button
               key={index}
               variant="ghost"
-              className="w-full justify-start text-left py-6"
+              className="w-full justify-start text-left py-6 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
             >
               <item.icon className="mr-2 h-5 w-5" />
               {item.label}
@@ -53,7 +53,7 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose }) => {
           </div>
         </div>
         <DrawerFooter>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             AI Chat v1.0
           </p>
         </DrawerFooter>
