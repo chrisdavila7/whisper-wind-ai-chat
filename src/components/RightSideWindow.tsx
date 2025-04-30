@@ -1,14 +1,23 @@
+
 import { useEffect, useRef } from 'react';
+
 interface RightSideWindowProps {
   isVisible: boolean;
 }
+
 const RightSideWindow = ({
   isVisible
 }: RightSideWindowProps) => {
   const sideWindowRef = useRef<HTMLDivElement>(null);
-  return <div ref={sideWindowRef} className={`fixed top-0 right-0 h-[80vh] w-1/3 transform transition-transform duration-300 ${isVisible ? 'translate-x-[33%]' : 'translate-x-full'}`} style={{
-    marginTop: 'calc(10vh)'
-  }}>
+
+  return (
+    <div 
+      ref={sideWindowRef} 
+      className={`fixed top-0 right-0 h-[80vh] w-1/3 transform transition-transform duration-300 ${isVisible ? 'translate-x-[66.67%]' : 'translate-x-full'}`} 
+      style={{
+        marginTop: 'calc(10vh)'
+      }}
+    >
       <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 h-full bg-white/10 backdrop-blur-md mx-16 relative my--3.5 relative">
         <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-8 backdrop-blur-md rounded-15 bg-white/0">
           <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-2 sm:mb-3 md:mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
@@ -22,6 +31,8 @@ const RightSideWindow = ({
           </p>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default RightSideWindow;

@@ -9,6 +9,7 @@ import { Progress } from './ui/progress';
 import TabButton from './TabButton';
 import SidePanel from './SidePanel';
 import RightSideWindow from './RightSideWindow';
+
 const ChatWindow = () => {
   const {
     messages,
@@ -31,14 +32,18 @@ const ChatWindow = () => {
       });
     }
   }, [messages]);
+  
   const toggleSidePanel = () => {
     setIsSidePanelOpen(!isSidePanelOpen);
   };
+  
   const handleToggleTTS = () => {
     setTtsEnabled(prev => !prev);
     // You could also save this preference to localStorage here
   };
-  return <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
+  
+  return (
+    <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
       <TabButton onClick={toggleSidePanel} isOpen={isSidePanelOpen} />
       <SidePanel isOpen={isSidePanelOpen} onClose={() => setIsSidePanelOpen(false)} />
       <RightSideWindow isVisible={isRightSideWindowVisible} />
@@ -89,6 +94,8 @@ const ChatWindow = () => {
           </div>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default ChatWindow;
