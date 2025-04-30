@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -7,6 +8,8 @@ import { Trash2 } from 'lucide-react';
 import { Progress } from './ui/progress';
 import TabButton from './TabButton';
 import SidePanel from './SidePanel';
+import RightSideWindow from './RightSideWindow';
+
 const ChatWindow = () => {
   const {
     messages,
@@ -19,6 +22,7 @@ const ChatWindow = () => {
   const [progress, setProgress] = useState(68); // Fixed fake percentage
   const [isSidePanelOpen, setIsSidePanelOpen] = useState(false);
   const [ttsEnabled, setTtsEnabled] = useState(false);
+  const [isRightSideWindowVisible, setIsRightSideWindowVisible] = useState(true);
 
   // Auto-scroll to bottom when new messages come in
   useEffect(() => {
@@ -28,16 +32,20 @@ const ChatWindow = () => {
       });
     }
   }, [messages]);
+  
   const toggleSidePanel = () => {
     setIsSidePanelOpen(!isSidePanelOpen);
   };
+  
   const handleToggleTTS = () => {
     setTtsEnabled(prev => !prev);
     // You could also save this preference to localStorage here
   };
+  
   return <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
       <TabButton onClick={toggleSidePanel} isOpen={isSidePanelOpen} />
       <SidePanel isOpen={isSidePanelOpen} onClose={() => setIsSidePanelOpen(false)} />
+      <RightSideWindow isVisible={isRightSideWindowVisible} />
       
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
         <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm ml-[-375px] pl-[65px] mr-[50px]">
@@ -62,12 +70,37 @@ const ChatWindow = () => {
             <p className="text-gray-500 max-w-sm">
               Start a conversation with the AI assistant by typing a message below.
             </p>
-          </div> : messages.map(message => <MessageBubble key={message.id} message={message} autoPlayTTS={ttsEnabled} />)}
+          </div> : messages.map(message => <MessageBubble key={message.id} message={message} />)}
         <div ref={messagesEndRef} />
       </div>
 
       <div className="my-[-120px] py-[30px] p-t[30px] px-[240px] mr-[109px] ml-[-0px]">
-        <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} ttsEnabled={ttsEnabled} onToggleTTS={handleToggleTTS} />
+        <div className="flex items-center">
+          <Button 
+            type="button" 
+            onClick={handleToggleTTS} 
+            variant="ghost" 
+            size="icon" 
+            title={ttsEnabled ? "Disable auto text-to-speech" : "Enable auto text-to-speech"} 
+            className="flex-shrink-0 text-gray-500 hover:text-gray-700 rounded-15 mr-3 bg-slate-500 hover:bg-slate-400"
+          >
+            <span className="sr-only">{ttsEnabled ? "Disable TTS" : "Enable TTS"}</span>
+            {ttsEnabled ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <line x1="23" y1="9" x2="17" y2="15"></line>
+                <line x1="17" y1="9" x2="23" y2="15"></line>
+              </svg>
+            )}
+          </Button>
+          <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} />
+        </div>
       </div>
     </div>;
 };
