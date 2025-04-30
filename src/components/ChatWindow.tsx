@@ -9,6 +9,7 @@ import { Progress } from './ui/progress';
 import TabButton from './TabButton';
 import SidePanel from './SidePanel';
 import RightSideWindow from './RightSideWindow';
+import ThemeToggle from './ThemeToggle';
 
 const ChatWindow = () => {
   const {
@@ -77,6 +78,7 @@ const ChatWindow = () => {
 
       <div className="w-[calc(70%-2rem)] ml-[4%] relative px-4 pb-3 pt-3 my-[-15vh]">
         <div className="flex items-center gap-3">
+          <ThemeToggle className="mr-1" />
           <Button type="button" onClick={handleToggleTTS} variant="ghost" size="icon" title={ttsEnabled ? "Disable auto text-to-speech" : "Enable auto text-to-speech"} className="flex-shrink-0 text-gray-500 hover:text-gray-700 rounded-15 bg-slate-500 hover:bg-slate-400">
             <span className="sr-only">{ttsEnabled ? "Disable TTS" : "Enable TTS"}</span>
             {ttsEnabled ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">

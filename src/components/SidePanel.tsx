@@ -9,6 +9,7 @@ import {
 } from './ui/drawer';
 import { Button } from './ui/button';
 import { X, List, ListOrdered, ListVideo, Plus } from 'lucide-react';
+import ThemeToggle from './ThemeToggle';
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -45,6 +46,11 @@ const SidePanel: React.FC<SidePanelProps> = ({ isOpen, onClose }) => {
               {item.label}
             </Button>
           ))}
+          
+          {/* Theme Toggle Button */}
+          <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+            <ThemeToggle variant="full" />
+          </div>
         </div>
         <DrawerFooter>
           <p className="text-sm text-muted-foreground">
