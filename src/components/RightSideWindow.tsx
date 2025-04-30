@@ -13,7 +13,7 @@ const RightSideWindow = ({
   return (
     <div 
       ref={sideWindowRef} 
-      className={`fixed top-0 right-0 h-[80vh] w-1/3 transform transition-transform duration-300 ${isVisible ? 'translate-x-[66.67%]' : 'translate-x-full'}`} 
+      className={`fixed top-0 right-0 h-[80vh] w-1/3 transform transition-transform duration-300 ${isVisible ? 'translate-x-0' : 'translate-x-full'}`} 
       style={{
         marginTop: 'calc(10vh)'
       }}
