@@ -5,9 +5,10 @@ import { formatTimestamp } from '../utils/formatMessage';
 
 interface MessageBubbleProps {
   message: Message;
+  autoPlayTTS?: boolean;
 }
 
-const MessageBubble = ({ message }: MessageBubbleProps) => {
+const MessageBubble = ({ message, autoPlayTTS = false }: MessageBubbleProps) => {
   const isUser = message.role === 'user';
   const isStreaming = message.isStreaming;
   
