@@ -45,20 +45,19 @@ const NeuralBackground = () => {
   
   return (
     <div 
-      className={`fixed top-0 left-0 w-full h-full -z-10 ${
-        theme === 'dark' 
-          ? 'bg-gradient-to-br from-gray-900 via-[#0a1428] to-ai-dark-secondary shadow-inner' 
-          : 'bg-gradient-to-br from-[#F8F7FF] via-[#E5DEFF] to-ai-secondary shadow-inner'
-      }`}
+      className={`fixed top-0 left-0 w-full h-full -z-10`}
       style={{
-        backgroundSize: '200% 200%',
+        background: theme === 'dark' 
+          ? 'linear-gradient(135deg, #20243f 0%, #0a1428 50%, #131b2e 100%)' 
+          : 'linear-gradient(135deg, #f8f7ff 0%, #e5deff 50%, #d6bcfa 100%)',
+        backgroundSize: '400% 400%',
         animation: 'gradient-animation 15s ease infinite'
       }}
     >
       <canvas 
         ref={canvasRef}
         className="w-full h-full"
-        style={{ pointerEvents: 'none' }}
+        style={{ pointerEvents: 'none', opacity: 0.8 }}
       />
     </div>
   );
