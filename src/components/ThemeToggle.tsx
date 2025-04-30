@@ -24,19 +24,19 @@ const ThemeToggle = ({ variant = 'icon', className = '' }: ThemeToggleProps) => 
         theme === 'dark' 
           ? 'dark:text-gray-300 dark:hover:text-gray-100 dark:bg-slate-700/30 dark:hover:bg-slate-600/50'
           : 'text-gray-700 hover:text-gray-900 bg-white/20 hover:bg-gray-200/50'
-      } rounded-15 backdrop-blur-sm shadow-sm`}
+      } rounded-15 backdrop-blur-sm shadow-sm font-merriweather`}
       title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (
         <>
           <Sun className={variant === 'full' ? 'mr-2 h-5 w-5' : 'h-5 w-5'} />
-          {variant === 'full' && <span>Light Mode</span>}
+          {variant === 'full' && <span className="merriweather-regular">Light Mode</span>}
           <span className="sr-only">Switch to light mode</span>
         </>
       ) : (
         <>
           <Moon className={variant === 'full' ? 'mr-2 h-5 w-5' : 'h-5 w-5'} />
-          {variant === 'full' && <span>Dark Mode</span>}
+          {variant === 'full' && <span className="merriweather-regular">Dark Mode</span>}
           <span className="sr-only">Switch to dark mode</span>
         </>
       )}

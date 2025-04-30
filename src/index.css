@@ -1,4 +1,6 @@
 
+@import url('https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -87,7 +89,7 @@
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-border font-merriweather;
   }
 
   body {
@@ -134,5 +136,37 @@
     0% { content: '.'; }
     33% { content: '..'; }
     66% { content: '...'; }
+  }
+
+  .merriweather-light {
+    font-family: "Merriweather", serif;
+    font-optical-sizing: auto;
+    font-weight: 300;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+  }
+
+  .merriweather-regular {
+    font-family: "Merriweather", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+  }
+
+  .merriweather-bold {
+    font-family: "Merriweather", serif;
+    font-optical-sizing: auto;
+    font-weight: 700;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+  }
+
+  .merriweather-black {
+    font-family: "Merriweather", serif;
+    font-optical-sizing: auto;
+    font-weight: 900;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
   }
 }
