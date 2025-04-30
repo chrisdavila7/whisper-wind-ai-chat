@@ -25,7 +25,7 @@ const ChatWindow = () => {
     }
   }, [messages]);
   return <div className="flex flex-col h-full max-h-full rounded-15 my-[-40px]">
-      <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
+      <div className="backdrop-blur-sm">
         <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-ai-text">Status</span>
