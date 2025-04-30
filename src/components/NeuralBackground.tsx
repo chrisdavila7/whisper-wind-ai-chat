@@ -29,7 +29,8 @@ const NeuralBackground = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Clear the canvas completely when theme changes
+    // Ensure the canvas is fully cleared when theme changes
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -47,7 +48,7 @@ const NeuralBackground = () => {
     <canvas 
       ref={canvasRef}
       className={`fixed top-0 left-0 w-full h-full -z-10 ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}
-      style={{ pointerEvents: 'none' }}
+      style={{ pointerEvents: 'none', fontFamily: 'inherit' }}
     />
   );
 };
