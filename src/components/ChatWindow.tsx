@@ -60,7 +60,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[5vh] mb-[15vh] ml-[4%] mr-[4%] relative max-w-none w-auto px-3 sm:px-4 md:px-5">
+      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[5vh] mb-[15vh] ml-[4%] relative max-w-none w-[calc(70%-2rem)] px-3 sm:px-4 md:px-5">
         {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-8 backdrop-blur-md rounded-15 bg-white/0 border-15 mx-auto">
             <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-2 sm:mb-3 md:mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -75,7 +75,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="w-full max-w-none mx-[2%] relative px-4 pb-3 pt-3 my-[-15vh] relative">
+      <div className="w-[calc(70%-2rem)] ml-[4%] relative px-4 pb-3 pt-3 my-[-15vh]">
         <div className="flex items-center gap-3">
           <Button type="button" onClick={handleToggleTTS} variant="ghost" size="icon" title={ttsEnabled ? "Disable auto text-to-speech" : "Enable auto text-to-speech"} className="flex-shrink-0 text-gray-500 hover:text-gray-700 rounded-15 bg-slate-500 hover:bg-slate-400">
             <span className="sr-only">{ttsEnabled ? "Disable TTS" : "Enable TTS"}</span>
