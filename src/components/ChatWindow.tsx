@@ -54,7 +54,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[35px] mb-[120px] ml-[18px] relative mr-[40px] relative max-w-4xl lg:max-w-5xl px-3 sm:px-4 md:px-5">
+      <div className="flex-1 overflow-y-auto p-4 border-gray-500 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[35px] mb-[120px] ml-[18px] relative mr-[120px] relative max-w-4xl lg:max-w-5xl px-3 sm:px-4 md:px-5">
         {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-8 backdrop-blur-md rounded-15 bg-white/0 border-15 mx-auto">
             <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-2 sm:mb-3 md:mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
