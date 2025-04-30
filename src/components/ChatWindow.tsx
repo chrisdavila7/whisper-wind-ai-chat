@@ -35,7 +35,7 @@ const ChatWindow = () => {
       <SidePanel isOpen={isSidePanelOpen} onClose={() => setIsSidePanelOpen(false)} />
       
       <div className="absolute top-4 left-1/2 transform -translate-x-1/2">
-        <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm">
+        <div className="bg-white/30 backdrop-blur-sm rounded-15 p-3 shadow-sm ml-[-200px]">
           <div className="flex items-center gap-3">
             <span className="text-sm font-medium text-ai-text">Status</span>
             <div className="w-32">
