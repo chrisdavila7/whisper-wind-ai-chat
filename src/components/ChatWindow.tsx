@@ -59,7 +59,7 @@ const ChatWindow = () => {
         <div ref={messagesEndRef} />
       </div>
 
-      <div className="p-4  my-0 py-[16px]">
+      <div className="p-4  my-[-50px] py-[10px]">
         <ChatInput onSendMessage={sendMessage} isLoading={isLoading} onStopGeneration={stopStreaming} />
       </div>
     </div>;
