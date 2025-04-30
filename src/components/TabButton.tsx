@@ -14,7 +14,7 @@ const TabButton: React.FC<TabButtonProps> = ({ onClick, isOpen, className }) => 
     <button
       onClick={onClick}
       className={cn(
-        "absolute top-4 left-4 z-30 flex items-center justify-center ml-[-15px] py-2 bg-ai-primary text-white rounded-r-15 transition-transform duration-300",
+        "absolute top-4 left-4 z-30 flex items-center justify-center ml-[-15px] py-2 bg-ai-primary text-white border-r-rounded-15 transition-transform duration-300",
         isOpen ? "-translate-x-full" : "translate-x-0",
         className
       )}
