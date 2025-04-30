@@ -24,7 +24,7 @@ const ThemeToggle = ({ variant = 'icon', className = '' }: ThemeToggleProps) => 
         theme === 'dark' 
           ? 'dark:text-gray-300 dark:hover:text-gray-100 dark:bg-slate-700/30 dark:hover:bg-slate-600/50'
           : 'text-gray-700 hover:text-gray-900 bg-white/20 hover:bg-gray-200/50'
-      } rounded-15 backdrop-blur-sm`}
+      } rounded-15 backdrop-blur-sm shadow-sm`}
       title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {theme === 'dark' ? (
