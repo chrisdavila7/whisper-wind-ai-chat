@@ -47,15 +47,27 @@ const NeuralBackground = () => {
     <div 
       className={`fixed top-0 left-0 w-full h-full -z-10 ${
         theme === 'dark' 
-          ? 'bg-gradient-to-br from-gray-950 via-[#0a1428] to-ai-dark-secondary' 
-          : 'bg-gradient-to-br from-[#F1F0FB] via-[#E5DEFF] to-ai-secondary'
+          ? 'bg-gradient-to-br from-gray-900 via-[#0a1428] to-ai-dark-secondary shadow-inner' 
+          : 'bg-gradient-to-br from-[#F8F7FF] via-[#E5DEFF] to-ai-secondary shadow-inner'
       }`}
+      style={{
+        backgroundSize: '200% 200%',
+        animation: 'gradient-animation 15s ease infinite'
+      }}
     >
       <canvas 
         ref={canvasRef}
         className="w-full h-full"
         style={{ pointerEvents: 'none' }}
       />
+      
+      <style jsx>{`
+        @keyframes gradient-animation {
+          0% { background-position: 0% 50% }
+          50% { background-position: 100% 50% }
+          100% { background-position: 0% 50% }
+        }
+      `}</style>
     </div>
   );
 };
