@@ -44,11 +44,19 @@ const NeuralBackground = () => {
   }, [theme]);
   
   return (
-    <canvas 
-      ref={canvasRef}
-      className={`fixed top-0 left-0 w-full h-full -z-10 ${theme === 'dark' ? 'bg-gray-950' : 'bg-white'}`}
-      style={{ pointerEvents: 'none' }}
-    />
+    <div 
+      className={`fixed top-0 left-0 w-full h-full -z-10 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-br from-gray-950 via-[#0a1428] to-[#131836]' 
+          : 'bg-gradient-to-br from-[#F1F0FB] via-[#E5DEFF] to-[#D3E4FD]'
+      }`}
+    >
+      <canvas 
+        ref={canvasRef}
+        className="w-full h-full"
+        style={{ pointerEvents: 'none' }}
+      />
+    </div>
   );
 };
 
