@@ -4,15 +4,21 @@ import { Neuron, Connection, Branch, Point } from '../types/neural';
 /**
  * Draws and animates an organic neural network on a canvas
  */
-export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D) {
+export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
   const config = {
-    backgroundColor: '#020817', // Darker background
+    backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
-      base: 'rgba(59, 130, 246, 0.7)', // Blue base
-      core: 'rgba(219, 234, 254, 0.9)' // Light blue core
+      base: theme === 'dark' 
+        ? 'rgba(59, 130, 246, 0.7)' // Blue base for dark mode
+        : 'rgba(59, 130, 246, 0.6)', // Slightly more visible blue for light mode
+      core: theme === 'dark'
+        ? 'rgba(219, 234, 254, 0.9)' // Light blue core for dark mode
+        : 'rgba(29, 78, 216, 0.85)' // Darker blue core for light mode for better contrast
     },
-    connectionColor: 'rgba(59, 130, 246, 0.4)',
+    connectionColor: theme === 'dark' 
+      ? 'rgba(59, 130, 246, 0.4)' 
+      : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
     // Organic parameters with increased spacing (35% more)
     neuronCount: 20, // Reduced count for less visual clutter
@@ -25,7 +31,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Animation settings
     flowSpeed: 0.0004, // Slowed down by 60%
     pulseInterval: 3000, // Increased interval for slower pace
-    glowIntensity: 0.7,
+    glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
     neuronSize: { min: 3, max: 8 },
     
     // Traveling node settings - slower by 65%
@@ -569,7 +575,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   // Main render function
   function render(timestamp: number) {
     // Clear canvas with slight trail effect for smoother animation
-    ctx.fillStyle = 'rgba(2, 8, 23, 0.3)'; // Semi-transparent background for trail effect
+    ctx.fillStyle = theme === 'dark' 
+      ? 'rgba(2, 8, 23, 0.3)' // Semi-transparent dark background for trail effect
+      : 'rgba(255, 255, 255, 0.3)'; // Semi-transparent white background for trail effect
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Draw connections
