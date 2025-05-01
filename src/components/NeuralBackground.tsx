@@ -54,6 +54,7 @@ const NeuralBackground = () => {
             animation: 'waddingFluid 2s ease-in-out infinite',
             filter: 'blur(0.5px)',
             opacity: 0.9
+            willChange: 'background-position'
       }}
     >
       <canvas 
