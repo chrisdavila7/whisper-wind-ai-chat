@@ -48,13 +48,13 @@ const NeuralBackground = () => {
   className="fixed top-0 left-0 w-full h-full -z-10"
   style={{
     background: theme === 'dark' 
-      ? 'linear-gradient(45deg, #0a1428 0%, #0a1428 30%, #79a1ff 50%, #131b2e 100%)'
+      ? 'linear-gradient(#0a1428 0%, #0a1428 30%, #79a1ff 50%, #131b2e 100%)'
       : 'linear-gradient(145deg, #e5deff, #e5deff, #1155ca, #d6bcfa)',
     backgroundSize: '100% 100%',
     backgroundRepeat: 'no-repeat',
     animation: 'waveDiagonal 3s ease-in-out',
-    filter: 'blur(0.5px)',
-    opacity: 0.8,
+    filter: 'blur(0.3px)',
+    opacity: 0.9,
     willChange: 'background-position',
          }}
     >
