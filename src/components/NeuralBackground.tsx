@@ -54,7 +54,7 @@ const NeuralBackground = () => {
     backgroundRepeat: 'no-repeat',
     animation: 'waveDiagonal ease infinite',
     filter: 'blur(0.5px)',
-    opacity: 80,
+    opacity: 1,
     willChange: 'background-position',
          }}
     >
