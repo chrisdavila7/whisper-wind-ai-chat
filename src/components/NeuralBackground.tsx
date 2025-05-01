@@ -50,7 +50,7 @@ const NeuralBackground = () => {
     background: theme === 'dark' 
       ? 'linear-gradient(145deg, #0a1428, #0a1428, #79a1ff, #131b2e)'
       : 'linear-gradient(145deg, #131b2e, #e5deff, #d6bcfa)',
-    backgroundSize: '400% 400%',
+    backgroundSize: '100% 100%',
     backgroundRepeat: 'no-repeat',
     animation: 'waveDiagonal ease-in-out infinite',
     filter: 'blur(0.5px)',
