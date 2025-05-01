@@ -45,7 +45,7 @@ const NeuralBackground = () => {
   
   return (
     <div 
-  className="top-0 left-0 w-full h-full -z-10"
+  className="fixed top-0 left-0 w-full h-full -z-10"
   style={{
     background: theme === 'dark' 
       ? 'radial-gradient(ellipse at top left, #131b2e, #79a1ff, #131b2e)'
