@@ -51,7 +51,7 @@ const NeuralBackground = () => {
           ? 'radial-gradient(ellipse at top left, #79a1ff 0%, #0a1428 50%, #131b2e 100%)' 
           : 'radial-gradient(ellipse at top left, #79a1ff 0%, #e5deff 50%, #d6bcfa 100%)',
         backgroundSize: '400% 400%',
-        animation: 'gradient-animation 2s ease infinite'
+        animation: 'radial-Pulse 2s ease infinite'
       }}
     >
       <canvas 
