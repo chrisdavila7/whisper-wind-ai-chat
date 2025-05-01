@@ -51,7 +51,7 @@ const NeuralBackground = () => {
           ? 'linear-gradient(at center, #79a1ff 30%, #0a1428 65%, #131b2e 100%)' 
           : 'radial-gradient(at center, #79a1ff 30%, #e5deff 65%, #d6bcfa 100%)',
         backgroundSize: '400% 400%',
-        animation: 'gradient-animation 15s ease infinite'
+        animation: 'gradientShift 15s ease infinite'
       }}
     >
       <canvas 
