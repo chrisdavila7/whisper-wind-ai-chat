@@ -54,7 +54,13 @@
   100% { background-position: 0% 50%; }
 }
 
-         @keyframes radialPulse {
+@keyframes radialPulse {
+  0% { background-size: 0% 50%; }
+  50% { background-size: 100% 50%; }
+  100% { background-size: 0% 50%; }
+}
+
+@keyframes radialMove {
   0% { background-size: 0% 50%; }
   50% { background-size: 100% 50%; }
   100% { background-size: 0% 50%; }
