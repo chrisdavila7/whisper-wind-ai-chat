@@ -51,7 +51,7 @@ const NeuralBackground = () => {
           ? 'linear-gradient(135deg, #79a1ff 0%, #0a1428 50%, #131b2e 100%)' 
           : 'linear-gradient(135deg, #79a1ff 0%, #e5deff 50%, #d6bcfa 100%)',
         backgroundSize: '400% 400%',
-            animation: 'waddingFluid 30s ease-in-out infinite',
+            animation: 'waddingFluid 2s ease-in-out infinite',
             filter: 'blur(0.5px)',
             opacity: 0.9
       }}
