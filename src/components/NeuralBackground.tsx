@@ -53,7 +53,7 @@ const NeuralBackground = () => {
         backgroundSize: '400% 400%',
         animation: 'gradient-animation 2s ease-in-out infinite',
         filter: 'blur(0.5px)',
-        opacity: 0.9,
+        opacity: 1,
         willChange: 'background-position'
       }}
     >
