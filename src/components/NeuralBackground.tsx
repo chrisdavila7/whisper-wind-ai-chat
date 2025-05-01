@@ -52,7 +52,7 @@ const NeuralBackground = () => {
       : 'linear-gradient(145deg, #131b2e, #e5deff, #d6bcfa)',
     backgroundSize: '100% 100%',
     backgroundRepeat: 'no-repeat',
-    animation: 'waveDiagonal 2s linear infinite',
+    animation: 'waveDiagonal ease 5',
     filter: 'blur(0.5px)',
     opacity: 0.9,
     willChange: 'background-position',
