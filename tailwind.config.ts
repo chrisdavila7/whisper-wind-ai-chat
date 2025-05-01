@@ -110,6 +110,13 @@ export default {
         'bounce-right': {
           '0%, 100%': { transform: 'translateX(0)' },
           '50%': { transform: 'translateX(3px)' }
+        },
+        'gradient-animation': {
+          '0%': { backgroundPosition: '0% 0%' },
+          '25%': { backgroundPosition: '50% 50%' },
+          '50%': { backgroundPosition: '100% 100%' },
+          '75%': { backgroundPosition: '50% 50%' },
+          '100%': { backgroundPosition: '0% 0%' }
         }
       },
       animation: {
@@ -129,7 +136,8 @@ export default {
         // The following animations are not part of connection flow, so also slowed down
         'typing': 'typing 2.4s steps(40, end)', // from 1.5s to 2.4s
         'blink': 'blink 1.12s infinite', // from 0.7s to 1.12s
-        'bounce-right': 'bounce-right 1.6s infinite' // from 1s to 1.6s
+        'bounce-right': 'bounce-right 1.6s infinite', // from 1s to 1.6s
+        'gradient-animation': 'gradient-animation 15s ease infinite'
       }
     }
   },

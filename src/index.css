@@ -170,3 +170,15 @@
     font-variation-settings: "wdth" 100;
   }
 }
+
+@keyframes gradient-animation {
+  0% { background-position: 0% 0% }
+  25% { background-position: 50% 50% }
+  50% { background-position: 100% 100% }
+  75% { background-position: 50% 50% }
+  100% { background-position: 0% 0% }
+}
+
+.animate-gradient-animation {
+  animation: gradient-animation 15s ease infinite;
+}
