@@ -35,7 +35,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // Traveling node settings - slower by 65%
     travelingNodeCount: 15,
-    travelingNodeSpeed: { min: 0.105, max: 0.28 }, // Reduced by 65% from {min: 0.3, max: 0.8}
+    travelingNodeSpeed: { min: 0.00105, max: 0.0028 }, // Reduced by 65% from {min: 0.3, max: 0.8}
     travelingNodeGlowDuration: 800, // How long the glow effect lasts in ms
   };
 
