@@ -2,11 +2,14 @@ import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/ne
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
 
+// Define a more flexible canvas context type for compatibility
+type CanvasContext = CanvasRenderingContext2D;
+
 /**
  * Draw a neuron with glow effect
  */
 export function drawNeuron(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasContext,
   neuron: Neuron, 
   config: NeuralNetworkConfig
 ): void {
@@ -49,7 +52,7 @@ export function drawNeuron(
  * Draw and update traveling nodes
  */
 export function updateAndDrawTravelingNodes(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasContext,
   travelingNodes: TravelingNode[],
   neurons: Neuron[],
   canvas: HTMLCanvasElement,
@@ -113,7 +116,7 @@ export function updateAndDrawTravelingNodes(
  * Draw organic branches with gentle water-like flow with random timing and directions
  */
 export function drawBranches(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasContext,
   neuron: Neuron, 
   config: NeuralNetworkConfig
 ): void {
@@ -225,7 +228,7 @@ export function drawBranches(
  * Draw a connection with organic, flowing path while maintaining endpoint anchors
  */
 export function drawConnection(
-  ctx: CanvasRenderingContext2D,
+  ctx: CanvasContext,
   connection: Connection, 
   config: NeuralNetworkConfig
 ): void {

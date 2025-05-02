@@ -28,9 +28,12 @@ export async function streamResponse(
   const words = response.split(' ');
   let streamedResponse = '';
   
-  // Performance optimization - determine delay based on length and device capability
-  const baseDelay = navigator.connection && 
-    (navigator.connection as any).effectiveType === '4g' ? 50 : 80;
+  // Performance optimization - determine delay based on device capabilities
+  // Safely check for connection property using type assertion
+  const baseDelay = (
+    'connection' in navigator && 
+    (navigator as any).connection?.effectiveType === '4g'
+  ) ? 50 : 80;
   
   // Stream words with adaptive timing
   for (let i = 0; i < words.length; i++) {

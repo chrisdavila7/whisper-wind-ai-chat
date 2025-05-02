@@ -14,6 +14,9 @@ import {
   drawConnection 
 } from './rendering';
 
+// Type definition for canvas context that works with both standard and offscreen canvas
+type CanvasContext = CanvasRenderingContext2D;
+
 /**
  * Main renderer that sets up and animates the neural network
  * Optimized for performance with conditional rendering and frame skipping
@@ -35,13 +38,18 @@ export function drawOrganicNeuralNetwork(
   
   // Performance optimization variables
   let offscreenCanvas: OffscreenCanvas | null = null;
-  let offscreenCtx: OffscreenCanvasRenderingContext2D | null = null;
+  let offscreenCtx: CanvasRenderingContext2D | null = null;
   
   // Set up offscreen canvas if supported for improved performance
   if (config.useOffscreenCanvas && 'OffscreenCanvas' in window) {
     try {
       offscreenCanvas = new OffscreenCanvas(canvas.width, canvas.height);
-      offscreenCtx = offscreenCanvas.getContext('2d') as OffscreenCanvasRenderingContext2D;
+      const tempCtx = offscreenCanvas.getContext('2d');
+      
+      if (tempCtx) {
+        // We can safely cast here as we'll ensure compatible methods are used
+        offscreenCtx = tempCtx as CanvasRenderingContext2D;
+      }
     } catch (e) {
       console.warn('OffscreenCanvas not fully supported, falling back to regular canvas');
     }

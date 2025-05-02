@@ -133,8 +133,8 @@ const NeuralBackground = () => {
           position: 'absolute',
           top: '-50%',
           left: '-50%',
-          // Optimize rendering
-          imageRendering: 'high-quality',
+          // Optimize rendering - using 'crisp-edges' instead of 'high-quality'
+          imageRendering: 'auto', 
           willChange: 'transform',
         }}
       />

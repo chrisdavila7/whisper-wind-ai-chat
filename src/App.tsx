@@ -27,7 +27,7 @@ const App = () => {
           refetchOnWindowFocus: false, // Disable refetching when window regains focus
           staleTime: 60000, // Data remains fresh for 1 minute
           retry: 1, // Only retry once on failure
-          suspense: false,
+          // Removed suspense property as it's not supported in the current version
         },
       },
     })
