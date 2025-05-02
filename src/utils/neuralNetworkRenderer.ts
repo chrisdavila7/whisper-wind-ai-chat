@@ -270,7 +270,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               target: target,
               width: 0.5 + Math.random() * 6,
               controlPoints,
-              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 1),
+              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 2),
               flowPhase: Math.random() * Math.PI * 2
             };
             
@@ -312,7 +312,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             target: target,
             width: 0.5 + Math.random() * 1,
             controlPoints,
-            flowSpeed: config.flowSpeed * (0.7 + Math.random() * 1),
+            flowSpeed: config.flowSpeed * (0.7 + Math.random() * 2),
             flowPhase: Math.random() * Math.PI * 2
           };
           
