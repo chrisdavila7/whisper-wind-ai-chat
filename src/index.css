@@ -173,9 +173,9 @@
 
 @keyframes gradient-animation {
   0% { background-position: 100% 100% }
-  25% { background-position: 75% 75% }
-  50% { background-position: 50% 50% }
-  75% { background-position: 75% 75% }
+  25% { background-position: 80% 80% }
+  50% { background-position: 40% 40% }
+  75% { background-position: 80% 80% }
   100% { background-position: 100% 100% }
 }
 
