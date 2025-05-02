@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useRef } from 'react';
@@ -16,10 +15,13 @@ const NeuralBackground = () => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas to full screen
+    // Set canvas to full screen - use twice the dimensions for retina-like quality
+    // while keeping the scale transform to make elements appear zoomed out
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Double the canvas dimensions to maintain quality when scaled
+      canvas.width = window.innerWidth * 2;
+      canvas.height = window.innerHeight * 2;
+      
       // Redraw on resize to fill the screen properly
       if (canvas.width > 0 && canvas.height > 0) {
         drawOrganicNeuralNetwork(canvas, ctx, theme);
@@ -37,10 +39,9 @@ const NeuralBackground = () => {
     const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
     
     // Force a refresh of the canvas every few seconds if animation isn't working properly
-    // Reduced interval from 5000ms to 3000ms to freshen the display more often
     const forceRefreshInterval = setInterval(() => {
       if (canvas && ctx) {
-        // Reduced opacity further for a more subtle trail effect
+        // Reduced opacity for a more subtle trail effect
         ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.08)' : 'rgba(255, 255, 255, 0.08)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
@@ -56,6 +57,7 @@ const NeuralBackground = () => {
   
   return (
     <div className="fixed top-0 left-0 w-full h-full -z-10">
+      {/* Gradient background - covers the entire viewport */}
       <div 
         className="absolute top-0 left-0 w-full h-full animate-gradient-animation"
         style={{
@@ -66,13 +68,22 @@ const NeuralBackground = () => {
           opacity: 0.6, // Reduced from 0.7 to make the neural network more visible
         }}
       />
+      {/* Neural network canvas - scaled down to appear further away while covering full viewport */}
       <canvas 
         ref={canvasRef}
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 0.9, // Increased from 0.8 to make neural network more visible
-          transform: 'scale(0.5)' // Changed from 1.1 to 0.5 to zoom out by approximately 100% (make elements appear further away)
+          opacity: 0.9,
+          // Scale the rendered content to appear zoomed out, but keep covering full viewport
+          transform: 'scale(0.5)',
+          // Double the size to ensure it fills the viewport when scaled down
+          width: '200%',
+          height: '200%',
+          // Center the expanded canvas
+          position: 'absolute',
+          top: '-50%',
+          left: '-50%',
         }}
       />
     </div>
