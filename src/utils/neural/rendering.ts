@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
@@ -123,8 +122,10 @@ export function drawBranches(
     branch.flowPhase += 0.002;
     if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
     
-    // Draw branch as a bezier curve
+    // Draw branch as a bezier curve with thicker width
     ctx.strokeStyle = config.connectionColor;
+    
+    // Ensure width is consistently thick (using the same multiplier as in initialization)
     ctx.lineWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
     
     ctx.beginPath();
@@ -168,9 +169,11 @@ export function drawConnection(
   connection.flowPhase += connection.flowSpeed;
   if (connection.flowPhase > Math.PI * 2) connection.flowPhase -= Math.PI * 2;
   
-  // Draw connection path
+  // Draw connection path with wider lines
   ctx.strokeStyle = config.connectionColor;
-  ctx.lineWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2); // Pulsing width
+  
+  // Make all connections wider to match branch width
+  ctx.lineWidth = width * 3.6 * (0.8 + Math.sin(connection.flowPhase) * 0.2); // Using 3.6 multiplier for consistency
   
   ctx.beginPath();
   ctx.moveTo(source.x, source.y);

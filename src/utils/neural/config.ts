@@ -19,23 +19,23 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
       ? 'rgba(59, 130, 246, 0.4)' 
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
-    // Organic parameters with increased spacing (35% more)
-    neuronCount: 20, // Reduced count for less visual clutter
-    minConnections: 2, // Reduced for less clutter
-    maxConnections: 6, // Reduced for less clutter
+    // Reduced neuron count and increased spacing for a more zoomed-in appearance
+    neuronCount: 15, // Reduced from 20 to make it appear larger
+    minConnections: 2,
+    maxConnections: 5, // Reduced slightly from 6
     minBranches: 2,
     maxBranches: 5,
-    branchLength: { min: 30, max: 120 },
+    branchLength: { min: 40, max: 150 }, // Increased lengths for more visibility
     
     // Animation settings
-    flowSpeed: 0.0004, // Slowed down by 60%
-    pulseInterval: 3000, // Increased interval for slower pace
-    glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
-    neuronSize: { min: 3, max: 8 },
+    flowSpeed: 0.0004,
+    pulseInterval: 3000,
+    glowIntensity: theme === 'dark' ? 0.7 : 0.5,
+    neuronSize: { min: 4, max: 10 }, // Increased sizes for more visibility
     
-    // Traveling node settings - slower by 65%
-    travelingNodeCount: 15,
-    travelingNodeSpeed: { min: 0.105, max: 0.28 }, // Reduced by 65% from {min: 0.3, max: 0.8}
-    travelingNodeGlowDuration: 800, // How long the glow effect lasts in ms
+    // Traveling node settings - adjusted for zoomed appearance
+    travelingNodeCount: 12, // Reduced from 15
+    travelingNodeSpeed: { min: 0.105, max: 0.28 },
+    travelingNodeGlowDuration: 800,
   };
 }
