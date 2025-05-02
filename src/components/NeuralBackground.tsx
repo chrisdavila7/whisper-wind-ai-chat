@@ -58,7 +58,11 @@ const NeuralBackground = () => {
       <canvas 
         ref={canvasRef}
         className="w-full h-full"
-        style={{ pointerEvents: 'none', opacity: 0.8, transform: 'scale(1.2)' }} // Added scale transform to zoom in
+        style={{ 
+          pointerEvents: 'none', 
+          opacity: 0.8, 
+          transform: 'scale(1.1)' // Slightly reduced zoom to show more neurons
+        }}
       />
     </div>
   );

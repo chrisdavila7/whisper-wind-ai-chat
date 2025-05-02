@@ -19,22 +19,22 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
       ? 'rgba(59, 130, 246, 0.4)' 
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
-    // Reduced neuron count and increased spacing for a more zoomed-in appearance
-    neuronCount: 15, // Reduced from 20 to make it appear larger
+    // Ensuring at least 3-4 neurons are always visible by increasing count and adjusting distribution
+    neuronCount: 20, // Increased from 15 to ensure enough neurons
     minConnections: 2,
-    maxConnections: 5, // Reduced slightly from 6
+    maxConnections: 5,
     minBranches: 2,
     maxBranches: 5,
-    branchLength: { min: 40, max: 150 }, // Increased lengths for more visibility
+    branchLength: { min: 40, max: 150 },
     
     // Animation settings
     flowSpeed: 0.0004,
     pulseInterval: 3000,
     glowIntensity: theme === 'dark' ? 0.7 : 0.5,
-    neuronSize: { min: 4, max: 10 }, // Increased sizes for more visibility
+    neuronSize: { min: 6, max: 12 }, // Increased sizes to make neurons more prominent
     
-    // Traveling node settings - adjusted for zoomed appearance
-    travelingNodeCount: 12, // Reduced from 15
+    // Traveling node settings
+    travelingNodeCount: 12,
     travelingNodeSpeed: { min: 0.105, max: 0.28 },
     travelingNodeGlowDuration: 800,
   };

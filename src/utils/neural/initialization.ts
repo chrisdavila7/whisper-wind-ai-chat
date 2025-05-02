@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 
@@ -7,8 +6,30 @@ import { NeuralNetworkConfig } from '../../types/neural';
  */
 export function initializeNeurons(canvas: HTMLCanvasElement, config: NeuralNetworkConfig): Neuron[] {
   const neurons: Neuron[] = [];
-  // Create neurons with better spherical distribution and increased spacing
-  for (let i = 0; i < config.neuronCount; i++) {
+  
+  // Ensure at least 3-4 neurons are always visible in the central area
+  
+  // First, add 3-4 neurons in the central visible area
+  const centerCount = 4; // Guarantee 4 center neurons
+  for (let i = 0; i < centerCount; i++) {
+    // Place these neurons in a more central position with some spacing
+    const angle = (i / centerCount) * Math.PI * 2;
+    // Use reduced radius to keep them more in the center (0.25-0.45 of the canvas)
+    const radius = 0.25 + (Math.random() * 0.2);
+    
+    neurons.push({
+      id: i,
+      x: canvas.width * (0.5 + Math.cos(angle) * radius),
+      y: canvas.height * (0.5 + Math.sin(angle) * radius),
+      size: config.neuronSize.min + Math.random() * (config.neuronSize.max - config.neuronSize.min),
+      connections: [],
+      branches: [],
+      pulseStrength: 0,
+    });
+  }
+  
+  // Then add the rest with the spherical distribution
+  for (let i = centerCount; i < config.neuronCount; i++) {
     // Use spherical fibonacci distribution for better 360° coverage
     const goldenRatio = (1 + Math.sqrt(5)) / 2;
     const i_normalized = i / config.neuronCount;
@@ -17,7 +38,7 @@ export function initializeNeurons(canvas: HTMLCanvasElement, config: NeuralNetwo
     // Use cosine for y to distribute more evenly
     const phi = Math.acos(1 - 2 * i_normalized);
     
-    // Spread neurons out further (1.215 instead of 0.9 - 35% more spacing)
+    // Spread neurons out further
     const x = 0.5 + 1.215 * Math.sin(phi) * Math.cos(theta);
     const y = 0.5 + 1.215 * Math.sin(phi) * Math.sin(theta);
     
