@@ -7,8 +7,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState, Suspense, lazy } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
-// Lazy load pages to improve initial load time
-const Index = lazy(() => import("./pages/Index"));
+// Lazy load pages to improve initial load time - update to use lowercase 'index'
+const Index = lazy(() => import("./pages/index"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Create a loading fallback component
