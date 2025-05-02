@@ -51,8 +51,8 @@ const NeuralBackground = () => {
       const viewportHeight = window.visualViewport?.height || window.innerHeight;
       
       // Size for physical pixels (accounting for device pixel ratio)
-      canvas.width = viewportWidth * devicePixelRatio * 2;
-      canvas.height = viewportHeight * devicePixelRatio * 2;
+      canvas.width = viewportWidth * devicePixelRatio;  // Reduced multiplier from 2 to 1 for better performance
+      canvas.height = viewportHeight * devicePixelRatio;
       
       // Apply the scale for retina/high-DPI displays
       ctx.scale(devicePixelRatio, devicePixelRatio);
@@ -84,12 +84,12 @@ const NeuralBackground = () => {
       // Use a more memory-efficient way to create trails
       // Reset interval only when animation is visible
       const forceRefreshInterval = setInterval(() => {
-        if (canvas && ctx && document.visibilityState === 'visible') {
+        if (canvas && ctx && document.visibilityState === 'visible' && isVisible) {
           // Reduced opacity for a more subtle trail effect
-          ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.08)' : 'rgba(255, 255, 255, 0.08)';
+          ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.05)' : 'rgba(255, 255, 255, 0.05)';
           ctx.fillRect(0, 0, canvas.width, canvas.height);
         }
-      }, 3000);
+      }, 5000); // Increased interval from 3000ms to 5000ms for better performance
       
       // Cleanup function
       return () => {
@@ -106,15 +106,12 @@ const NeuralBackground = () => {
       <div 
         className="absolute top-0 left-0 w-full h-full will-change-transform"
         style={{
-          background: theme === 'dark' 
+          backgroundImage: theme === 'dark' 
             ? 'linear-gradient(145deg, #0d1117, #0d1117, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117)'
             : 'linear-gradient(#8e97e6, #8e97e6, #003399, #003399, #8e97e6, #8e97e6)',
           backgroundSize: '300% 300%',
-          opacity: 0.6, // Reduced from 0.7 to make the neural network more visible
-          animationName: 'gradientAnimation',
-          animationDuration: '15s',
-          animationTimingFunction: 'ease',
-          animationIterationCount: 'infinite',
+          opacity: 0.5, // Reduced opacity for better performance
+          animation: 'gradientAnimation 15s ease infinite'
         }}
       />
       {/* Neural network canvas - scaled down to appear further away while covering full viewport */}
@@ -123,18 +120,14 @@ const NeuralBackground = () => {
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 0.9,
-          // Scale the rendered content to appear zoomed out, but keep covering full viewport
+          opacity: 0.85,  // Slightly reduced opacity
           transform: 'scale(0.5)',
-          // Double the size to ensure it fills the viewport when scaled down
           width: '200%',
           height: '200%',
-          // Center the expanded canvas
           position: 'absolute',
           top: '-50%',
           left: '-50%',
-          // Optimize rendering - using 'crisp-edges' instead of 'high-quality'
-          imageRendering: 'auto', 
+          imageRendering: 'auto',
           willChange: 'transform',
         }}
       />

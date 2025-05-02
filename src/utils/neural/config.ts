@@ -1,3 +1,4 @@
+
 import { NeuralNetworkConfig } from '../../types/neural';
 
 /**
@@ -7,6 +8,7 @@ import { NeuralNetworkConfig } from '../../types/neural';
 export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNetworkConfig {
   // Use different densities based on device capability
   const isMobileOrTablet = window.innerWidth < 1024;
+  const isLowPowerDevice = window.navigator.hardwareConcurrency ? window.navigator.hardwareConcurrency <= 4 : true;
   
   // Calculate neuron opacity with 45% reduction from original values
   // Original dark: rgba(59, 130, 246, 0.7) → reduced to 0.385
@@ -28,34 +30,34 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
     },
     connectionColor: `rgba(59, 130, 246, ${connectionOpacity})`, // Reduced opacity by 45%
     
-    // Responsive neuron counts based on device capability
-    neuronCount: isMobileOrTablet ? 40 : 60,
-    minConnections: isMobileOrTablet ? 2 : 4,
-    maxConnections: isMobileOrTablet ? 6 : 8,
-    minBranches: isMobileOrTablet ? 3 : 5,
-    maxBranches: isMobileOrTablet ? 6 : 10,
+    // Significantly reduced neuron counts for better performance
+    neuronCount: isLowPowerDevice ? 15 : (isMobileOrTablet ? 25 : 30),
+    minConnections: isLowPowerDevice ? 1 : (isMobileOrTablet ? 1 : 2),
+    maxConnections: isLowPowerDevice ? 3 : (isMobileOrTablet ? 4 : 5),
+    minBranches: isLowPowerDevice ? 1 : (isMobileOrTablet ? 2 : 3),
+    maxBranches: isLowPowerDevice ? 3 : (isMobileOrTablet ? 4 : 5),
     branchLength: { 
-      min: isMobileOrTablet ? 70 : 100, 
-      max: isMobileOrTablet ? 200 : 300 
+      min: isLowPowerDevice ? 50 : (isMobileOrTablet ? 70 : 100), 
+      max: isLowPowerDevice ? 100 : (isMobileOrTablet ? 150 : 200) 
     },
     
     // Performance-optimized animation settings
-    flowSpeed: 0.008,
-    pulseInterval: isMobileOrTablet ? 2000 : 1500, // Less frequent pulses on mobile
+    flowSpeed: 0.005, // Reduced from 0.008
+    pulseInterval: isLowPowerDevice ? 3000 : (isMobileOrTablet ? 2500 : 2000), // Less frequent pulses
     glowIntensity: theme === 'dark' ? 0.495 : 0.385, // Reduced from 0.9/0.7 to 0.495/0.385 (45% reduction)
     neuronSize: { 
-      min: isMobileOrTablet ? 8 : 12, 
-      max: isMobileOrTablet ? 14 : 20 
+      min: isLowPowerDevice ? 6 : (isMobileOrTablet ? 8 : 10), 
+      max: isLowPowerDevice ? 10 : (isMobileOrTablet ? 12 : 16) 
     },
     
-    // Responsive traveling node settings
-    travelingNodeCount: isMobileOrTablet ? 15 : 25,
-    travelingNodeSpeed: { min: 0.3, max: 0.5 },
+    // Responsive traveling node settings - reduced count
+    travelingNodeCount: isLowPowerDevice ? 5 : (isMobileOrTablet ? 8 : 12), // Significantly reduced
+    travelingNodeSpeed: { min: 0.2, max: 0.4 }, // Slightly slower
     travelingNodeGlowDuration: 800,
     
     // Performance optimization flags
     useRequestAnimationFrame: true,
     useOffscreenCanvas: 'OffscreenCanvas' in window,
-    skipFrames: isMobileOrTablet ? 2 : 1, // Skip frames on lower-powered devices
+    skipFrames: isLowPowerDevice ? 3 : (isMobileOrTablet ? 2 : 1), // Skip more frames on lower-powered devices
   };
 }

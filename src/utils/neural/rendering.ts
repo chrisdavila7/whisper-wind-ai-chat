@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
@@ -35,8 +34,7 @@ export function drawNeuron(
     ctx.fill();
   }
 
-  // Removing the problematic filter line since it's causing syntax errors
-  // ctx.filter = blur(10px); <- This was the issue
+  // Removed problematic filter line that was causing syntax error
   
   // Draw neuron body
   ctx.fillStyle = config.neuronColor.base;

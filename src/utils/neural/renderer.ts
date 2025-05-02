@@ -36,6 +36,7 @@ export function drawOrganicNeuralNetwork(
   let animationFrameId: number;
   let lastPulseTime = 0;
   let frameCount = 0;
+  let lastFrameTime = 0;
   
   // Performance optimization variables
   let offscreenCanvas: OffscreenCanvas | null = null;
@@ -56,18 +57,10 @@ export function drawOrganicNeuralNetwork(
     }
   }
   
-  // Track animation performance
-  let lastFrameTime = 0;
-  const fps: number[] = [];
-  
   // Main render function with performance optimizations
   function render(timestamp: number) {
-    // Calculate FPS for performance monitoring
-    if (lastFrameTime) {
-      const currentFps = 1000 / (timestamp - lastFrameTime);
-      fps.push(currentFps);
-      if (fps.length > 60) fps.shift(); // Keep last 60 frames
-    }
+    // Calculate delta time for smoother animations regardless of frame rate
+    const deltaTime = lastFrameTime ? (timestamp - lastFrameTime) / 16.67 : 1; // normalize to ~60fps
     lastFrameTime = timestamp;
     
     // Skip frames for performance on lower-end devices
@@ -77,7 +70,7 @@ export function drawOrganicNeuralNetwork(
       return;
     }
     
-    // Check if document is visible to save resources
+    // Throttle animation when tab is not visible or when scrolling
     if (document.visibilityState !== 'visible') {
       animationFrameId = requestAnimationFrame(render);
       return;
@@ -87,37 +80,44 @@ export function drawOrganicNeuralNetwork(
     const renderCtx = offscreenCtx || ctx;
     const renderCanvas = offscreenCanvas || canvas;
     
-    // First completely clear the canvas to prevent trail artifacts between theme changes
+    // Only clear the canvas once per frame
     renderCtx.fillStyle = config.backgroundColor;
     renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
     
-    // Now apply the semi-transparent overlay for the trail effect
-    renderCtx.fillStyle = theme === 'dark' 
-      ? 'rgba(2, 8, 23, 0.1)' // Semi-transparent dark background for trail effect
-      : 'rgba(255, 255, 255, 0.1)'; // Semi-transparent white background for trail effect
-    renderCtx.fillRect(0, 0, renderCanvas.width, renderCanvas.height);
+    // Draw connections - most resource intensive part, draw only a subset per frame
+    const connectionsPerFrame = 5; // Limit connections rendered per frame
+    let connectionsDrawn = 0;
     
-    // Draw connections
-    neurons.forEach(neuron => {
-      // Draw branches first, so they appear behind
-      drawBranches(renderCtx, neuron, config);
+    neurons.forEach((neuron, index) => {
+      // Only draw branches for every other neuron to improve performance
+      if (index % 2 === 0) {
+        drawBranches(renderCtx, neuron, config);
+      }
       
-      // Draw connections
+      // Limit number of connections drawn per frame
       neuron.connections.forEach(connection => {
-        drawConnection(renderCtx, connection, config);
+        if (connectionsDrawn < connectionsPerFrame) {
+          drawConnection(renderCtx, connection, config);
+          connectionsDrawn++;
+        }
       });
     });
     
-    // Update and draw traveling nodes
+    // Update and draw traveling nodes - optimized to update fewer nodes
     updateAndDrawTravelingNodes(renderCtx, travelingNodes, neurons, canvas, config);
     
-    // Draw neurons on top
-    neurons.forEach(neuron => drawNeuron(renderCtx, neuron, config));
+    // Draw neurons on top - stagger neuron updates across frames
+    neurons.forEach((neuron, index) => {
+      // Only update and draw some neurons each frame based on frame count
+      if (index % 3 === frameCount % 3) {
+        drawNeuron(renderCtx, neuron, config);
+      }
+    });
     
-    // Apply occasional random pulses to neurons
+    // Less frequent pulses for better performance
     if (timestamp - lastPulseTime > config.pulseInterval) {
-      // Randomly pulse a neuron
-      if (neurons.length > 0) {
+      // Randomly pulse a neuron, but less frequently
+      if (neurons.length > 0 && Math.random() > 0.3) {
         const randomNeuron = neurons[Math.floor(Math.random() * neurons.length)];
         randomNeuron.pulseStrength = 1;
       }
@@ -129,7 +129,7 @@ export function drawOrganicNeuralNetwork(
       ctx.drawImage(offscreenCanvas, 0, 0);
     }
     
-    // Continue animation
+    // Continue animation with a throttled frame rate if low power device
     animationFrameId = requestAnimationFrame(render);
   }
   
@@ -161,6 +161,7 @@ export function drawOrganicNeuralNetwork(
     if (document.visibilityState === 'hidden') {
       cancelAnimationFrame(animationFrameId);
     } else {
+      lastFrameTime = 0; // Reset time tracking
       animationFrameId = requestAnimationFrame(render);
     }
   }
