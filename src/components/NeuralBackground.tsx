@@ -1,47 +1,83 @@
 
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { drawOrganicNeuralNetwork } from '../utils/neuralNetworkRenderer';
 import { useTheme } from '../contexts/ThemeContext';
 
 const NeuralBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
+  const [isVisible, setIsVisible] = useState(true);
   
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false, desynchronized: true });
     if (!ctx) return;
     
     // Set canvas to full screen
     const resizeCanvas = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Use device pixel ratio for better clarity on high DPI screens if performance allows
+      const dpr = window.devicePixelRatio || 1;
+      
+      // Get display size of the canvas
+      const displayWidth = window.innerWidth;
+      const displayHeight = window.innerHeight;
+      
+      // Set canvas size to match display size adjusted for device pixel ratio
+      canvas.width = displayWidth;
+      canvas.height = displayHeight;
+      
+      // We don't scale the context as that would make things too small on high DPI screens
+      // Just use 1:1 pixel mapping for better performance
+      
       // Redraw on resize to fill the screen properly
-      if (canvas.width > 0 && canvas.height > 0) {
-        drawOrganicNeuralNetwork(canvas, ctx, theme);
+      if (canvas.width > 0 && canvas.height > 0 && isVisible) {
+        // Clear the canvas completely when theme changes
+        ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        
+        // Restart the animation on resize
+        cleanup();
+        cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
       }
     };
     
+    // Track cleanup function
+    let cleanupRef = { current: () => {} };
+    
+    // Visibility change handler
+    const handleVisibilityChange = () => {
+      const isPageVisible = document.visibilityState === 'visible';
+      setIsVisible(isPageVisible);
+      
+      if (isPageVisible) {
+        // Page became visible again, restart animation
+        resizeCanvas();
+      } else {
+        // Page is hidden, stop animation to save resources
+        cleanupRef.current();
+      }
+    };
+    
+    // Initial setup
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // Clear the canvas completely when theme changes
-    ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Start the animation
-    const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
+    // Store cleanup function
+    let cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
+    cleanupRef.current = cleanup;
     
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       cleanup();
     };
-  }, [theme]);
+  }, [theme, isVisible]);
   
   return (
     <div className="fixed top-0 left-0 w-full h-full -z-10">
