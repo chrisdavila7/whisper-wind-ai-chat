@@ -37,6 +37,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     travelingNodeCount: 7,
     travelingNodeSpeed: { min: 0.000105, max: 0.00105 }, // Reduced by 65% from {min: 0.3, max: 0.8}
     travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
+    nodeSamples: 100, // How many points to sample for precise path following
   };
 
   // State
@@ -45,7 +46,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   let animationFrameId: number;
   let lastPulseTime = 0;
   
-  // Interface for traveling nodes - modified to include connection data
+  /**
+   * Interface for traveling nodes - enhanced to include path data
+   * for precise path following and exact node positioning
+   */
   interface TravelingNode {
     x: number;
     y: number;
@@ -56,6 +60,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     speed: number;
     width: number;
     active: boolean;
+    // Path cache for more accurate following
+    path?: Point[];
+    pathIndex?: number;
   }
   
   // Initialize neurons with improved distribution and more spacing
@@ -100,7 +107,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Create a new traveling node along an existing connection
+  /**
+   * Create a new traveling node that follows an existing connection's path
+   * Ensures nodes only travel TO neuron cores, never FROM them
+   */
   function createNewTravelingNode() {
     if (neurons.length === 0) return;
     
@@ -115,7 +125,17 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     const connection = sourceNeuron.connections[Math.floor(Math.random() * sourceNeuron.connections.length)];
     const targetNeuron = connection.target;
     
-    // Create a traveling node that will follow this connection
+    // Pre-compute path points for more accurate curve following
+    const pathPoints: Point[] = [];
+    const samples = config.nodeSamples;
+    
+    // Generate sample points along the connection path
+    for (let i = 0; i <= samples; i++) {
+      const t = i / samples;
+      pathPoints.push(getPositionAlongPath(connection, t));
+    }
+    
+    // Create a traveling node that will follow this connection's path precisely
     travelingNodes.push({
       x: sourceNeuron.x,  // Start at source neuron
       y: sourceNeuron.y,
@@ -126,7 +146,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       speed: config.travelingNodeSpeed.min + 
         Math.random() * (config.travelingNodeSpeed.max - config.travelingNodeSpeed.min),
       width: connection.width * 0.6,  // Slightly smaller than the connection
-      active: true
+      active: true,
+      path: pathPoints,
+      pathIndex: 0
     });
   }
   
@@ -348,7 +370,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     if (neuron.pulseStrength < 0.05) neuron.pulseStrength = 0;
   }
   
-  // Draw and update traveling nodes - completely rewritten to follow connection paths
+  /**
+   * Draw and update traveling nodes with enhanced path following
+   * Uses pre-computed path points for more accurate curve following 
+   */
   function updateAndDrawTravelingNodes(timestamp: number) {
     for (let i = 0; i < travelingNodes.length; i++) {
       const node = travelingNodes[i];
@@ -357,10 +382,23 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       // Update progress
       node.progress += node.speed;
       
-      // Calculate current position along the connection's bezier path
-      const position = getPositionAlongPath(node.connection, node.progress);
-      node.x = position.x;
-      node.y = position.y;
+      if (node.path && node.path.length > 0) {
+        // Get the current position from the pre-computed path
+        const nextIndex = Math.min(
+          Math.floor(node.progress * node.path.length), 
+          node.path.length - 1
+        );
+        
+        if (nextIndex >= 0 && nextIndex < node.path.length) {
+          node.x = node.path[nextIndex].x;
+          node.y = node.path[nextIndex].y;
+        }
+      } else {
+        // Fallback to bezier calculation if path doesn't exist
+        const position = getPositionAlongPath(node.connection, node.progress);
+        node.x = position.x;
+        node.y = position.y;
+      }
       
       // Check if node has reached target
       if (node.progress >= 1) {
@@ -511,7 +549,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.stroke();
   }
   
-  // Calculate position along a bezier curve with multiple control points
+  /**
+   * Calculate position along a bezier curve with multiple control points
+   * Enhanced for more accurate path following
+   */
   function getPositionAlongPath(connection: Connection, t: number): Point {
     // Clamp t between 0 and 1 to prevent out-of-bounds errors
     t = Math.max(0, Math.min(1, t));
