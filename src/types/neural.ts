@@ -40,3 +40,35 @@ export interface Point {
   x: number;
   y: number;
 }
+
+export interface TravelingNode {
+  x: number;
+  y: number;
+  targetNeuron: Neuron | null;
+  progress: number;  // 0 to 1, representing progress to target
+  speed: number;
+  width: number;
+  active: boolean;
+}
+
+export interface NeuralNetworkConfig {
+  backgroundColor: string;
+  neuronColor: {
+    base: string;
+    core: string;
+  };
+  connectionColor: string;
+  neuronCount: number;
+  minConnections: number;
+  maxConnections: number;
+  minBranches: number;
+  maxBranches: number;
+  branchLength: { min: number; max: number };
+  flowSpeed: number;
+  pulseInterval: number;
+  glowIntensity: number;
+  neuronSize: { min: number; max: number };
+  travelingNodeCount: number;
+  travelingNodeSpeed: { min: number; max: number };
+  travelingNodeGlowDuration: number;
+}
