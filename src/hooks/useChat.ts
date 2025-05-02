@@ -9,12 +9,6 @@ export function useChat() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
-  const messagesRef = useRef<Message[]>([]);
-  
-  // Update ref whenever messages change
-  useEffect(() => {
-    messagesRef.current = messages;
-  }, [messages]);
   
   // Clean up abort controller on unmount
   useEffect(() => {
@@ -37,7 +31,6 @@ export function useChat() {
       // Create a placeholder for the assistant's response
       const assistantMessage = createAssistantMessage();
       
-      // Use functional update to avoid closure issues
       setMessages(prev => [...prev, userMessage, assistantMessage]);
       setIsLoading(true);
       
@@ -47,8 +40,8 @@ export function useChat() {
       }
       abortControllerRef.current = new AbortController();
       
-      // Get all messages to send to AI (using ref for latest state)
-      const messagesForAI = [...messagesRef.current, userMessage];
+      // Get all messages to send to AI (including the new user message)
+      const messagesForAI = [...messages, userMessage];
       
       // Stream the response
       await streamResponse(
@@ -95,7 +88,7 @@ export function useChat() {
         return currentMessages;
       });
     }
-  }, []); // Remove messages dependency to prevent re-creating function
+  }, [messages]);
 
   const stopStreaming = useCallback(() => {
     if (abortControllerRef.current) {
