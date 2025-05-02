@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -10,7 +9,6 @@ import TabButton from './TabButton';
 import SidePanel from './SidePanel';
 import RightSideWindow from './RightSideWindow';
 import ThemeToggle from './ThemeToggle';
-
 const ChatWindow = () => {
   const {
     messages,
@@ -33,17 +31,13 @@ const ChatWindow = () => {
       });
     }
   }, [messages]);
-  
   const toggleSidePanel = () => {
     setIsSidePanelOpen(!isSidePanelOpen);
   };
-  
   const handleToggleTTS = () => {
     setTtsEnabled(prev => !prev);
   };
-  
-  return (
-    <div className="flex flex-col h-full max-h-full rounded-15 my-[-5vh]">
+  return <div className="flex flex-col h-full max-h-full rounded-15 my-[-5vh]">
       <TabButton onClick={toggleSidePanel} isOpen={isSidePanelOpen} />
       <SidePanel isOpen={isSidePanelOpen} onClose={() => setIsSidePanelOpen(false)} />
       <RightSideWindow isVisible={isRightSideWindowVisible} />
@@ -60,7 +54,7 @@ const ChatWindow = () => {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4 border-gray-500 dark:border-gray-600 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[5vh] mb-[15vh] ml-[4%] relative max-w-none w-[calc(70%-2rem)] px-3 sm:px-4 md:px-5 dark:bg-gray-800/20 bg-white/20 backdrop-blur-sm shadow-xl">
+      <div className="flex-1 overflow-y-auto p-4 border-gray-500 dark:border-gray-600 border-l-4 border-r-4 border-b-4 rounded-b-15 border-t-4 rounded-t-15 mt-[5vh] mb-[15vh] ml-[4%] relative max-w-none w-[calc(70%-2rem)] px-3 sm:px-4 md:px-5 dark:bg-gray-800/20 bg-white/20 backdrop-blur-md shadow-xl">
         {messages.length === 0 ? <div className="h-full flex flex-col items-center justify-center text-center p-4 sm:p-6 md:p-8 backdrop-blur-md rounded-15 bg-white/10 dark:bg-slate-800/10 border-15 mx-auto shadow-md">
             <div className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 mb-2 sm:mb-3 md:mb-4 rounded-full bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 flex items-center justify-center shadow-md">
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -95,8 +89,6 @@ const ChatWindow = () => {
           </div>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ChatWindow;
