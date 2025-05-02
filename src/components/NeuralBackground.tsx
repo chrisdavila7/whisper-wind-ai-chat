@@ -50,9 +50,9 @@ const NeuralBackground = () => {
         style={{
           background: theme === 'dark' 
             ? 'linear-gradient(170deg, #0d1117, #0d1117, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117)'
-            : 'linear-gradient(145deg, #e5deff, #1155ca, #d6bcfa)',
+            : 'linear-gradient(170deg, #e5deff, #e5deff, #0d1117, #0d1117, #e5deff, #e5deff)',
           backgroundSize: '300% 300%',
-          opacity: 0.7,
+          opacity: 0.4,
         }}
       />
       <canvas 
