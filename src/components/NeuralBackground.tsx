@@ -36,9 +36,18 @@ const NeuralBackground = () => {
     // Start the animation
     const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
     
+    // Force a refresh of the canvas every few seconds if animation isn't working properly
+    const forceRefreshInterval = setInterval(() => {
+      if (canvas && ctx) {
+        ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      }
+    }, 5000);
+    
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
+      clearInterval(forceRefreshInterval);
       cleanup();
     };
   }, [theme]);

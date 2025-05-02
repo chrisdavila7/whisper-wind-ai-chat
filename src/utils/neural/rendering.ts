@@ -119,21 +119,21 @@ export function drawBranches(
   config: NeuralNetworkConfig
 ): void {
   neuron.branches.forEach(branch => {
-    // Update flow phase - slow down for gentle ebbing
-    branch.flowPhase += 0.001; // Reduced from 0.002 for slower movement
+    // Update flow phase - faster for more noticeable movement
+    branch.flowPhase += 0.003; // Increased from 0.001 to make movement more noticeable
     if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
     
     // Draw branch as a bezier curve with thicker width
     ctx.strokeStyle = config.connectionColor;
     
-    // Width now varies smoothly creating water-like undulation
-    ctx.lineWidth = branch.width * (0.9 + Math.sin(branch.flowPhase) * 0.1);
+    // Width now varies more dramatically creating water-like undulation
+    ctx.lineWidth = branch.width * (0.7 + Math.sin(branch.flowPhase) * 0.3); // Increased variation
     
     ctx.beginPath();
     ctx.moveTo(branch.startX, branch.startY);
     
-    // Apply gentle undulation to all branches
-    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.05);
+    // Apply more pronounced gentle undulation to all branches
+    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.1); // Doubled from 0.05
     
     // Calculate a fixed endpoint based on branch direction vector
     const endPointDistance = branch.length;
@@ -160,7 +160,7 @@ export function drawBranches(
       const perpX = -normalizedDy;
       const perpY = normalizedDx;
       
-      const offsetAmount = waveAmplitude * 2;
+      const offsetAmount = waveAmplitude * 3; // Increased from 2 to make undulation more noticeable
       
       ctx.quadraticCurveTo(
         midX + perpX * offsetAmount,
@@ -170,9 +170,9 @@ export function drawBranches(
       );
     }
     else if (branch.controlPoints.length === 1) {
-      // Undulating control point for water-like effect
-      const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.03);
-      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.03);
+      // More pronounced undulating control point for water-like effect
+      const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.06); // Doubled from 0.03
+      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.06); // Doubled from 0.03
       
       ctx.quadraticCurveTo(
         branch.controlPoints[0].x + offsetX, 
@@ -183,11 +183,11 @@ export function drawBranches(
     } 
     else {
       // For branches with multiple control points
-      // Undulating both control points for a more natural flow
-      const offset1X = waveAmplitude * 1.2;
-      const offset1Y = waveAmplitude * 0.8;
-      const offset2X = waveAmplitude * 0.9;
-      const offset2Y = waveAmplitude * 1.1;
+      // More dramatic undulating both control points for a more natural flow
+      const offset1X = waveAmplitude * 2.0; // Increased from 1.2
+      const offset1Y = waveAmplitude * 1.5; // Increased from 0.8
+      const offset2X = waveAmplitude * 1.8; // Increased from 0.9
+      const offset2Y = waveAmplitude * 2.0; // Increased from 1.1
       
       // Use first and last control point with undulation
       const firstPoint = branch.controlPoints[0];

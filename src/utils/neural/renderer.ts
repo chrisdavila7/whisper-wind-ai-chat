@@ -37,10 +37,10 @@ export function drawOrganicNeuralNetwork(
     ctx.fillStyle = config.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Now apply the semi-transparent overlay for the trail effect
+    // Now apply the semi-transparent overlay for the trail effect - reduced opacity for clearer animation
     ctx.fillStyle = theme === 'dark' 
-      ? 'rgba(2, 8, 23, 0.3)' // Semi-transparent dark background for trail effect
-      : 'rgba(255, 255, 255, 0.3)'; // Semi-transparent white background for trail effect
+      ? 'rgba(2, 8, 23, 0.1)' // Semi-transparent dark background for trail effect (reduced from 0.3)
+      : 'rgba(255, 255, 255, 0.1)'; // Semi-transparent white background for trail effect (reduced from 0.3)
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Draw connections

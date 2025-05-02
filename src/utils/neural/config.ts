@@ -27,15 +27,15 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
     maxBranches: 5,
     branchLength: { min: 40, max: 150 },
     
-    // Animation settings
-    flowSpeed: 0.0004,
-    pulseInterval: 3000,
+    // Animation settings - increased for more noticeable movement
+    flowSpeed: 0.001, // Increased from 0.0004 to make flow more noticeable
+    pulseInterval: 2000, // Decreased from 3000 for more frequent pulsing
     glowIntensity: theme === 'dark' ? 0.7 : 0.5,
-    neuronSize: { min: 6, max: 12 }, // Increased sizes to make neurons more prominent
+    neuronSize: { min: 6, max: 12 },
     
     // Traveling node settings
     travelingNodeCount: 12,
-    travelingNodeSpeed: { min: 0.105, max: 0.28 },
+    travelingNodeSpeed: { min: 0.15, max: 0.35 }, // Increased speed for more noticeable movement
     travelingNodeGlowDuration: 800,
   };
 }
