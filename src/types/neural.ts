@@ -22,6 +22,9 @@ export interface Branch {
   width: number;
   // Animation phase
   flowPhase: number;
+  // Random flow properties
+  randomFlowFactor?: number; // Individual flow speed multiplier
+  flowDirection?: number; // 1 or -1 for direction
 }
 
 export interface Connection {
@@ -34,6 +37,9 @@ export interface Connection {
   // Animation properties
   flowSpeed: number;
   flowPhase: number;
+  // Random flow properties
+  randomFlowFactor?: number; // Individual flow speed multiplier
+  flowDirection?: number; // 1 or -1 for direction
 }
 
 export interface Point {

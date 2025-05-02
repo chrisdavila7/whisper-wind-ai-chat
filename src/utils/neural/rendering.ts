@@ -110,7 +110,7 @@ export function updateAndDrawTravelingNodes(
 }
 
 /**
- * Draw organic branches with gentle water-like flow
+ * Draw organic branches with gentle water-like flow with random timing and directions
  */
 export function drawBranches(
   ctx: CanvasRenderingContext2D,
@@ -118,21 +118,32 @@ export function drawBranches(
   config: NeuralNetworkConfig
 ): void {
   neuron.branches.forEach(branch => {
-    // Update flow phase - faster for more noticeable movement
-    branch.flowPhase += 0.005; // Increased from 0.003 to make flow movement more noticeable
+    // Update flow phase with randomized speed for each branch
+    // Each branch now has its own unique flow speed and direction
+    if (!branch.randomFlowFactor) {
+      // Initialize random flow factors for new branches
+      branch.randomFlowFactor = Math.random() * 0.01 + 0.003; // Range from 0.003 to 0.013
+      branch.flowDirection = Math.random() > 0.5 ? 1 : -1; // Random direction (positive or negative)
+    }
+    
+    // Apply the randomized flow speed and direction
+    branch.flowPhase += branch.randomFlowFactor * branch.flowDirection;
+    
+    // Ensure flowPhase stays within reasonable bounds
     if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
+    if (branch.flowPhase < 0) branch.flowPhase += Math.PI * 2;
     
     // Draw branch as a bezier curve with thicker width
     ctx.strokeStyle = config.connectionColor;
     
     // Width now varies more dramatically creating water-like undulation
-    ctx.lineWidth = branch.width * (0.7 + Math.sin(branch.flowPhase) * 0.4); // Increased variation from 0.3 to 0.4
+    ctx.lineWidth = branch.width * (0.7 + Math.sin(branch.flowPhase) * 0.4);
     
     ctx.beginPath();
     ctx.moveTo(branch.startX, branch.startY);
     
     // Apply more pronounced gentle undulation to all branches
-    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.15); // Increased from 0.1
+    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.15);
     
     // Calculate a fixed endpoint based on branch direction vector
     const endPointDistance = branch.length;
@@ -159,7 +170,9 @@ export function drawBranches(
       const perpX = -normalizedDy;
       const perpY = normalizedDx;
       
-      const offsetAmount = waveAmplitude * 3.5; // Increased from 3 to make undulation more noticeable
+      // Use branch-specific random factor to create varied undulation
+      const offsetFactor = 3.5 + (branch.randomFlowFactor * 100); // Creating variety in undulation strength
+      const offsetAmount = waveAmplitude * offsetFactor;
       
       ctx.quadraticCurveTo(
         midX + perpX * offsetAmount,
@@ -169,9 +182,9 @@ export function drawBranches(
       );
     }
     else if (branch.controlPoints.length === 1) {
-      // More pronounced undulating control point for water-like effect
-      const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.08); // Increased from 0.06
-      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.08); // Increased from 0.06
+      // More pronounced undulating control point with randomized offset
+      const offsetX = Math.sin(branch.flowPhase) * (branch.length * (0.08 + branch.randomFlowFactor * 2));
+      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * (0.08 + branch.randomFlowFactor * 2));
       
       ctx.quadraticCurveTo(
         branch.controlPoints[0].x + offsetX, 
@@ -182,11 +195,13 @@ export function drawBranches(
     } 
     else {
       // For branches with multiple control points
-      // More dramatic undulating both control points for a more natural flow
-      const offset1X = waveAmplitude * 2.5; // Increased from 2.0
-      const offset1Y = waveAmplitude * 2.0; // Increased from 1.5
-      const offset2X = waveAmplitude * 2.0; // Increased from 1.8
-      const offset2Y = waveAmplitude * 2.5; // Increased from 2.0
+      // More dramatic undulating both control points with randomized factors for a more natural flow
+      const randomFactor1 = 2.5 + branch.randomFlowFactor * 50;
+      const randomFactor2 = 2.0 + branch.randomFlowFactor * 40;
+      const offset1X = waveAmplitude * randomFactor1;
+      const offset1Y = waveAmplitude * randomFactor2;
+      const offset2X = waveAmplitude * randomFactor2;
+      const offset2Y = waveAmplitude * randomFactor1;
       
       // Use first and last control point with undulation
       const firstPoint = branch.controlPoints[0];
@@ -216,15 +231,24 @@ export function drawConnection(
 ): void {
   const { source, target, width, controlPoints } = connection;
   
-  // Update flow phase - faster for water-like movement
-  connection.flowPhase += config.flowSpeed * 2.0; // Increased from 0.6 to make movement more noticeable
+  // Initialize random flow properties if not yet set
+  if (!connection.randomFlowFactor) {
+    connection.randomFlowFactor = Math.random() * 0.015 + 0.005; // Range from 0.005 to 0.02
+    connection.flowDirection = Math.random() > 0.5 ? 1 : -1; // Random direction
+  }
+  
+  // Update flow phase with randomized speed and direction
+  connection.flowPhase += config.flowSpeed * connection.randomFlowFactor * connection.flowDirection;
+  
+  // Keep flowPhase within bounds
   if (connection.flowPhase > Math.PI * 2) connection.flowPhase -= Math.PI * 2;
+  if (connection.flowPhase < 0) connection.flowPhase += Math.PI * 2;
   
   // Draw connection path with wider lines
   ctx.strokeStyle = config.connectionColor;
   
   // More pronounced width variation for visible undulation
-  ctx.lineWidth = width * 3.8 * (0.85 + Math.sin(connection.flowPhase) * 0.15); // Increased variation
+  ctx.lineWidth = width * 3.8 * (0.85 + Math.sin(connection.flowPhase) * 0.15);
   
   ctx.beginPath();
   ctx.moveTo(source.x, source.y);
@@ -236,7 +260,9 @@ export function drawConnection(
     const perpX = -(target.y - source.y);
     const perpY = (target.x - source.x);
     const dist = Math.sqrt(perpX * perpX + perpY * perpY);
-    const offsetAmount = Math.sin(connection.flowPhase) * (width * 5); // Increased from 2 to 5 for more visible movement
+    
+    // Use connection-specific random factor for varied undulation
+    const offsetAmount = Math.sin(connection.flowPhase) * (width * (5 + connection.randomFlowFactor * 100));
     
     // Add a substantial curve to straight lines but keep endpoints anchored
     if (dist > 0) {
@@ -251,8 +277,10 @@ export function drawConnection(
     }
   } else if (controlPoints.length === 1) {
     // Quadratic curve with enhanced undulation but fixed endpoints
-    const offsetX = Math.sin(connection.flowPhase) * (width * 6); // Doubled from 3 to 6
-    const offsetY = Math.cos(connection.flowPhase * 0.7) * (width * 6); // Doubled from 3 to 6
+    // Use randomized factors for varied movement
+    const offsetFactor = 6 + connection.randomFlowFactor * 100;
+    const offsetX = Math.sin(connection.flowPhase) * (width * offsetFactor);
+    const offsetY = Math.cos(connection.flowPhase * 0.7) * (width * offsetFactor);
     
     ctx.quadraticCurveTo(
       controlPoints[0].x + offsetX, 
@@ -262,10 +290,13 @@ export function drawConnection(
     );
   } else if (controlPoints.length === 2) {
     // Cubic curve with more complex undulation but anchored endpoints
-    const offset1X = Math.sin(connection.flowPhase) * (width * 6); // Doubled from 3
-    const offset1Y = Math.cos(connection.flowPhase * 0.8) * (width * 5); // Doubled from 2.5
-    const offset2X = Math.sin(connection.flowPhase * 0.9) * (width * 5); // Doubled from 2.5
-    const offset2Y = Math.cos(connection.flowPhase * 0.7) * (width * 6); // Doubled from 3
+    // Use connection-specific random factors for non-uniform movement
+    const factor1 = 6 + connection.randomFlowFactor * 80;
+    const factor2 = 5 + connection.randomFlowFactor * 70;
+    const offset1X = Math.sin(connection.flowPhase) * (width * factor1);
+    const offset1Y = Math.cos(connection.flowPhase * 0.8) * (width * factor2);
+    const offset2X = Math.sin(connection.flowPhase * 0.9) * (width * factor2);
+    const offset2Y = Math.cos(connection.flowPhase * 0.7) * (width * factor1);
     
     ctx.bezierCurveTo(
       controlPoints[0].x + offset1X,
@@ -280,10 +311,11 @@ export function drawConnection(
     for (let i = 0; i < controlPoints.length; i++) {
       const point = controlPoints[i];
       
-      // More pronounced movement for water-like effect
-      // Use different frequencies for each point to avoid uniform motion
-      const offsetX = Math.sin(connection.flowPhase + i * 0.3) * width * 3; // Doubled from 1.5
-      const offsetY = Math.cos(connection.flowPhase + i * 0.5) * width * 3; // Doubled from 1.5
+      // More pronounced movement for water-like effect with randomized factors
+      // Use different frequencies for each point and connection-specific random factor
+      const pointFactor = 3 + connection.randomFlowFactor * 50;
+      const offsetX = Math.sin(connection.flowPhase + i * 0.3) * width * pointFactor;
+      const offsetY = Math.cos(connection.flowPhase + i * 0.5) * width * pointFactor;
       
       if (i === 0) {
         ctx.quadraticCurveTo(

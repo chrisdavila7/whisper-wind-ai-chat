@@ -72,7 +72,7 @@ const NeuralBackground = () => {
         style={{ 
           pointerEvents: 'none', 
           opacity: 0.9, // Increased from 0.8 to make neural network more visible
-          transform: 'scale(1.1)' // Slightly reduced zoom to show more neurons
+          transform: 'scale(0.5)' // Changed from 1.1 to 0.5 to zoom out by approximately 100% (make elements appear further away)
         }}
       />
     </div>

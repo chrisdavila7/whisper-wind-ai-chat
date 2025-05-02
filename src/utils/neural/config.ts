@@ -19,23 +19,23 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
       ? 'rgba(59, 130, 246, 0.4)' 
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
-    // Ensuring at least 3-4 neurons are always visible by increasing count and adjusting distribution
-    neuronCount: 25, // Increased from 20 to ensure more visible connections
-    minConnections: 3, // Increased from 2 to have more visible connections
-    maxConnections: 6, // Increased from 5 to have more visible connections
-    minBranches: 3, // Increased from 2 to have more visible branches
-    maxBranches: 6, // Increased from 5 to have more visible branches
-    branchLength: { min: 50, max: 180 }, // Increased from {min:40, max:150} for more visible branches
+    // Increased counts to ensure sufficient density when zoomed out
+    neuronCount: 40, // Increased from 25 to ensure more visible connections when zoomed out
+    minConnections: 4, // Increased from 3 to have more visible connections
+    maxConnections: 8, // Increased from 6 to have more visible connections
+    minBranches: 4, // Increased from 3 to have more visible branches
+    maxBranches: 8, // Increased from 6 to have more visible branches
+    branchLength: { min: 80, max: 250 }, // Increased from {min:50, max:180} for more visibility when zoomed out
     
-    // Animation settings - increased for more noticeable movement
-    flowSpeed: 0.005, // Increased from 0.001 to make flow more noticeable
-    pulseInterval: 1800, // Decreased from 2000 for more frequent pulsing
-    glowIntensity: theme === 'dark' ? 0.8 : 0.6, // Increased from 0.7/0.5 for more visible glows
-    neuronSize: { min: 7, max: 14 }, // Increased from {min:6, max:12} for more visible neurons
+    // Animation settings - enhanced for randomized flow
+    flowSpeed: 0.008, // Base flow speed, individual elements will have randomized speeds
+    pulseInterval: 1500, // Decreased from 1800 for more frequent pulsing when zoomed out
+    glowIntensity: theme === 'dark' ? 0.9 : 0.7, // Increased from 0.8/0.6 for more visible glows when zoomed out
+    neuronSize: { min: 10, max: 18 }, // Increased from {min:7, max:14} for more visibility when zoomed out
     
     // Traveling node settings
-    travelingNodeCount: 15, // Increased from 12 to add more visible movement
-    travelingNodeSpeed: { min: 0.2, max: 0.4 }, // Increased from {min:0.15, max:0.35} for more noticeable movement
+    travelingNodeCount: 20, // Increased from 15 to add more visible movement when zoomed out
+    travelingNodeSpeed: { min: 0.3, max: 0.5 }, // Increased from {min:0.2, max:0.4} for more noticeable movement
     travelingNodeGlowDuration: 800,
   };
 }
