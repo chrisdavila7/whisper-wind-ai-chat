@@ -74,7 +74,7 @@ export function createBranches(neurons: Neuron[], config: NeuralNetworkConfig): 
         startY: neuron.y,
         controlPoints,
         length,
-        width: (0.5 + Math.random() * 1) * 1.8, // Increased width by 80% (from base width)
+        width: (0.5 + Math.random() * 1) * 2.88, // Increased width by 60% from previous 1.8 (1.8 * 1.6 = 2.88)
         flowPhase: Math.random() * Math.PI * 2 // Random initial phase
       });
     }
