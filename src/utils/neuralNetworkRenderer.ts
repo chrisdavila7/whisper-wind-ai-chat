@@ -185,7 +185,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           startY: neuron.y,
           controlPoints,
           length,
-          width: (0.5 + Math.random() * 1) * 15, // Increased width by 25% (from base width)
+          width: (0.5 + Math.random() * 1), // Increased width by 25% (from base width)
           flowPhase: Math.random() * Math.PI * 2 // Random initial phase
         });
       }
@@ -268,7 +268,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               id: neuron.connections.length,
               source: neuron,
               target: target,
-              width: 0.5 + Math.random() * 1,
+              width: 0.5 + Math.random() * 3,
               controlPoints,
               flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
               flowPhase: Math.random() * Math.PI * 2
