@@ -46,12 +46,12 @@ const NeuralBackground = () => {
   return (
     <div className="fixed top-0 left-0 w-full h-full -z-10">
       <div 
-        className="absolute top-0 left-0 w-full h-full animate-gradient-animation"
+        className="absolute top-0 left-0 w-full h-full"
         style={{
           background: theme === 'dark' 
             ? 'linear-gradient(170deg, #0d1117, #0d1117, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117)'
             : 'linear-gradient(#8e97e6, #8e97e6, #003399, #003399, #8e97e6, #8e97e6)',
-          backgroundSize: '300% 300%',
+          backgroundSize: '200% 200%',
           opacity: 0.7,
         }}
       />
