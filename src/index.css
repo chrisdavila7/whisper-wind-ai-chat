@@ -180,5 +180,5 @@
 }
 
 .animate-gradient-animation {
-  animation: gradient-animation 300s ease-in-out infinite;
+  animation: gradient-animation 3s ease-in-out infinite;
 }
