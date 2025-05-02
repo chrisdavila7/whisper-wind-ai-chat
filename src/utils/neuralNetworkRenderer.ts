@@ -1,3 +1,4 @@
+
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -33,9 +34,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
     neuronSize: { min: 3, max: 8 },
     
-    // Traveling node settings - slower by 65%
+    // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
-    travelingNodeSpeed: { min: 0.000105, max: 0.00105 }, // Reduced by 65% from {min: 0.3, max: 0.8}
+    // Using consistent speeds instead of random values for smoother animation
+    travelingNodeSpeedFactor: 0.004, // Fixed speed factor (distance-independent)
     travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
     nodeSamples: 100, // How many points to sample for precise path following
   };
@@ -45,6 +47,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   let travelingNodes: TravelingNode[] = [];
   let animationFrameId: number;
   let lastPulseTime = 0;
+  let lastFrameTime = 0; // Track last frame time for delta time calculation
   
   /**
    * Interface for traveling nodes - enhanced to include path data
@@ -57,12 +60,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     sourceNeuron: Neuron;
     connection: Connection;  // The connection this node is traveling along
     progress: number;  // 0 to 1, representing progress to target
-    speed: number;
+    speed: number;     // Speed is now a consistent factor regardless of path length
     width: number;
     active: boolean;
     // Path cache for more accurate following
     path?: Point[];
     pathIndex?: number;
+    // Total path length for normalizing speed
+    pathLength?: number;
   }
   
   // Initialize neurons with improved distribution and more spacing
@@ -108,6 +113,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
+   * Calculate the total length of a path by summing distances between sample points
+   * This helps normalize speed across different length paths
+   */
+  function calculatePathLength(points: Point[]): number {
+    let length = 0;
+    for (let i = 1; i < points.length; i++) {
+      length += Math.sqrt(
+        Math.pow(points[i].x - points[i-1].x, 2) + 
+        Math.pow(points[i].y - points[i-1].y, 2)
+      );
+    }
+    return length;
+  }
+  
+  /**
    * Create a new traveling node that follows an existing connection's path
    * Ensures nodes only travel TO neuron cores, never FROM them
    */
@@ -135,7 +155,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       pathPoints.push(getPositionAlongPath(connection, t));
     }
     
+    // Calculate the total path length for normalizing speed
+    const pathLength = calculatePathLength(pathPoints);
+    
     // Create a traveling node that will follow this connection's path precisely
+    // Speed is now normalized by path length so all nodes move at visually similar speeds
     travelingNodes.push({
       x: sourceNeuron.x,  // Start at source neuron
       y: sourceNeuron.y,
@@ -143,12 +167,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       targetNeuron,
       connection,
       progress: 0,
-      speed: config.travelingNodeSpeed.min + 
-        Math.random() * (config.travelingNodeSpeed.max - config.travelingNodeSpeed.min),
+      // Use consistent speed factor multiplied by a small random variation
+      // but normalized by path length for consistent visual speed
+      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.4),
       width: connection.width * 0.6,  // Slightly smaller than the connection
       active: true,
       path: pathPoints,
-      pathIndex: 0
+      pathIndex: 0,
+      pathLength: pathLength,
     });
   }
   
@@ -373,14 +399,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   /**
    * Draw and update traveling nodes with enhanced path following
    * Uses pre-computed path points for more accurate curve following 
+   * Updated to use delta time for consistent animation speed
    */
   function updateAndDrawTravelingNodes(timestamp: number) {
+    // Calculate delta time for frame-rate independent movement
+    const deltaTime = timestamp - lastFrameTime;
+    const deltaFactor = deltaTime / 16.67; // Normalize to ~60fps (16.67ms)
+    
     for (let i = 0; i < travelingNodes.length; i++) {
       const node = travelingNodes[i];
       if (!node.active) continue;
       
-      // Update progress
-      node.progress += node.speed;
+      // Update progress with delta time for consistent speed regardless of frame rate
+      // Use the node's pathLength to normalize speed across different path lengths
+      const speedAdjustment = node.pathLength ? 500 / node.pathLength : 1;
+      node.progress += node.speed * deltaFactor * speedAdjustment;
       
       if (node.path && node.path.length > 0) {
         // Get the current position from the pre-computed path
@@ -623,7 +656,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       });
     });
     
-    // Update and draw traveling nodes
+    // Update and draw traveling nodes with timestamp for delta time calculation
     updateAndDrawTravelingNodes(timestamp);
     
     // Draw neurons on top
@@ -639,6 +672,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       lastPulseTime = timestamp;
     }
     
+    // Update last frame time for next delta calculation
+    lastFrameTime = timestamp;
+    
     // Continue animation
     animationFrameId = requestAnimationFrame(render);
   }
@@ -653,6 +689,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     createBranches();
     createConnections();
     initializeTravelingNodes();
+    lastFrameTime = performance.now(); // Initialize last frame time
     animationFrameId = requestAnimationFrame(render);
   }
   
