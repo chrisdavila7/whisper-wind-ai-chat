@@ -1,12 +1,15 @@
 
 import { AIServiceResponse, Message } from "../types/message";
 
-// This is a mock implementation that simulates streaming responses
+// Optimized mock implementation that simulates streaming responses
 export async function streamResponse(
   messages: Message[],
   onChunk: (chunk: AIServiceResponse) => void,
   abortSignal?: AbortSignal
 ): Promise<void> {
+  // Early abort check
+  if (abortSignal?.aborted) return;
+
   const userMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
   
   // Demo responses based on user input
@@ -24,8 +27,12 @@ export async function streamResponse(
   // Split the response into words for streaming simulation
   const words = response.split(' ');
   let streamedResponse = '';
-
-  // Simulate streaming word by word with random delays
+  
+  // Performance optimization - determine delay based on length and device capability
+  const baseDelay = navigator.connection && 
+    (navigator.connection as any).effectiveType === '4g' ? 50 : 80;
+  
+  // Stream words with adaptive timing
   for (let i = 0; i < words.length; i++) {
     if (abortSignal?.aborted) {
       return;
@@ -39,8 +46,15 @@ export async function streamResponse(
       isComplete: i === words.length - 1
     });
 
-    // Random delay between 50-150ms for realistic typing effect
-    await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+    // Use more efficient setTimeout with requestAnimationFrame for better performance
+    if (i < words.length - 1) {
+      await new Promise(resolve => {
+        // Use requestAnimationFrame for smoother animations
+        requestAnimationFrame(() => {
+          setTimeout(resolve, baseDelay + Math.random() * 30);
+        });
+      });
+    }
   }
 }
 
@@ -52,6 +66,9 @@ export async function streamResponse(
   abortSignal?: AbortSignal
 ): Promise<void> {
   try {
+    // Early abort check
+    if (abortSignal?.aborted) return;
+    
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
@@ -87,9 +104,15 @@ export async function streamResponse(
       const chunk = decoder.decode(value, { stream: true });
       streamedText += chunk;
       
-      onChunk({
-        content: streamedText,
-        isComplete: false
+      // Use requestAnimationFrame for smoother UI updates
+      await new Promise<void>(resolve => {
+        window.requestAnimationFrame(() => {
+          onChunk({
+            content: streamedText,
+            isComplete: false
+          });
+          resolve();
+        });
       });
     }
 

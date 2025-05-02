@@ -8,6 +8,8 @@ export interface Neuron {
   pulseStrength: number;
   // Organic features
   branches: Branch[];
+  // Last drawn state for optimized rendering
+  lastDrawn?: number;
 }
 
 export interface Branch {
@@ -25,6 +27,8 @@ export interface Branch {
   // Random flow properties
   randomFlowFactor?: number; // Individual flow speed multiplier
   flowDirection?: number; // 1 or -1 for direction
+  // Track last animation frame to optimize redraws
+  lastAnimated?: number;
 }
 
 export interface Connection {
@@ -40,6 +44,8 @@ export interface Connection {
   // Random flow properties
   randomFlowFactor?: number; // Individual flow speed multiplier
   flowDirection?: number; // 1 or -1 for direction
+  // Track last animation frame to optimize redraws
+  lastAnimated?: number;
 }
 
 export interface Point {
@@ -77,4 +83,9 @@ export interface NeuralNetworkConfig {
   travelingNodeCount: number;
   travelingNodeSpeed: { min: number; max: number };
   travelingNodeGlowDuration: number;
+  
+  // Performance optimization flags
+  useRequestAnimationFrame: boolean;
+  useOffscreenCanvas: boolean;
+  skipFrames: number; // Number of frames to skip for performance
 }

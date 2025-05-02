@@ -4,14 +4,34 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import { useState } from "react";
+import { useState, Suspense, lazy } from "react";
 import { ThemeProvider } from "./contexts/ThemeContext";
 
+// Lazy load pages to improve initial load time
+const Index = lazy(() => import("./pages/Index"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+
+// Create a loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center h-screen">
+    <div className="w-12 h-12 rounded-full border-4 border-blue-500 border-t-transparent animate-spin"></div>
+  </div>
+);
+
 const App = () => {
-  // Create a client instance inside the component function
-  const [queryClient] = useState(() => new QueryClient());
+  // Create a client instance with optimized settings
+  const [queryClient] = useState(() => 
+    new QueryClient({
+      defaultOptions: {
+        queries: {
+          refetchOnWindowFocus: false, // Disable refetching when window regains focus
+          staleTime: 60000, // Data remains fresh for 1 minute
+          retry: 1, // Only retry once on failure
+          suspense: false,
+        },
+      },
+    })
+  );
 
   return (
     <ThemeProvider>
@@ -20,11 +40,13 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
           </BrowserRouter>
         </TooltipProvider>
       </QueryClientProvider>
