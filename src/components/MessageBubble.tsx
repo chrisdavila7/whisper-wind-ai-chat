@@ -16,7 +16,7 @@ const MessageBubble = ({ message, autoPlayTTS = false }: MessageBubbleProps) => 
     <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in font-merriweather`}>
       <div className={`relative max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-15 ${
         isUser 
-          ? 'chat-gradient backdrop-blur-sm bg-gradient-to-r from-ai-primary/100 to-ai-secondary/80 rounded-tr-none shadow-lg' 
+          ? 'chat-gradient backdrop-blur-sm bg-gradient-to-r from-ai-primary/100 to-ai-secondary/100 rounded-tr-none shadow-lg' 
           : 'bg-white/50 dark:bg-gray-800/70 backdrop-blur-sm shadow-md rounded-tl-none'
       }`}>
         <div className="flex flex-col">
