@@ -20,7 +20,7 @@ const MessageBubble = ({ message, autoPlayTTS = false }: MessageBubbleProps) => 
           : 'bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm shadow-md rounded-tl-none'
       }`}>
         <div className="flex flex-col">
-          <div className="text-xs opacity-70 mb-1 merriweather-regular">
+          <div className="text-xs opacity-0 mb-1 merriweather-regular">
             {isUser ? 'You' : 'AI Assistant'} • {formatTimestamp(message.timestamp)}
           </div>
           
