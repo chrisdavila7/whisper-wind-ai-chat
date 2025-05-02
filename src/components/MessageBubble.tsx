@@ -17,7 +17,7 @@ const MessageBubble = ({ message, autoPlayTTS = false }: MessageBubbleProps) => 
       <div className={`relative max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-15 ${
         isUser 
           ? 'chat-gradient backdrop-blur-sm bg-gradient-to-r from-ai-primary/80 to-ai-secondary/80 rounded-tr-none shadow-lg' 
-          : 'bg-white/50 dark:bg-gray-800/30 backdrop-blur-sm shadow-md rounded-tl-none'
+          : 'bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-md rounded-tl-none'
       }`}>
         <div className="flex flex-col">
           <div className="text-xs opacity-70 mb-1 merriweather-regular">
