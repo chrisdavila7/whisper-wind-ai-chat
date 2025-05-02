@@ -52,7 +52,7 @@ const NeuralBackground = () => {
             ? 'linear-gradient(145deg, #0d1117, #0d1117, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117)'
             : 'linear-gradient(145deg, #e5deff, #1155ca, #d6bcfa)',
           backgroundSize: '300% 300%',
-          opacity: 0.9,
+          opacity: 0.3,
         }}
       />
       <canvas 
