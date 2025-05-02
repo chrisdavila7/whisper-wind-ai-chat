@@ -60,28 +60,39 @@ export function initializeNeurons(canvas: HTMLCanvasElement, config: NeuralNetwo
 }
 
 /**
- * Create branches for neurons
+ * Create branches for neurons - ensuring each neuron has at least 3 branches
  */
 export function createBranches(neurons: Neuron[], config: NeuralNetworkConfig): void {
   neurons.forEach(neuron => {
-    const branchCount = config.minBranches + Math.floor(Math.random() * (config.maxBranches - config.minBranches + 1));
+    // Ensure at least minBranches (which is now set to 3) branches per neuron
+    // But not too many to maintain performance
+    const branchCount = Math.max(
+      config.minBranches,
+      Math.min(
+        config.minBranches + Math.floor(Math.random() * (config.maxBranches - config.minBranches + 1)),
+        config.maxBranches
+      )
+    );
     
+    // Create branches with even angular distribution for better visual balance
     for (let i = 0; i < branchCount; i++) {
-      const angle = Math.PI * 2 * (i / branchCount);
+      // Distribute branches evenly in a circle around the neuron
+      const angle = Math.PI * 2 * (i / branchCount) + (Math.random() * 0.2 - 0.1);
       const length = config.branchLength.min + Math.random() * (config.branchLength.max - config.branchLength.min);
       
-      // Create 2-3 control points for organic curve
-      const controlPointCount = 2 + Math.floor(Math.random() * 2);
+      // Optimize: Create fewer control points for better performance
+      // Use 1-2 control points instead of 2-3 for better performance
+      const controlPointCount = 1 + Math.floor(Math.random() * 2);
       const controlPoints: Point[] = [];
       
       for (let j = 0; j < controlPointCount; j++) {
         // Add randomness to control points
-        const segmentLength = length / controlPointCount;
+        const segmentLength = length / (controlPointCount + 1);
         const segmentPosition = (j + 1) / (controlPointCount + 1);
         const segmentDistance = segmentPosition * length;
         
         // Add some random variance to the angle
-        const ctrlAngle = angle + (Math.random() * 0.6 - 0.3);
+        const ctrlAngle = angle + (Math.random() * 0.4 - 0.2); // Reduced variance for more straight branches
         
         controlPoints.push({
           x: neuron.x + Math.cos(ctrlAngle) * segmentDistance,
@@ -95,7 +106,7 @@ export function createBranches(neurons: Neuron[], config: NeuralNetworkConfig): 
         startY: neuron.y,
         controlPoints,
         length,
-        width: (0.5 + Math.random() * 1) * 3.6, // 2x multiplier from the original 1.8 value
+        width: (0.5 + Math.random() * 0.8) * 3.6, // Slightly reduced randomness for more consistent appearance
         flowPhase: Math.random() * Math.PI * 2 // Random initial phase
       });
     }

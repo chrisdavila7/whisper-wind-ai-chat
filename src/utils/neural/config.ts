@@ -34,8 +34,11 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
     neuronCount: isLowPowerDevice ? 15 : (isMobileOrTablet ? 25 : 30),
     minConnections: isLowPowerDevice ? 1 : (isMobileOrTablet ? 1 : 2),
     maxConnections: isLowPowerDevice ? 3 : (isMobileOrTablet ? 4 : 5),
-    minBranches: isLowPowerDevice ? 1 : (isMobileOrTablet ? 2 : 3),
-    maxBranches: isLowPowerDevice ? 3 : (isMobileOrTablet ? 4 : 5),
+    
+    // Ensuring each neuron has at least 3 branches, but not too many on low power devices
+    minBranches: 3, // Changed from dynamic to fixed minimum of 3 branches
+    maxBranches: isLowPowerDevice ? 4 : (isMobileOrTablet ? 5 : 6), // Slightly increased max
+    
     branchLength: { 
       min: isLowPowerDevice ? 50 : (isMobileOrTablet ? 70 : 100), 
       max: isLowPowerDevice ? 100 : (isMobileOrTablet ? 150 : 200) 
