@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
@@ -23,6 +22,8 @@ export function drawNeuron(
       neuron.x, neuron.y, glowRadius
     );
     
+    // Apply 45% opacity reduction to the glow effect
+    // Original baseAlpha * config.glowIntensity now uses reduced glowIntensity
     const baseAlpha = neuron.pulseStrength * config.glowIntensity;
     glow.addColorStop(0, `rgba(59, 130, 246, ${baseAlpha})`);
     glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
@@ -98,13 +99,14 @@ export function updateAndDrawTravelingNodes(
     ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
     ctx.fill();
     
-    // Add small glow effect to traveling node
+    // Add small glow effect to traveling node with reduced opacity (45% reduction)
+    // Original 0.3 opacity reduced to 0.165
     const nodeGlow = ctx.createRadialGradient(
       node.x, node.y, node.width * 0.5,
       node.x, node.y, node.width * 2
     );
     
-    nodeGlow.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
+    nodeGlow.addColorStop(0, 'rgba(59, 130, 246, 0.165)'); // Reduced from 0.3 to 0.165 (45% reduction)
     nodeGlow.addColorStop(1, 'rgba(59, 130, 246, 0)');
     
     ctx.fillStyle = nodeGlow;

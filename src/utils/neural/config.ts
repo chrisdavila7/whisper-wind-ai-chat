@@ -1,4 +1,3 @@
-
 import { NeuralNetworkConfig } from '../../types/neural';
 
 /**
@@ -9,19 +8,25 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
   // Use different densities based on device capability
   const isMobileOrTablet = window.innerWidth < 1024;
   
+  // Calculate neuron opacity with 45% reduction from original values
+  // Original dark: rgba(59, 130, 246, 0.7) → reduced to 0.385
+  // Original light: rgba(59, 130, 246, 0.6) → reduced to 0.33
+  const neuronBaseOpacity = theme === 'dark' ? 0.385 : 0.33; // 45% reduction
+  
+  // Calculate connection opacity with 45% reduction from original values
+  // Original dark: rgba(59, 130, 246, 0.4) → reduced to 0.22
+  // Original light: rgba(59, 130, 246, 0.3) → reduced to 0.165
+  const connectionOpacity = theme === 'dark' ? 0.22 : 0.165; // 45% reduction
+  
   return {
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
-      base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.7)' // Blue base for dark mode
-        : 'rgba(59, 130, 246, 0.6)', // Slightly more visible blue for light mode
+      base: `rgba(59, 130, 246, ${neuronBaseOpacity})`, // Reduced opacity by 45%
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.9)' // Light blue core for dark mode
-        : 'rgba(29, 78, 216, 0.85)' // Darker blue core for light mode for better contrast
+        ? 'rgba(219, 234, 254, 0.495)' // Reduced from 0.9 to 0.495 (45% reduction)
+        : 'rgba(29, 78, 216, 0.468)' // Reduced from 0.85 to 0.468 (45% reduction)
     },
-    connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.4)' 
-      : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
+    connectionColor: `rgba(59, 130, 246, ${connectionOpacity})`, // Reduced opacity by 45%
     
     // Responsive neuron counts based on device capability
     neuronCount: isMobileOrTablet ? 40 : 60,
@@ -37,7 +42,7 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
     // Performance-optimized animation settings
     flowSpeed: 0.008,
     pulseInterval: isMobileOrTablet ? 2000 : 1500, // Less frequent pulses on mobile
-    glowIntensity: theme === 'dark' ? 0.9 : 0.7,
+    glowIntensity: theme === 'dark' ? 0.495 : 0.385, // Reduced from 0.9/0.7 to 0.495/0.385 (45% reduction)
     neuronSize: { 
       min: isMobileOrTablet ? 8 : 12, 
       max: isMobileOrTablet ? 14 : 20 
