@@ -185,7 +185,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           startY: neuron.y,
           controlPoints,
           length,
-          width: 0.8 + Math.random() * 1,
+          width: 0.5 + Math.random() * 1,
           flowPhase: Math.random() * Math.PI * 2 // Random initial phase
         });
       }
