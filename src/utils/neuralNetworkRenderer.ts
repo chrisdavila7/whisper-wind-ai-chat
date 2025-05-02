@@ -347,14 +347,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
-    cts.filter = blur(10px);
+    cts.filter = blur(10);
     
     // Draw inner core
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size * 0.6, 0, Math.PI * 2);
     ctx.fill();
-    cts.filter = blur(10px);
+    cts.filter = blur(10);
     
     // Reduce pulse strength over time
     neuron.pulseStrength *= 0.95;
