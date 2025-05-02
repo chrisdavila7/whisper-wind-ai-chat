@@ -33,6 +33,8 @@ export function drawNeuron(
     ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  ctx.filter = blur(10px);
   
   // Draw neuron body
   ctx.fillStyle = config.neuronColor.base;
