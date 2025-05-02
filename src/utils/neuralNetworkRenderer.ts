@@ -70,8 +70,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       const phi = Math.acos(1 - 2 * i_normalized);
       
       // Spread neurons out further (1.215 instead of 0.9 - 35% more spacing)
-      const x = 0.5 + 1.215 * Math.sin(phi) * Math.cos(theta);
-      const y = 0.5 + 1.215 * Math.sin(phi) * Math.sin(theta);
+      const x = 0.5 + 1 * Math.sin(phi) * Math.cos(theta);
+      const y = 0.5 + 1 * Math.sin(phi) * Math.sin(theta);
       
       // Add slight random variation to avoid perfect patterns
       const jitterX = (Math.random() - 0.5) * 0.1;
@@ -171,7 +171,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           const segmentDistance = segmentPosition * length;
           
           // Add some random variance to the angle
-          const ctrlAngle = angle + (Math.random() * 0.6 - 0.3);
+          const ctrlAngle = angle + (Math.random() * 0.8 - 0.3);
           
           controlPoints.push({
             x: neuron.x + Math.cos(ctrlAngle) * segmentDistance,
