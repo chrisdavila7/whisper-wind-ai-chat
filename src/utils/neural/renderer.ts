@@ -13,7 +13,6 @@ import {
   drawBranches, 
   drawConnection 
 } from './rendering';
-import { NeuralNetworkConfig } from '../../types/neural';
 
 /**
  * Main renderer that sets up and animates the neural network
@@ -21,11 +20,10 @@ import { NeuralNetworkConfig } from '../../types/neural';
 export function drawOrganicNeuralNetwork(
   canvas: HTMLCanvasElement, 
   ctx: CanvasRenderingContext2D, 
-  theme: 'light' | 'dark' = 'dark',
-  customConfig?: NeuralNetworkConfig
+  theme: 'light' | 'dark' = 'dark'
 ) {
-  // Create configuration based on theme or use custom config if provided
-  const config = customConfig || createNetworkConfig(theme);
+  // Create configuration based on theme
+  const config = createNetworkConfig(theme);
   
   // State
   let neurons: Neuron[] = [];
