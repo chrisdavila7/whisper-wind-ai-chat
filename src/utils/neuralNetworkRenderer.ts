@@ -340,7 +340,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.save();
 
     // Apply blur via shadow
-    ctx.shadowBlur = glowRadius * 0.6;  // Adjust for stronger/weaker blur
+    ctx.shadowBlur = glowRadius * 1;  // Adjust for stronger/weaker blur
     ctx.shadowColor = `rgba(59, 130, 246, ${baseAlpha})`;
 
     ctx.fillStyle = glow;
