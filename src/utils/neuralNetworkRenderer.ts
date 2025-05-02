@@ -268,7 +268,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               id: neuron.connections.length,
               source: neuron,
               target: target,
-              width: 0.5 + Math.random() * 3,
+              width: 0.5 + Math.random() * 10,
               controlPoints,
               flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
               flowPhase: Math.random() * Math.PI * 2
