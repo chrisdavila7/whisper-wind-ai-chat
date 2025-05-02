@@ -28,7 +28,7 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
     branchLength: { min: 50, max: 180 }, // Increased from {min:40, max:150} for more visible branches
     
     // Animation settings - increased for more noticeable movement
-    flowSpeed: 0.003, // Increased from 0.001 to make flow more noticeable
+    flowSpeed: 0.005, // Increased from 0.001 to make flow more noticeable
     pulseInterval: 1800, // Decreased from 2000 for more frequent pulsing
     glowIntensity: theme === 'dark' ? 0.8 : 0.6, // Increased from 0.7/0.5 for more visible glows
     neuronSize: { min: 7, max: 14 }, // Increased from {min:6, max:12} for more visible neurons
