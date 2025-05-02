@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
@@ -111,7 +110,7 @@ export function updateAndDrawTravelingNodes(
 }
 
 /**
- * Draw organic branches with gentle water-like flow instead of spinning
+ * Draw organic branches with gentle water-like flow
  */
 export function drawBranches(
   ctx: CanvasRenderingContext2D,
@@ -120,20 +119,20 @@ export function drawBranches(
 ): void {
   neuron.branches.forEach(branch => {
     // Update flow phase - faster for more noticeable movement
-    branch.flowPhase += 0.003; // Increased from 0.001 to make movement more noticeable
+    branch.flowPhase += 0.005; // Increased from 0.003 to make flow movement more noticeable
     if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
     
     // Draw branch as a bezier curve with thicker width
     ctx.strokeStyle = config.connectionColor;
     
     // Width now varies more dramatically creating water-like undulation
-    ctx.lineWidth = branch.width * (0.7 + Math.sin(branch.flowPhase) * 0.3); // Increased variation
+    ctx.lineWidth = branch.width * (0.7 + Math.sin(branch.flowPhase) * 0.4); // Increased variation from 0.3 to 0.4
     
     ctx.beginPath();
     ctx.moveTo(branch.startX, branch.startY);
     
     // Apply more pronounced gentle undulation to all branches
-    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.1); // Doubled from 0.05
+    const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.15); // Increased from 0.1
     
     // Calculate a fixed endpoint based on branch direction vector
     const endPointDistance = branch.length;
@@ -160,7 +159,7 @@ export function drawBranches(
       const perpX = -normalizedDy;
       const perpY = normalizedDx;
       
-      const offsetAmount = waveAmplitude * 3; // Increased from 2 to make undulation more noticeable
+      const offsetAmount = waveAmplitude * 3.5; // Increased from 3 to make undulation more noticeable
       
       ctx.quadraticCurveTo(
         midX + perpX * offsetAmount,
@@ -171,8 +170,8 @@ export function drawBranches(
     }
     else if (branch.controlPoints.length === 1) {
       // More pronounced undulating control point for water-like effect
-      const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.06); // Doubled from 0.03
-      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.06); // Doubled from 0.03
+      const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.08); // Increased from 0.06
+      const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.08); // Increased from 0.06
       
       ctx.quadraticCurveTo(
         branch.controlPoints[0].x + offsetX, 
@@ -184,10 +183,10 @@ export function drawBranches(
     else {
       // For branches with multiple control points
       // More dramatic undulating both control points for a more natural flow
-      const offset1X = waveAmplitude * 2.0; // Increased from 1.2
-      const offset1Y = waveAmplitude * 1.5; // Increased from 0.8
-      const offset2X = waveAmplitude * 1.8; // Increased from 0.9
-      const offset2Y = waveAmplitude * 2.0; // Increased from 1.1
+      const offset1X = waveAmplitude * 2.5; // Increased from 2.0
+      const offset1Y = waveAmplitude * 2.0; // Increased from 1.5
+      const offset2X = waveAmplitude * 2.0; // Increased from 1.8
+      const offset2Y = waveAmplitude * 2.5; // Increased from 2.0
       
       // Use first and last control point with undulation
       const firstPoint = branch.controlPoints[0];
@@ -208,7 +207,7 @@ export function drawBranches(
 }
 
 /**
- * Draw a connection with organic, flowing path
+ * Draw a connection with organic, flowing path while maintaining endpoint anchors
  */
 export function drawConnection(
   ctx: CanvasRenderingContext2D,
@@ -217,29 +216,29 @@ export function drawConnection(
 ): void {
   const { source, target, width, controlPoints } = connection;
   
-  // Update flow phase - slower for water-like movement
-  connection.flowPhase += connection.flowSpeed * 0.6; // Slowed down by 40%
+  // Update flow phase - faster for water-like movement
+  connection.flowPhase += config.flowSpeed * 2.0; // Increased from 0.6 to make movement more noticeable
   if (connection.flowPhase > Math.PI * 2) connection.flowPhase -= Math.PI * 2;
   
   // Draw connection path with wider lines
   ctx.strokeStyle = config.connectionColor;
   
-  // More subtle width variation for gentler undulation
-  ctx.lineWidth = width * 3.6 * (0.9 + Math.sin(connection.flowPhase) * 0.1);
+  // More pronounced width variation for visible undulation
+  ctx.lineWidth = width * 3.8 * (0.85 + Math.sin(connection.flowPhase) * 0.15); // Increased variation
   
   ctx.beginPath();
   ctx.moveTo(source.x, source.y);
   
   if (controlPoints.length === 0) {
-    // Simple line with subtle undulation
+    // Simple line with more visible undulation but anchored endpoints
     const midX = (source.x + target.x) / 2;
     const midY = (source.y + target.y) / 2;
     const perpX = -(target.y - source.y);
     const perpY = (target.x - source.x);
     const dist = Math.sqrt(perpX * perpX + perpY * perpY);
-    const offsetAmount = Math.sin(connection.flowPhase) * (width * 2);
+    const offsetAmount = Math.sin(connection.flowPhase) * (width * 5); // Increased from 2 to 5 for more visible movement
     
-    // Add a subtle curve to straight lines
+    // Add a substantial curve to straight lines but keep endpoints anchored
     if (dist > 0) {
       ctx.quadraticCurveTo(
         midX + (perpX / dist) * offsetAmount,
@@ -251,9 +250,9 @@ export function drawConnection(
       ctx.lineTo(target.x, target.y);
     }
   } else if (controlPoints.length === 1) {
-    // Quadratic curve with gentle undulation
-    const offsetX = Math.sin(connection.flowPhase) * (width * 3);
-    const offsetY = Math.cos(connection.flowPhase * 0.7) * (width * 3);
+    // Quadratic curve with enhanced undulation but fixed endpoints
+    const offsetX = Math.sin(connection.flowPhase) * (width * 6); // Doubled from 3 to 6
+    const offsetY = Math.cos(connection.flowPhase * 0.7) * (width * 6); // Doubled from 3 to 6
     
     ctx.quadraticCurveTo(
       controlPoints[0].x + offsetX, 
@@ -262,11 +261,11 @@ export function drawConnection(
       target.y
     );
   } else if (controlPoints.length === 2) {
-    // Cubic curve with more complex undulation
-    const offset1X = Math.sin(connection.flowPhase) * (width * 3);
-    const offset1Y = Math.cos(connection.flowPhase * 0.8) * (width * 2.5);
-    const offset2X = Math.sin(connection.flowPhase * 0.9) * (width * 2.5);
-    const offset2Y = Math.cos(connection.flowPhase * 0.7) * (width * 3);
+    // Cubic curve with more complex undulation but anchored endpoints
+    const offset1X = Math.sin(connection.flowPhase) * (width * 6); // Doubled from 3
+    const offset1Y = Math.cos(connection.flowPhase * 0.8) * (width * 5); // Doubled from 2.5
+    const offset2X = Math.sin(connection.flowPhase * 0.9) * (width * 5); // Doubled from 2.5
+    const offset2Y = Math.cos(connection.flowPhase * 0.7) * (width * 6); // Doubled from 3
     
     ctx.bezierCurveTo(
       controlPoints[0].x + offset1X,
@@ -277,14 +276,14 @@ export function drawConnection(
       target.y
     );
   } else {
-    // Complex path with multiple control points
+    // Complex path with multiple control points - all undulating but endpoints anchored
     for (let i = 0; i < controlPoints.length; i++) {
       const point = controlPoints[i];
       
-      // Gentler movement for water-like effect
+      // More pronounced movement for water-like effect
       // Use different frequencies for each point to avoid uniform motion
-      const offsetX = Math.sin(connection.flowPhase + i * 0.3) * width * 1.5;
-      const offsetY = Math.cos(connection.flowPhase + i * 0.5) * width * 1.5;
+      const offsetX = Math.sin(connection.flowPhase + i * 0.3) * width * 3; // Doubled from 1.5
+      const offsetY = Math.cos(connection.flowPhase + i * 0.5) * width * 3; // Doubled from 1.5
       
       if (i === 0) {
         ctx.quadraticCurveTo(

@@ -37,12 +37,14 @@ const NeuralBackground = () => {
     const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
     
     // Force a refresh of the canvas every few seconds if animation isn't working properly
+    // Reduced interval from 5000ms to 3000ms to freshen the display more often
     const forceRefreshInterval = setInterval(() => {
       if (canvas && ctx) {
-        ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.1)' : 'rgba(255, 255, 255, 0.1)';
+        // Reduced opacity further for a more subtle trail effect
+        ctx.fillStyle = theme === 'dark' ? 'rgba(2, 8, 23, 0.08)' : 'rgba(255, 255, 255, 0.08)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
       }
-    }, 5000);
+    }, 3000);
     
     // Cleanup function
     return () => {
@@ -61,7 +63,7 @@ const NeuralBackground = () => {
             ? 'linear-gradient(170deg, #0d1117, #0d1117, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117)'
             : 'linear-gradient(#8e97e6, #8e97e6, #003399, #003399, #8e97e6, #8e97e6)',
           backgroundSize: '300% 300%',
-          opacity: 0.7,
+          opacity: 0.6, // Reduced from 0.7 to make the neural network more visible
         }}
       />
       <canvas 
@@ -69,7 +71,7 @@ const NeuralBackground = () => {
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 0.8, 
+          opacity: 0.9, // Increased from 0.8 to make neural network more visible
           transform: 'scale(1.1)' // Slightly reduced zoom to show more neurons
         }}
       />

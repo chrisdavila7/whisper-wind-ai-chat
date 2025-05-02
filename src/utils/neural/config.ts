@@ -20,22 +20,22 @@ export function createNetworkConfig(theme: 'light' | 'dark' = 'dark'): NeuralNet
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
     // Ensuring at least 3-4 neurons are always visible by increasing count and adjusting distribution
-    neuronCount: 20, // Increased from 15 to ensure enough neurons
-    minConnections: 2,
-    maxConnections: 5,
-    minBranches: 2,
-    maxBranches: 5,
-    branchLength: { min: 40, max: 150 },
+    neuronCount: 25, // Increased from 20 to ensure more visible connections
+    minConnections: 3, // Increased from 2 to have more visible connections
+    maxConnections: 6, // Increased from 5 to have more visible connections
+    minBranches: 3, // Increased from 2 to have more visible branches
+    maxBranches: 6, // Increased from 5 to have more visible branches
+    branchLength: { min: 50, max: 180 }, // Increased from {min:40, max:150} for more visible branches
     
     // Animation settings - increased for more noticeable movement
-    flowSpeed: 0.001, // Increased from 0.0004 to make flow more noticeable
-    pulseInterval: 2000, // Decreased from 3000 for more frequent pulsing
-    glowIntensity: theme === 'dark' ? 0.7 : 0.5,
-    neuronSize: { min: 6, max: 12 },
+    flowSpeed: 0.003, // Increased from 0.001 to make flow more noticeable
+    pulseInterval: 1800, // Decreased from 2000 for more frequent pulsing
+    glowIntensity: theme === 'dark' ? 0.8 : 0.6, // Increased from 0.7/0.5 for more visible glows
+    neuronSize: { min: 7, max: 14 }, // Increased from {min:6, max:12} for more visible neurons
     
     // Traveling node settings
-    travelingNodeCount: 12,
-    travelingNodeSpeed: { min: 0.15, max: 0.35 }, // Increased speed for more noticeable movement
+    travelingNodeCount: 15, // Increased from 12 to add more visible movement
+    travelingNodeSpeed: { min: 0.2, max: 0.4 }, // Increased from {min:0.15, max:0.35} for more noticeable movement
     travelingNodeGlowDuration: 800,
   };
 }
