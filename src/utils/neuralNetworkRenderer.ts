@@ -439,7 +439,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
                       Math.random() * (config.branchLength.max - config.branchLength.min);
         
         // Reduce control points for low performance
-        const controlPointCount = isLowPerformance ? 1 : (1 + Math.floor(Math.random() * 2));
+        const controlPointCount = isLowPerformance ? 
+                                 1 : 
+                                 (1 + Math.floor(Math.random() * 2));
         const controlPoints: Point[] = [];
         
         for (let j = 0; j < controlPointCount; j++) {
@@ -793,4 +795,283 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       if (!isLowPerformance) {
         // Add small glow effect to traveling node
         const nodeGlow = ctx.createRadialGradient(
-          node.x, node.y, node.width *
+          node.x, node.y, node.width * 0.5, 
+          node.x, node.y, node.width * 2.5
+        );
+        
+        nodeGlow.addColorStop(0, `rgba(59, 130, 246, 0.3)`);
+        nodeGlow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        
+        ctx.fillStyle = nodeGlow;
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, node.width * 2.5, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    
+    // Limit node creation based on how many are currently visible in viewport
+    return activeNodesInViewport;
+  }
+  
+  /**
+   * Calculate a position along a path with control points
+   */
+  function getPositionAlongPath(connection: Connection, t: number): Point {
+    if (t <= 0) return { x: connection.source.x, y: connection.source.y };
+    if (t >= 1) return { x: connection.target.x, y: connection.target.y };
+    
+    const points = [
+      { x: connection.source.x, y: connection.source.y },
+      ...connection.controlPoints,
+      { x: connection.target.x, y: connection.target.y }
+    ];
+    
+    // Use De Casteljau's algorithm for bezier curve point calculation
+    let currentPoints = [...points];
+    
+    // Iteratively compute points along curve
+    while (currentPoints.length > 1) {
+      const nextPoints: Point[] = [];
+      
+      for (let i = 0; i < currentPoints.length - 1; i++) {
+        nextPoints.push({
+          x: (1 - t) * currentPoints[i].x + t * currentPoints[i + 1].x,
+          y: (1 - t) * currentPoints[i].y + t * currentPoints[i + 1].y
+        });
+      }
+      
+      currentPoints = nextPoints;
+    }
+    
+    return currentPoints[0];
+  }
+  
+  /**
+   * Draw a connection with adaptive effects based on performance
+   */
+  function drawConnection(connection: Connection, timestamp: number) {
+    if (!isWithinExtendedViewport(connection.source.x, connection.source.y) &&
+        !isWithinExtendedViewport(connection.target.x, connection.target.y)) {
+      return; // Skip if both endpoints are outside viewport
+    }
+    
+    // Base path drawing
+    ctx.strokeStyle = config.connectionColor;
+    ctx.lineWidth = connection.width;
+    
+    ctx.beginPath();
+    ctx.moveTo(connection.source.x, connection.source.y);
+    
+    // Draw curve with control points
+    if (connection.controlPoints.length === 1) {
+      // Quadratic curve for single control point
+      ctx.quadraticCurveTo(
+        connection.controlPoints[0].x,
+        connection.controlPoints[0].y,
+        connection.target.x,
+        connection.target.y
+      );
+    } else if (connection.controlPoints.length >= 2) {
+      // Bezier curve for multiple control points
+      ctx.bezierCurveTo(
+        connection.controlPoints[0].x,
+        connection.controlPoints[0].y,
+        connection.controlPoints[1].x,
+        connection.controlPoints[1].y,
+        connection.target.x,
+        connection.target.y
+      );
+    } else {
+      // Simple line if no control points
+      ctx.lineTo(connection.target.x, connection.target.y);
+    }
+    
+    ctx.stroke();
+    
+    // Skip additional flow effects on very low performance
+    if (isVeryLowPerformance) return;
+    
+    // Calculate flow pattern for high quality rendering
+    if (!isLowPerformance) {
+      const samples = 10; // Reduced from 15 for better performance
+      const maxFlowParticles = 3; // Reduced from 5
+      
+      // Animate flow along connection
+      connection.flowPhase += connection.flowSpeed;
+      if (connection.flowPhase > Math.PI * 2) {
+        connection.flowPhase -= Math.PI * 2;
+      }
+      
+      for (let i = 0; i < maxFlowParticles; i++) {
+        const offset = (i / maxFlowParticles) * Math.PI * 2;
+        const flowPosition = (Math.sin(connection.flowPhase + offset) + 1) / 2;
+        
+        // Draw flow particles
+        const position = getPositionAlongPath(connection, flowPosition);
+        
+        // Skip if outside viewport
+        if (!isWithinExtendedViewport(position.x, position.y, 0)) {
+          continue;
+        }
+        
+        const particleSize = connection.width * 0.7; // Reduced particle size
+        
+        ctx.fillStyle = 'rgba(219, 234, 254, 0.5)';
+        ctx.beginPath();
+        ctx.arc(position.x, position.y, particleSize, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+  }
+  
+  /**
+   * Draw all branches with adaptive complexity
+   */
+  function drawBranches() {
+    // Skip branches on very low performance
+    if (isVeryLowPerformance) return;
+    
+    neurons.forEach(neuron => {
+      if (!isWithinExtendedViewport(neuron.x, neuron.y, 100)) return;
+      
+      neuron.branches.forEach(branch => {
+        // Draw branch base path
+        ctx.strokeStyle = config.connectionColor;
+        ctx.lineWidth = branch.width;
+        
+        ctx.beginPath();
+        ctx.moveTo(branch.startX, branch.startY);
+        
+        // Determine end point based on control points or direct angle
+        const endX = branch.controlPoints.length > 0 
+          ? branch.controlPoints[branch.controlPoints.length - 1].x 
+          : branch.startX + Math.cos(branch.flowPhase) * branch.length;
+          
+        const endY = branch.controlPoints.length > 0
+          ? branch.controlPoints[branch.controlPoints.length - 1].y
+          : branch.startY + Math.sin(branch.flowPhase) * branch.length;
+        
+        // Draw curve with control points
+        if (branch.controlPoints.length === 1) {
+          ctx.quadraticCurveTo(
+            branch.controlPoints[0].x,
+            branch.controlPoints[0].y,
+            endX, endY
+          );
+        } else if (branch.controlPoints.length >= 2) {
+          // Use multiple control points
+          ctx.bezierCurveTo(
+            branch.controlPoints[0].x,
+            branch.controlPoints[0].y,
+            branch.controlPoints[1].x,
+            branch.controlPoints[1].y,
+            endX, endY
+          );
+        } else {
+          ctx.lineTo(endX, endY);
+        }
+        
+        ctx.stroke();
+      });
+    });
+  }
+  
+  /**
+   * Main animation render loop with performance optimizations
+   */
+  function render(timestamp: number) {
+    // Calculate time between frames for consistent animation
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    const deltaTime = timestamp - lastFrameTime;
+    
+    // Skip frames if browser is struggling to maintain framerate
+    if (isVeryLowPerformance && frameCount % 2 !== 0) {
+      // Only update FPS counter on skipped frames
+      updateFps(timestamp);
+      animationFrameId = requestAnimationFrame(render);
+      frameCount++;
+      return;
+    }
+    
+    // Clear canvas
+    ctx.fillStyle = config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw connections first (behind neurons)
+    neurons.forEach(neuron => {
+      neuron.connections.forEach(connection => {
+        drawConnection(connection, timestamp);
+      });
+    });
+    
+    // Draw branches if performance allows
+    if (!isVeryLowPerformance) {
+      drawBranches();
+    }
+    
+    // Draw neurons
+    neurons.forEach(neuron => {
+      drawNeuron(neuron);
+    });
+    
+    // Update and draw traveling nodes
+    updateAndDrawTravelingNodes(timestamp);
+    
+    // Pulse effect with interval management
+    if (timestamp - lastPulseTime > config.pulseInterval) {
+      // Find visible neurons for pulsing
+      const visibleNeurons = neurons.filter(n => 
+        isWithinExtendedViewport(n.x, n.y) && 
+        Math.random() < (isLowPerformance ? 0.3 : 0.5)
+      );
+      
+      // Pulse some random visible neurons
+      if (visibleNeurons.length > 0) {
+        const neuronCount = isLowPerformance ? 1 : Math.min(3, visibleNeurons.length);
+        for (let i = 0; i < neuronCount; i++) {
+          const idx = Math.floor(Math.random() * visibleNeurons.length);
+          visibleNeurons[idx].pulseStrength = 1;
+          visibleNeurons.splice(idx, 1);
+        }
+      }
+      
+      lastPulseTime = timestamp;
+    }
+    
+    // Update performance metrics
+    updateFps(timestamp);
+    lastFrameTime = timestamp;
+    
+    // Continue animation loop
+    animationFrameId = requestAnimationFrame(render);
+  }
+  
+  // Initialize the network
+  function initialize() {
+    initializeNeurons();
+    createConnections();
+    createBranches();
+    initializeTravelingNodes();
+    
+    lastFrameTime = 0;
+    lastPulseTime = 0;
+    
+    // Start animation loop
+    animationFrameId = requestAnimationFrame(render);
+  }
+  
+  // Initialize the network
+  initialize();
+  
+  // Return cleanup function
+  return function cleanup() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    
+    // Clear any pending timeouts
+    if (adaptiveQualityTimeout) {
+      clearTimeout(adaptiveQualityTimeout);
+    }
+  };
+}
