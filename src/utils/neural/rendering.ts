@@ -1,9 +1,11 @@
+
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
 
 // Define a more flexible canvas context type for compatibility
-type CanvasContext = CanvasRenderingContext2D;
+// Match the type in renderer.ts
+type CanvasContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
 /**
  * Draw a neuron with glow effect
