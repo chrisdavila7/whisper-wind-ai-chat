@@ -172,11 +172,11 @@
 }
 
 @keyframes gradient-animation {
-  0% { background-position: 0% 0% }
-  25% { background-position: 25% 25% }
+  0% { background-position: 100% 100% }
+  25% { background-position: 75% 75% }
   50% { background-position: 50% 50% }
-  75% { background-position: 25% 25% }
-  100% { background-position: 0% 0% }
+  75% { background-position: 75% 75% }
+  100% { background-position: 100% 100% }
 }
 
 .animate-gradient-animation {
