@@ -333,14 +333,24 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       );
       
       const baseAlpha = neuron.pulseStrength * config.glowIntensity;
-      glow.addColorStop(0, `rgba(59, 130, 246, ${baseAlpha})`);
-      glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
-      
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    glow.addColorStop(0, `rgba(59, 130, 246, ${baseAlpha})`);
+    glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+
+    // Save context state
+    ctx.save();
+
+    // Apply blur via shadow
+    ctx.shadowBlur = glowRadius * 0.6;  // Adjust for stronger/weaker blur
+    ctx.shadowColor = `rgba(59, 130, 246, ${baseAlpha})`;
+
+    ctx.fillStyle = glow;
+    ctx.beginPath();
+    ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Restore context state to prevent blur leaking into other elements
+    ctx.restore();
+  }
     
     // Draw neuron body
     ctx.fillStyle = config.neuronColor.base;
@@ -353,7 +363,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size * 0.6, 0, Math.PI * 2);
     ctx.fill();
-    cts.filter = blur(.9);
     
     // Reduce pulse strength over time
     neuron.pulseStrength *= 0.95;
