@@ -1,3 +1,4 @@
+
 import { Neuron, Connection, Branch, Point, TravelingNode } from '../../types/neural';
 import { NeuralNetworkConfig } from '../../types/neural';
 import { createNewTravelingNode } from './initialization';
@@ -131,49 +132,72 @@ export function drawBranches(
     ctx.beginPath();
     ctx.moveTo(branch.startX, branch.startY);
     
-    // Instead of rotating branches, we'll undulate the control points
-    // to create a gentle water-like movement
+    // Apply gentle undulation to all branches
     const waveAmplitude = Math.sin(branch.flowPhase) * (branch.length * 0.05);
     
-    if (branch.controlPoints.length === 1) {
-      // Undulating control point rather than changing endpoint
+    // Calculate a fixed endpoint based on branch direction vector
+    const endPointDistance = branch.length;
+    const dx = branch.controlPoints.length > 0 ? 
+      branch.controlPoints[branch.controlPoints.length - 1].x - branch.startX : 
+      Math.cos(branch.flowPhase * 0.1) * endPointDistance;
+    const dy = branch.controlPoints.length > 0 ? 
+      branch.controlPoints[branch.controlPoints.length - 1].y - branch.startY : 
+      Math.sin(branch.flowPhase * 0.1) * endPointDistance;
+      
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const normalizedDx = distance > 0 ? dx / distance : 0;
+    const normalizedDy = distance > 0 ? dy / distance : 0;
+    
+    const endX = branch.startX + normalizedDx * endPointDistance;
+    const endY = branch.startY + normalizedDy * endPointDistance;
+    
+    if (branch.controlPoints.length === 0) {
+      // For branches with no control points, add simple undulation
+      const midX = (branch.startX + endX) / 2;
+      const midY = (branch.startY + endY) / 2;
+      
+      // Calculate perpendicular vector for undulation
+      const perpX = -normalizedDy;
+      const perpY = normalizedDx;
+      
+      const offsetAmount = waveAmplitude * 2;
+      
+      ctx.quadraticCurveTo(
+        midX + perpX * offsetAmount,
+        midY + perpY * offsetAmount,
+        endX,
+        endY
+      );
+    }
+    else if (branch.controlPoints.length === 1) {
+      // Undulating control point for water-like effect
       const offsetX = Math.sin(branch.flowPhase) * (branch.length * 0.03);
       const offsetY = Math.cos(branch.flowPhase * 0.7) * (branch.length * 0.03);
       
       ctx.quadraticCurveTo(
         branch.controlPoints[0].x + offsetX, 
         branch.controlPoints[0].y + offsetY,
-        branch.startX + branch.length * (branch.controlPoints[0].x - branch.startX) / Math.sqrt(
-          Math.pow(branch.controlPoints[0].x - branch.startX, 2) + 
-          Math.pow(branch.controlPoints[0].y - branch.startY, 2)
-        ),
-        branch.startY + branch.length * (branch.controlPoints[0].y - branch.startY) / Math.sqrt(
-          Math.pow(branch.controlPoints[0].x - branch.startX, 2) + 
-          Math.pow(branch.controlPoints[0].y - branch.startY, 2)
-        )
+        endX,
+        endY
       );
-    } else if (branch.controlPoints.length >= 2) {
+    } 
+    else {
+      // For branches with multiple control points
       // Undulating both control points for a more natural flow
       const offset1X = waveAmplitude * 1.2;
       const offset1Y = waveAmplitude * 0.8;
       const offset2X = waveAmplitude * 0.9;
       const offset2Y = waveAmplitude * 1.1;
       
-      // Calculate a fixed endpoint rather than one that rotates
-      const endX = branch.startX + branch.length * (branch.controlPoints[1].x - branch.startX) / Math.sqrt(
-        Math.pow(branch.controlPoints[1].x - branch.startX, 2) + 
-        Math.pow(branch.controlPoints[1].y - branch.startY, 2)
-      );
-      const endY = branch.startY + branch.length * (branch.controlPoints[1].y - branch.startY) / Math.sqrt(
-        Math.pow(branch.controlPoints[1].x - branch.startX, 2) + 
-        Math.pow(branch.controlPoints[1].y - branch.startY, 2)
-      );
+      // Use first and last control point with undulation
+      const firstPoint = branch.controlPoints[0];
+      const lastPoint = branch.controlPoints[branch.controlPoints.length - 1];
       
       ctx.bezierCurveTo(
-        branch.controlPoints[0].x + offset1X,
-        branch.controlPoints[0].y + offset1Y,
-        branch.controlPoints[1].x + offset2X,
-        branch.controlPoints[1].y + offset2Y,
+        firstPoint.x + offset1X,
+        firstPoint.y + offset1Y,
+        lastPoint.x + offset2X,
+        lastPoint.y + offset2Y,
         endX,
         endY
       );
