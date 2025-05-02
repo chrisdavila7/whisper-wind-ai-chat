@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -9,6 +8,7 @@ const NeuralBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const { theme } = useTheme();
   const [isVisible, setIsVisible] = useState(true);
+  const cleanupFuncRef = useRef<(() => void) | null>(null);
   
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -40,13 +40,14 @@ const NeuralBackground = () => {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         
         // Restart the animation on resize
-        cleanup();
-        cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
+        if (cleanupFuncRef.current) {
+          cleanupFuncRef.current();
+        }
+        
+        // Store new cleanup function in the ref
+        cleanupFuncRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
       }
     };
-    
-    // Track cleanup function
-    let cleanupRef = { current: () => {} };
     
     // Visibility change handler
     const handleVisibilityChange = () => {
@@ -58,7 +59,10 @@ const NeuralBackground = () => {
         resizeCanvas();
       } else {
         // Page is hidden, stop animation to save resources
-        cleanupRef.current();
+        if (cleanupFuncRef.current) {
+          cleanupFuncRef.current();
+          cleanupFuncRef.current = null;
+        }
       }
     };
     
@@ -67,15 +71,17 @@ const NeuralBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     document.addEventListener('visibilitychange', handleVisibilityChange);
     
-    // Store cleanup function
-    let cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
-    cleanupRef.current = cleanup;
+    // Initialize network
+    cleanupFuncRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
     
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
-      cleanup();
+      if (cleanupFuncRef.current) {
+        cleanupFuncRef.current();
+        cleanupFuncRef.current = null;
+      }
     };
   }, [theme, isVisible]);
   
