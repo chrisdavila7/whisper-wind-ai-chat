@@ -7,6 +7,7 @@ import { useTheme } from '../contexts/ThemeContext';
 
 const NeuralBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const cleanupRef = useRef<(() => void) | null>(null);
   const { theme } = useTheme();
   
   useEffect(() => {
@@ -20,12 +21,21 @@ const NeuralBackground = () => {
     const resizeCanvas = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      
       // Redraw on resize to fill the screen properly
       if (canvas.width > 0 && canvas.height > 0) {
-        drawOrganicNeuralNetwork(canvas, ctx, theme);
+        // Store the previous cleanup function if it exists
+        if (cleanupRef.current) {
+          cleanupRef.current();
+          cleanupRef.current = null;
+        }
+        
+        // Start a new animation
+        cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
       }
     };
     
+    // Initial setup
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
@@ -33,13 +43,19 @@ const NeuralBackground = () => {
     ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Start the animation
-    const cleanup = drawOrganicNeuralNetwork(canvas, ctx, theme);
+    // If we haven't created the animation in the resize function,
+    // start it here and store the cleanup function
+    if (!cleanupRef.current) {
+      cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
+    }
     
     // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
-      cleanup();
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
     };
   }, [theme]);
   
