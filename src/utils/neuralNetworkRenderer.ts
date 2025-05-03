@@ -261,7 +261,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       progress: 0,
       // Use consistent speed factor multiplied by a small random variation
       // but normalized by path length for consistent visual speed
-      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.4),
+      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.2),
       width: connection.width * 0.6,  // Slightly smaller than the connection
       active: true,
       path: pathPoints,
