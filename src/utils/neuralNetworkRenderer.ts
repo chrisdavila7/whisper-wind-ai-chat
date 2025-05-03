@@ -1,8 +1,8 @@
+
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
  * Draws and animates an organic neural network on a canvas
- * With enhanced performance optimizations for smooth animation on all devices
  */
 export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
@@ -20,37 +20,32 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ? 'rgba(59, 130, 246, 0.4)' 
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
     
-    // Adaptive parameters based on device performance
-    neuronCount: 16, // Further reduced for better performance
-    minConnections: 2,
-    maxConnections: 4, // Reduced max connections
-    minBranches: 1, // Reduced min branches
-    maxBranches: 3, // Reduced max branches
-    branchLength: { min: 30, max: 100 }, // Slightly reduced max branch length
+    // Organic parameters with increased spacing (35% more)
+    neuronCount: 20, // Reduced count for less visual clutter
+    minConnections: 2, // Reduced for less clutter
+    maxConnections: 6, // Reduced for less clutter
+    minBranches: 2,
+    maxBranches: 5,
+    branchLength: { min: 30, max: 120 },
     
-    // Animation settings with performance defaults
-    flowSpeed: 0.003, // Slightly reduced speed
-    pulseInterval: 4000, // Increased interval for better performance
-    glowIntensity: theme === 'dark' ? 0.5 : 0.3, // Further reduced glow intensity
-    neuronSize: { min: 2, max: 6 }, // Smaller neurons
+    // Animation settings
+    flowSpeed: 0.004,
+    pulseInterval: 3000, // Increased interval for slower pace
+    glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
+    neuronSize: { min: 3, max: 8 },
     
-    // Traveling node settings optimized for performance
-    travelingNodeCount: 5, // Reduced count
-    travelingNodeSpeedFactor: 0.003, // Slightly slower for consistent movement
-    travelingNodeGlowDuration: 6000,
-    nodeSamples: 50, // Reduced sample points for paths
+    // Traveling node settings - use fixed speed that's frame-rate independent
+    travelingNodeCount: 7,
+    // Using consistent speeds instead of random values for smoother animation
+    travelingNodeSpeedFactor: 0.004, // Fixed speed factor (distance-independent)
+    travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
+    nodeSamples: 100, // How many points to sample for precise path following
     
-    // Enhanced performance optimization settings
-    maxDistanceForAnimation: 1200, // Reduced maximum distance
-    performanceThreshold: 45, // Slightly more aggressive performance threshold
-    lowPerformanceThreshold: 30, // Threshold for very low performance
-    viewportMargin: 80, // Reduced margin
-    fpsUpdateInterval: 1000,
-    fpsHistorySize: 5, // Track FPS over time for more stable measurements
-    adaptiveRenderingDelay: 300, // ms to wait before adapting rendering quality
-
-    // Safe margins to prevent nodes getting stuck in corners (added)
-    safeMargin: 0.15, // 15% margin from edges
+    // Performance optimization settings
+    maxDistanceForAnimation: 1500, // Maximum distance in pixels to create animation nodes
+    performanceThreshold: 50, // FPS threshold below which we optimize further
+    viewportMargin: 100, // Extra margin around viewport to pre-load animations
+    fpsUpdateInterval: 1000, // How often to update the FPS counter (ms)
   };
 
   // State
@@ -58,41 +53,40 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   let travelingNodes: TravelingNode[] = [];
   let animationFrameId: number;
   let lastPulseTime = 0;
-  let lastFrameTime = 0;
+  let lastFrameTime = 0; // Track last frame time for delta time calculation
   
-  // Enhanced performance monitoring
+  // Performance monitoring
   let frameCount = 0;
   let lastFpsUpdate = 0;
   let currentFps = 60; // Starting assumption
   let isLowPerformance = false;
-  let isVeryLowPerformance = false;
-  let fpsHistory: number[] = [];
-  let adaptiveQualityTimeout: number | null = null;
-  let adaptiveQualityLevel = 1; // 1=high, 2=medium, 3=low quality
   
   /**
-   * Interface for traveling nodes with performance optimization
+   * Interface for traveling nodes - enhanced to include path data
+   * for precise path following and exact node positioning
    */
   interface TravelingNode {
     x: number;
     y: number;
     targetNeuron: Neuron;
     sourceNeuron: Neuron;
-    connection: Connection;
-    progress: number;
-    speed: number;
+    connection: Connection;  // The connection this node is traveling along
+    progress: number;  // 0 to 1, representing progress to target
+    speed: number;     // Speed is now a consistent factor regardless of path length
     width: number;
     active: boolean;
+    // Path cache for more accurate following
     path?: Point[];
     pathIndex?: number;
+    // Total path length for normalizing speed
     pathLength?: number;
+    // Is this node within optimal rendering distance
     isWithinViewport?: boolean;
-    // Track skip frames for very low-end devices
-    skipFrameCount?: number;
   }
   
   /**
-   * Check if a position is within the extended viewport
+   * Check if a position is within the extended viewport (visible area + margin)
+   * This helps us determine if we should render/animate elements at this position
    */
   function isWithinExtendedViewport(x: number, y: number, margin = config.viewportMargin): boolean {
     return (
@@ -100,22 +94,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       x <= canvas.width + margin && 
       y >= -margin && 
       y <= canvas.height + margin
-    );
-  }
-
-  /**
-   * Check if a position is within safe area (not too close to edges)
-   * This prevents nodes from getting trapped in corners
-   */
-  function isWithinSafeArea(x: number, y: number): boolean {
-    const safeMarginX = canvas.width * config.safeMargin;
-    const safeMarginY = canvas.height * config.safeMargin;
-    
-    return (
-      x >= safeMarginX && 
-      x <= canvas.width - safeMarginX && 
-      y >= safeMarginY && 
-      y <= canvas.height - safeMarginY
     );
   }
   
@@ -127,166 +105,63 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * Get average FPS from history for more stable measurements
-   */
-  function getAverageFps(): number {
-    if (fpsHistory.length === 0) return 60;
-    return fpsHistory.reduce((sum, fps) => sum + fps, 0) / fpsHistory.length;
-  }
-  
-  /**
-   * Monitor and update FPS with enhanced stability measures
+   * Monitor and update FPS (frames per second)
    */
   function updateFps(timestamp: number) {
     frameCount++;
     
     // Update FPS counter once per second
     if (timestamp - lastFpsUpdate >= config.fpsUpdateInterval) {
-      const newFps = Math.round((frameCount * 1000) / (timestamp - lastFpsUpdate));
+      currentFps = Math.round((frameCount * 1000) / (timestamp - lastFpsUpdate));
       frameCount = 0;
       lastFpsUpdate = timestamp;
       
-      // Add to FPS history for more stable measurements
-      fpsHistory.push(newFps);
-      if (fpsHistory.length > config.fpsHistorySize) {
-        fpsHistory.shift(); // Remove oldest entry
-      }
-      
-      // Get average FPS for more stable performance detection
-      currentFps = getAverageFps();
-      
-      // Detect performance issues using average FPS
+      // Detect low performance
       isLowPerformance = currentFps < config.performanceThreshold;
-      isVeryLowPerformance = currentFps < config.lowPerformanceThreshold;
       
-      // Schedule adaptive quality adjustment with debounce
-      if (adaptiveQualityTimeout) clearTimeout(adaptiveQualityTimeout);
-      adaptiveQualityTimeout = window.setTimeout(() => {
-        adaptQualityToPerformance();
-      }, config.adaptiveRenderingDelay);
-    }
-  }
-  
-  /**
-   * Adapt rendering quality based on device performance
-   * This function dynamically adjusts visual quality to maintain framerate
-   */
-  function adaptQualityToPerformance() {
-    const averageFps = getAverageFps();
-    let newQualityLevel = adaptiveQualityLevel;
-    
-    // Determine appropriate quality level based on performance
-    if (averageFps < config.lowPerformanceThreshold) {
-      newQualityLevel = 3; // Low quality
-    } else if (averageFps < config.performanceThreshold) {
-      newQualityLevel = 2; // Medium quality
-    } else {
-      // Only upgrade quality if we're well above the threshold
-      if (averageFps > config.performanceThreshold + 10) {
-        newQualityLevel = 1; // High quality
+      // Dynamically adjust node count based on performance
+      if (isLowPerformance) {
+        // Reduce active traveling nodes if performance is suffering
+        const activeNodes = travelingNodes.filter(node => node.active);
+        if (activeNodes.length > Math.max(3, Math.floor(config.travelingNodeCount / 2))) {
+          // Remove some active nodes to improve performance
+          let nodesToDeactivate = activeNodes.length - Math.max(3, Math.floor(config.travelingNodeCount / 2));
+          for (let i = 0; i < travelingNodes.length && nodesToDeactivate > 0; i++) {
+            if (travelingNodes[i].active) {
+              travelingNodes[i].active = false;
+              nodesToDeactivate--;
+            }
+          }
+        }
       }
-    }
-    
-    // Only make changes if quality level changed
-    if (newQualityLevel !== adaptiveQualityLevel) {
-      adaptiveQualityLevel = newQualityLevel;
-      applyAdaptiveQualitySettings();
-    }
-  }
-  
-  /**
-   * Apply quality settings based on the current adaptive quality level
-   * This adjusts visual elements and animation complexity
-   */
-  function applyAdaptiveQualitySettings() {
-    const activeNodes = travelingNodes.filter(n => n.active);
-    let maxActiveNodes = config.travelingNodeCount;
-    
-    // Apply quality-specific settings
-    switch (adaptiveQualityLevel) {
-      case 3: // Low quality
-        // Drastically reduce active nodes
-        maxActiveNodes = Math.max(2, Math.floor(config.travelingNodeCount / 3));
-        // Deactivate excess nodes immediately
-        if (activeNodes.length > maxActiveNodes) {
-          let nodesToDeactivate = activeNodes.length - maxActiveNodes;
-          for (let i = 0; i < travelingNodes.length && nodesToDeactivate > 0; i++) {
-            if (travelingNodes[i].active) {
-              travelingNodes[i].active = false;
-              nodesToDeactivate--;
-            }
-          }
-        }
-        break;
-        
-      case 2: // Medium quality
-        // Moderately reduce active nodes
-        maxActiveNodes = Math.max(3, Math.floor(config.travelingNodeCount / 2));
-        // Deactivate some excess nodes
-        if (activeNodes.length > maxActiveNodes) {
-          let nodesToDeactivate = activeNodes.length - maxActiveNodes;
-          for (let i = 0; i < travelingNodes.length && nodesToDeactivate > 0; i++) {
-            if (travelingNodes[i].active) {
-              travelingNodes[i].active = false;
-              nodesToDeactivate--;
-            }
-          }
-        }
-        break;
-        
-      case 1: // High quality (default)
-      default:
-        // Allow creating more nodes if we're below the limit
-        if (activeNodes.length < config.travelingNodeCount) {
-          // Create new nodes up to the limit
-          const nodesToAdd = Math.min(
-            config.travelingNodeCount - activeNodes.length,
-            1 // Add at most 1 node per quality adjustment to avoid sudden changes
-          );
-          
-          for (let i = 0; i < nodesToAdd; i++) {
-            createNewTravelingNode();
-          }
-        }
-        break;
     }
   }
   
   // Initialize neurons with improved distribution and more spacing
   function initializeNeurons() {
     neurons = [];
-    // Create neurons with better spherical distribution
-    const neuronCount = isLowPerformance ? 
-                        Math.floor(config.neuronCount * 0.75) : 
-                        config.neuronCount;
-                        
-    for (let i = 0; i < neuronCount; i++) {
-      // Use spherical fibonacci distribution for better coverage
+    // Create neurons with better spherical distribution and increased spacing
+    for (let i = 0; i < config.neuronCount; i++) {
+      // Use spherical fibonacci distribution for better 360° coverage
       const goldenRatio = (1 + Math.sqrt(5)) / 2;
-      const i_normalized = i / neuronCount;
+      const i_normalized = i / config.neuronCount;
       const theta = 2 * Math.PI * i_normalized * goldenRatio;
       
+      // Use cosine for y to distribute more evenly
       const phi = Math.acos(1 - 2 * i_normalized);
       
-      // Apply safe margins to prevent nodes getting stuck in corners or edges
-      // Map from 0-1 range to safe area range
-      const safeMargin = config.safeMargin;
-      const x = safeMargin + (1 - 2 * safeMargin) * 0.5 * (1 + Math.sin(phi) * Math.cos(theta));
-      const y = safeMargin + (1 - 2 * safeMargin) * 0.5 * (1 + Math.sin(phi) * Math.sin(theta));
+      // Spread neurons out further (1.215 instead of 0.9 - 35% more spacing)
+      const x = 0.5 + 1 * Math.sin(phi) * Math.cos(theta);
+      const y = 0.5 + 1 * Math.sin(phi) * Math.sin(theta);
       
-      // Add slight random variation that respects safe margins
-      const maxJitter = Math.min(0.1, safeMargin * 0.5); // Limit jitter to half of safe margin
-      const jitterX = (Math.random() - 0.5) * maxJitter;
-      const jitterY = (Math.random() - 0.5) * maxJitter;
-      
-      // Calculate final position in canvas coordinates with safe margins
-      const canvasX = (x + jitterX) * canvas.width;
-      const canvasY = (y + jitterY) * canvas.height;
+      // Add slight random variation to avoid perfect patterns
+      const jitterX = (Math.random() - 0.5) * 0.1;
+      const jitterY = (Math.random() - 0.5) * 0.1;
       
       neurons.push({
         id: i,
-        x: canvasX,
-        y: canvasY,
+        x: (x + jitterX) * canvas.width,
+        y: (y + jitterY) * canvas.height,
         size: config.neuronSize.min + Math.random() * (config.neuronSize.max - config.neuronSize.min),
         connections: [],
         branches: [],
@@ -295,25 +170,19 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Initialize traveling nodes based on performance capacity
+  // Initialize traveling nodes with performance considerations
   function initializeTravelingNodes() {
     travelingNodes = [];
     
-    // Create initial nodes, adjusted for performance
-    const initialNodeCount = isLowPerformance ? 
-                            Math.floor(config.travelingNodeCount * 0.5) : 
-                            config.travelingNodeCount;
-                            
-    for (let i = 0; i < initialNodeCount; i++) {
-      // Stagger creation slightly to avoid all nodes being synced
-      setTimeout(() => {
-        createNewTravelingNode();
-      }, i * 100); // Stagger by 100ms
+    // Create initial nodes, respecting performance settings
+    for (let i = 0; i < config.travelingNodeCount; i++) {
+      createNewTravelingNode();
     }
   }
   
   /**
-   * Calculate the total length of a path
+   * Calculate the total length of a path by summing distances between sample points
+   * This helps normalize speed across different length paths
    */
   function calculatePathLength(points: Point[]): number {
     let length = 0;
@@ -327,128 +196,101 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * Create a new traveling node with adaptive performance
+   * Create a new traveling node that follows an existing connection's path
+   * Enhanced with performance optimizations and viewport checks
    */
   function createNewTravelingNode() {
     if (neurons.length === 0) return;
     
     // Don't create additional nodes if performance is suffering
-    if (isLowPerformance && travelingNodes.filter(n => n.active).length >= 
-        (isVeryLowPerformance ? 2 : Math.max(2, Math.floor(config.travelingNodeCount / 2)))) {
+    if (isLowPerformance && travelingNodes.filter(n => n.active).length >= Math.max(3, Math.floor(config.travelingNodeCount / 2))) {
       return;
     }
     
-    // Find neurons that are within the viewport AND safe area (not too close to edges)
-    // This prevents nodes from getting trapped in corners
+    // Find neurons that are within the viewport or extended margin
     const neuronsWithConnections = neurons.filter(n => 
       n.connections.length > 0 && 
-      isWithinExtendedViewport(n.x, n.y, config.viewportMargin * 2) &&
-      isWithinSafeArea(n.x, n.y)
+      isWithinExtendedViewport(n.x, n.y, config.viewportMargin * 2)
     );
     
-    // If no neurons match our criteria, don't create a node
     if (neuronsWithConnections.length === 0) return;
     
-    // Select a random neuron with connections that's in view and safe area
+    // Select a random neuron with connections that's in view
     const sourceNeuron = neuronsWithConnections[Math.floor(Math.random() * neuronsWithConnections.length)];
     
-    // Filter connections to only include those within safe area
-    // This ensures traveling nodes don't move to edge areas where they might get stuck
+    // Filter connections to only include those within a reasonable distance
     const viableConnections = sourceNeuron.connections.filter(conn => {
       const distance = calculateDistance(
         sourceNeuron.x, sourceNeuron.y, 
         conn.target.x, conn.target.y
       );
       
+      // Only use connections within maximum animation distance
+      // and where target is also within the extended viewport
       return distance <= config.maxDistanceForAnimation && 
-             isWithinExtendedViewport(conn.target.x, conn.target.y, config.viewportMargin * 2) &&
-             isWithinSafeArea(conn.target.x, conn.target.y);
+             isWithinExtendedViewport(conn.target.x, conn.target.y, config.viewportMargin * 2);
     });
     
-    // If no viable connections, don't create a node
+    // If no viable connections found, try another neuron next time
     if (viableConnections.length === 0) return;
     
     // Select a random viable connection
     const connection = viableConnections[Math.floor(Math.random() * viableConnections.length)];
     const targetNeuron = connection.target;
     
-    // Pre-compute path points - reduce samples for low performance
+    // Pre-compute path points for more accurate curve following
     const pathPoints: Point[] = [];
-    const samples = isVeryLowPerformance ? 
-                   Math.floor(config.nodeSamples / 2) : 
-                   (isLowPerformance ? Math.floor(config.nodeSamples * 0.75) : config.nodeSamples);
+    const samples = config.nodeSamples;
     
     // Generate sample points along the connection path
     for (let i = 0; i <= samples; i++) {
       const t = i / samples;
-      const position = getPositionAlongPath(connection, t);
-      
-      // Additional safety check to ensure path points don't go outside safe area
-      if (isWithinSafeArea(position.x, position.y)) {
-        pathPoints.push(position);
-      } else {
-        // If point is outside safe area, adjust it to stay within
-        const safePosition = {
-          x: Math.max(canvas.width * config.safeMargin, 
-                     Math.min(position.x, canvas.width * (1 - config.safeMargin))),
-          y: Math.max(canvas.height * config.safeMargin, 
-                     Math.min(position.y, canvas.height * (1 - config.safeMargin)))
-        };
-        pathPoints.push(safePosition);
-      }
+      pathPoints.push(getPositionAlongPath(connection, t));
     }
     
+    // Calculate the total path length for normalizing speed
     const pathLength = calculatePathLength(pathPoints);
     
-    // Create a traveling node with performance adaptations
+    // Create a traveling node that will follow this connection's path precisely
     travelingNodes.push({
-      x: sourceNeuron.x,
+      x: sourceNeuron.x,  // Start at source neuron
       y: sourceNeuron.y,
       sourceNeuron,
       targetNeuron,
       connection,
       progress: 0,
-      // Use consistent speed factor with less variation on low performance devices
-      speed: config.travelingNodeSpeedFactor * (isLowPerformance ? 
-             (0.9 + Math.random() * 0.2) : (0.8 + Math.random() * 0.4)),
-      width: connection.width * 0.6,
+      // Use consistent speed factor multiplied by a small random variation
+      // but normalized by path length for consistent visual speed
+      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.4),
+      width: connection.width * 0.6,  // Slightly smaller than the connection
       active: true,
       path: pathPoints,
       pathIndex: 0,
       pathLength: pathLength,
-      isWithinViewport: true,
-      // Skip frames on very low performance devices
-      skipFrameCount: isVeryLowPerformance ? Math.floor(Math.random() * 2) : 0
+      isWithinViewport: true, // Initially set as visible since we checked during creation
     });
   }
   
-  // Create branches with adaptive complexity
+  // Create branches for neurons
   function createBranches() {
     neurons.forEach(neuron => {
-      // Reduce branch count for performance
-      const maxBranches = isLowPerformance ? 
-                         Math.max(1, config.minBranches) : 
-                         config.maxBranches;
-                         
-      const branchCount = config.minBranches + 
-                         Math.floor(Math.random() * (maxBranches - config.minBranches + 1));
+      const branchCount = config.minBranches + Math.floor(Math.random() * (config.maxBranches - config.minBranches + 1));
       
       for (let i = 0; i < branchCount; i++) {
         const angle = Math.PI * 2 * (i / branchCount);
-        const length = config.branchLength.min + 
-                      Math.random() * (config.branchLength.max - config.branchLength.min);
+        const length = config.branchLength.min + Math.random() * (config.branchLength.max - config.branchLength.min);
         
-        // Reduce control points for low performance
-        const controlPointCount = isLowPerformance ? 
-                                 1 : 
-                                 (1 + Math.floor(Math.random() * 2));
+        // Create 2-3 control points for organic curve
+        const controlPointCount = 2 + Math.floor(Math.random() * 2);
         const controlPoints: Point[] = [];
         
         for (let j = 0; j < controlPointCount; j++) {
+          // Add randomness to control points
           const segmentLength = length / controlPointCount;
           const segmentPosition = (j + 1) / (controlPointCount + 1);
           const segmentDistance = segmentPosition * length;
           
+          // Add some random variance to the angle
           const ctrlAngle = angle + (Math.random() * 0.8 - 0.3);
           
           controlPoints.push({
@@ -463,37 +305,20 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           startY: neuron.y,
           controlPoints,
           length,
-          width: (0.5 + Math.random() * (isLowPerformance ? 0.5 : 1)),
-          flowPhase: Math.random() * Math.PI * 2
+          width: (0.5 + Math.random() * 1), // Increased width by 25% (from base width)
+          flowPhase: Math.random() * Math.PI * 2 // Random initial phase
         });
       }
     });
   }
   
-  // Create connections with adaptive complexity and distance checks
+  // Create connections between neurons with better 360° coverage
   function createConnections() {
     // First ensure each neuron has at least minConnections
     neurons.forEach(neuron => {
-      // Find all other neurons that are within safe distance
+      // Find all other neurons
       const potentialTargets = neurons
-        .filter(n => {
-          if (n.id === neuron.id) return false;
-          
-          // Calculate distance
-          const distance = Math.sqrt(
-            Math.pow(n.x - neuron.x, 2) + 
-            Math.pow(n.y - neuron.y, 2)
-          );
-          
-          // Check if the target is within safe distance and not too close
-          // This prevents creating connections that could lead to nodes getting stuck
-          const maxDistance = isLowPerformance ? 
-                            config.maxDistanceForAnimation * 0.7 : 
-                            config.maxDistanceForAnimation;
-          
-          // Connection should be within maxDistance and target neuron should be in safe area
-          return distance <= maxDistance && isWithinSafeArea(n.x, n.y);
-        })
+        .filter(n => n.id !== neuron.id)
         .map(n => ({
           neuron: n,
           distance: Math.sqrt(
@@ -502,23 +327,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           )
         }));
       
+      // Sort by distance, but also consider neurons in all directions
       potentialTargets.sort((a, b) => a.distance - b.distance);
       
-      // Reduce connection count for performance
-      const maxConnections = isLowPerformance ? 
-                            Math.min(3, config.maxConnections) : 
-                            config.maxConnections;
-                            
+      // Connect to closest neurons in different directions
       const connectionCount = config.minConnections + 
-                             Math.floor(Math.random() * (maxConnections - config.minConnections + 1));
+        Math.floor(Math.random() * (config.maxConnections - config.minConnections + 1));
       
-      // Divide the circle into sectors for even distribution
-      const sectors = isLowPerformance ? 4 : 6; // Reduced sectors for low performance
+      // Divide the circle into sectors to ensure even distribution
+      const sectors = 6; // Increased from 4 to 6 sectors for better coverage
       const sectorsWithConnections = Array(sectors).fill(0);
       const connectionsPerSector = Math.ceil(connectionCount / sectors);
       
       // Create connections for each sector
       for (let sec = 0; sec < sectors; sec++) {
+        // Filter targets that fall in this sector
         const sectorStartAngle = (sec * 2 * Math.PI) / sectors;
         const sectorEndAngle = ((sec + 1) * 2 * Math.PI) / sectors;
         
@@ -531,7 +354,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           return (angle >= sectorStartAngle && angle < sectorEndAngle);
         });
         
-        // Connect to closest targets in this sector
+        // Connect to the closest targets in this sector
         for (let i = 0; i < Math.min(connectionsPerSector, targetsInSector.length); i++) {
           if (sectorsWithConnections[sec] < connectionsPerSector && 
               targetsInSector[i] && 
@@ -540,38 +363,24 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             const target = targetsInSector[i].neuron;
             const distance = targetsInSector[i].distance;
             
-            // Reduce control point count for low performance
-            const controlPointCount = isLowPerformance ? 
-                                     1 : 
-                                     (1 + Math.floor(Math.random() * 2));
+            // Create organic connection with multiple control points
+            const controlPointCount = 2 + Math.floor(Math.random() * 3);
             const controlPoints: Point[] = [];
             
             for (let j = 0; j < controlPointCount; j++) {
               const t = (j + 1) / (controlPointCount + 1);
+              // Base point along the straight line
               const baseX = neuron.x + (target.x - neuron.x) * t;
               const baseY = neuron.y + (target.y - neuron.y) * t;
               
-              // Reduce variance for low performance
+              // Add organic variance
               const perpX = -(target.y - neuron.y) / distance;
               const perpY = (target.x - neuron.x) / distance;
-              const variance = (Math.random() * (isLowPerformance ? 0.3 : 0.5) - 
-                              (isLowPerformance ? 0.15 : 0.25)) * distance;
-              
-              // Generate control point and ensure it's within safe area
-              let ctrlX = baseX + perpX * variance;
-              let ctrlY = baseY + perpY * variance;
-              
-              // Adjust control point if outside safe area
-              if (!isWithinSafeArea(ctrlX, ctrlY)) {
-                ctrlX = Math.max(canvas.width * config.safeMargin, 
-                               Math.min(ctrlX, canvas.width * (1 - config.safeMargin)));
-                ctrlY = Math.max(canvas.height * config.safeMargin, 
-                               Math.min(ctrlY, canvas.height * (1 - config.safeMargin)));
-              }
+              const variance = (Math.random() * 0.5 - 0.25) * distance;
               
               controlPoints.push({
-                x: ctrlX,
-                y: ctrlY
+                x: baseX + perpX * variance,
+                y: baseY + perpY * variance
               });
             }
             
@@ -579,9 +388,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               id: neuron.connections.length,
               source: neuron,
               target: target,
-              width: 0.5 + Math.random() * (isLowPerformance ? 2 : 4), // Reduced width for low performance
+              width: 0.5 + Math.random() * 4,
               controlPoints,
-              flowSpeed: config.flowSpeed * (0.7 + Math.random() * (isLowPerformance ? 2 : 5)),
+              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 5),
               flowPhase: Math.random() * Math.PI * 2
             };
             
@@ -598,8 +407,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           const target = potentialTargets[targetIndex].neuron;
           const distance = potentialTargets[targetIndex].distance;
           
-          // Simple control points for minimum connections
-          const controlPointCount = isLowPerformance ? 1 : 2;
+          // Create control points and connection as before
+          const controlPointCount = 2 + Math.floor(Math.random() * 3);
           const controlPoints: Point[] = [];
           
           for (let j = 0; j < controlPointCount; j++) {
@@ -609,23 +418,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             
             const perpX = -(target.y - neuron.y) / distance;
             const perpY = (target.x - neuron.x) / distance;
-            const variance = (Math.random() * 0.3 - 0.15) * distance;
-            
-            // Generate control point and ensure it's within safe area
-            let ctrlX = baseX + perpX * variance;
-            let ctrlY = baseY + perpY * variance;
-            
-            // Adjust control point if outside safe area
-            if (!isWithinSafeArea(ctrlX, ctrlY)) {
-              ctrlX = Math.max(canvas.width * config.safeMargin, 
-                             Math.min(ctrlX, canvas.width * (1 - config.safeMargin)));
-              ctrlY = Math.max(canvas.height * config.safeMargin, 
-                             Math.min(ctrlY, canvas.height * (1 - config.safeMargin)));
-            }
+            const variance = (Math.random() * 0.5 - 0.25) * distance;
             
             controlPoints.push({
-              x: ctrlX,
-              y: ctrlY
+              x: baseX + perpX * variance,
+              y: baseY + perpY * variance
             });
           }
           
@@ -633,9 +430,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             id: neuron.connections.length,
             source: neuron,
             target: target,
-            width: 0.5 + Math.random() * 2,
+            width: 0.5 + Math.random() * 4,
             controlPoints,
-            flowSpeed: config.flowSpeed * (0.7 + Math.random() * 2),
+            flowSpeed: config.flowSpeed * (0.7 + Math.random() * 5),
             flowPhase: Math.random() * Math.PI * 2
           };
           
@@ -645,42 +442,39 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Draw a neuron with adaptive glow effects
+  // Draw a neuron with glow effect
   function drawNeuron(neuron: Neuron) {
+    // Performance optimization: Only render neurons that are within viewport or close enough
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
-      return;
+      return; // Skip rendering entirely if too far from view
     }
 
-    // Skip glow effects on very low performance
-    if (neuron.pulseStrength > 0 && !isVeryLowPerformance) {
-      const glowRadius = neuron.size * 3; // Reduced from 4 for better performance
+    // Draw glow if neuron is pulsing
+    if (neuron.pulseStrength > 0) {
+      const glowRadius = neuron.size * 4;
       const glow = ctx.createRadialGradient(
         neuron.x, neuron.y, neuron.size * 0.5,
         neuron.x, neuron.y, glowRadius
       );
       
-      // Use reduced glow intensity for better performance
-      const baseAlpha = neuron.pulseStrength * 
-                      (isLowPerformance ? config.glowIntensity * 0.7 : config.glowIntensity);
-      
+      const baseAlpha = neuron.pulseStrength * config.glowIntensity;
       glow.addColorStop(0, `rgba(59, 130, 246, ${baseAlpha})`);
       glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
 
-      // Only use shadows for high quality mode
-      if (!isLowPerformance) {
-        ctx.save();
-        ctx.shadowBlur = glowRadius * 1;
-        ctx.shadowColor = `rgba(59, 130, 246, ${baseAlpha})`;
-      }
+      // Save context state
+      ctx.save();
+
+      // Apply blur via shadow
+      ctx.shadowBlur = glowRadius * 1;  // Adjust for stronger/weaker blur
+      ctx.shadowColor = `rgba(59, 130, 246, ${baseAlpha})`;
 
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
       ctx.fill();
 
-      if (!isLowPerformance) {
-        ctx.restore();
-      }
+      // Restore context state to prevent blur leaking into other elements
+      ctx.restore();
     }
     
     // Draw neuron body
@@ -689,50 +483,41 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw inner core (skip on very low performance)
-    if (!isVeryLowPerformance) {
-      ctx.fillStyle = config.neuronColor.core;
-      ctx.beginPath();
-      ctx.arc(neuron.x, neuron.y, neuron.size * 0.6, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // Draw inner core
+    ctx.fillStyle = config.neuronColor.core;
+    ctx.beginPath();
+    ctx.arc(neuron.x, neuron.y, neuron.size * 0.6, 0, Math.PI * 2);
+    ctx.fill();
     
-    // Reduce pulse strength - faster decay on low performance
-    neuron.pulseStrength *= isLowPerformance ? 0.9 : 0.95;
+    // Reduce pulse strength over time
+    neuron.pulseStrength *= 0.95;
     if (neuron.pulseStrength < 0.05) neuron.pulseStrength = 0;
   }
   
   /**
-   * Update and draw traveling nodes with frame skipping for low-end devices
+   * Draw and update traveling nodes with enhanced path following and performance optimizations
+   * Uses pre-computed path points for more accurate curve following and handles nodes outside viewport
    */
   function updateAndDrawTravelingNodes(timestamp: number) {
     // Calculate delta time for frame-rate independent movement
     const deltaTime = timestamp - lastFrameTime;
-    const deltaFactor = deltaTime / 16.67; // Normalize to ~60fps
+    const deltaFactor = deltaTime / 16.67; // Normalize to ~60fps (16.67ms)
     
+    // Track how many active nodes are rendering
     let activeNodesInViewport = 0;
     
     for (let i = 0; i < travelingNodes.length; i++) {
       const node = travelingNodes[i];
       if (!node.active) continue;
       
-      // Skip frames on very low performance devices
-      if (isVeryLowPerformance && node.skipFrameCount && node.skipFrameCount > 0) {
-        node.skipFrameCount--;
-        continue;
-      }
-      
-      // Reset skip counter for next frame
-      if (isVeryLowPerformance) {
-        node.skipFrameCount = 1; // Skip every other frame
-      }
-      
-      // Update progress with performance adjustments
+      // Update progress regardless of visibility (to maintain animation state)
+      // Use the node's pathLength to normalize speed across different path lengths
       const speedAdjustment = node.pathLength ? 500 / node.pathLength : 1;
       node.progress += node.speed * deltaFactor * speedAdjustment;
       
       // Update position based on progress
       if (node.path && node.path.length > 0) {
+        // Get the current position from the pre-computed path
         const nextIndex = Math.min(
           Math.floor(node.progress * node.path.length), 
           node.path.length - 1
@@ -741,20 +526,18 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         if (nextIndex >= 0 && nextIndex < node.path.length) {
           node.x = node.path[nextIndex].x;
           node.y = node.path[nextIndex].y;
+          
+          // Update visibility status based on current position
           node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
         }
       } else {
+        // Fallback to bezier calculation if path doesn't exist
         const position = getPositionAlongPath(node.connection, node.progress);
         node.x = position.x;
         node.y = position.y;
+        
+        // Update visibility status
         node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
-      }
-      
-      // Safety check - if node somehow gets outside safe area, deactivate it
-      // This prevents edge-case trapped nodes in corners
-      if (!isWithinSafeArea(node.x, node.y)) {
-        node.active = false;
-        continue;
       }
       
       // Check if node has reached target
@@ -764,13 +547,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           node.targetNeuron.pulseStrength = 1;
         }
         
+        // Reset node
         node.active = false;
         
-        // Create a new node with adaptive delay based on performance
-        const delay = isVeryLowPerformance ? 
-                     Math.random() * 3000 + 1500 :
-                     (isLowPerformance ? Math.random() * 2000 + 1000 : Math.random() * 1000);
-                     
+        // Create a new node to replace this one with throttling for performance
+        const delay = isLowPerformance ? Math.random() * 2000 + 1000 : Math.random() * 1000;
         setTimeout(() => {
           createNewTravelingNode();
         }, delay);
@@ -778,13 +559,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         continue;
       }
       
-      // Skip drawing if outside viewport
+      // Skip drawing if outside viewport - still track total active nodes
       if (!node.isWithinViewport) {
         continue;
       }
       
       activeNodesInViewport++;
       
+      // Only render if within viewport and if we haven't exceeded our performance budget
       // Draw traveling node
       ctx.fillStyle = config.connectionColor;
       ctx.beginPath();
@@ -795,283 +577,294 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       if (!isLowPerformance) {
         // Add small glow effect to traveling node
         const nodeGlow = ctx.createRadialGradient(
-          node.x, node.y, node.width * 0.5, 
-          node.x, node.y, node.width * 2.5
+          node.x, node.y, node.width * 0.5,
+          node.x, node.y, node.width * 2
         );
         
-        nodeGlow.addColorStop(0, `rgba(59, 130, 246, 0.3)`);
+        nodeGlow.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
         nodeGlow.addColorStop(1, 'rgba(59, 130, 246, 0)');
         
         ctx.fillStyle = nodeGlow;
         ctx.beginPath();
-        ctx.arc(node.x, node.y, node.width * 2.5, 0, Math.PI * 2);
+        ctx.arc(node.x, node.y, node.width * 2, 0, Math.PI * 2);
         ctx.fill();
       }
     }
     
-    // Limit node creation based on how many are currently visible in viewport
-    return activeNodesInViewport;
-  }
-  
-  /**
-   * Calculate a position along a path with control points
-   */
-  function getPositionAlongPath(connection: Connection, t: number): Point {
-    if (t <= 0) return { x: connection.source.x, y: connection.source.y };
-    if (t >= 1) return { x: connection.target.x, y: connection.target.y };
-    
-    const points = [
-      { x: connection.source.x, y: connection.source.y },
-      ...connection.controlPoints,
-      { x: connection.target.x, y: connection.target.y }
-    ];
-    
-    // Use De Casteljau's algorithm for bezier curve point calculation
-    let currentPoints = [...points];
-    
-    // Iteratively compute points along curve
-    while (currentPoints.length > 1) {
-      const nextPoints: Point[] = [];
-      
-      for (let i = 0; i < currentPoints.length - 1; i++) {
-        nextPoints.push({
-          x: (1 - t) * currentPoints[i].x + t * currentPoints[i + 1].x,
-          y: (1 - t) * currentPoints[i].y + t * currentPoints[i + 1].y
-        });
-      }
-      
-      currentPoints = nextPoints;
-    }
-    
-    return currentPoints[0];
-  }
-  
-  /**
-   * Draw a connection with adaptive effects based on performance
-   */
-  function drawConnection(connection: Connection, timestamp: number) {
-    if (!isWithinExtendedViewport(connection.source.x, connection.source.y) &&
-        !isWithinExtendedViewport(connection.target.x, connection.target.y)) {
-      return; // Skip if both endpoints are outside viewport
-    }
-    
-    // Base path drawing
-    ctx.strokeStyle = config.connectionColor;
-    ctx.lineWidth = connection.width;
-    
-    ctx.beginPath();
-    ctx.moveTo(connection.source.x, connection.source.y);
-    
-    // Draw curve with control points
-    if (connection.controlPoints.length === 1) {
-      // Quadratic curve for single control point
-      ctx.quadraticCurveTo(
-        connection.controlPoints[0].x,
-        connection.controlPoints[0].y,
-        connection.target.x,
-        connection.target.y
+    // If we have capacity for more nodes and performance is good, add more
+    if (activeNodesInViewport < config.travelingNodeCount && !isLowPerformance) {
+      const nodesToAdd = Math.min(
+        config.travelingNodeCount - activeNodesInViewport,
+        2  // Maximum 2 new nodes per frame to prevent stuttering
       );
-    } else if (connection.controlPoints.length >= 2) {
-      // Bezier curve for multiple control points
-      ctx.bezierCurveTo(
-        connection.controlPoints[0].x,
-        connection.controlPoints[0].y,
-        connection.controlPoints[1].x,
-        connection.controlPoints[1].y,
-        connection.target.x,
-        connection.target.y
-      );
-    } else {
-      // Simple line if no control points
-      ctx.lineTo(connection.target.x, connection.target.y);
-    }
-    
-    ctx.stroke();
-    
-    // Skip additional flow effects on very low performance
-    if (isVeryLowPerformance) return;
-    
-    // Calculate flow pattern for high quality rendering
-    if (!isLowPerformance) {
-      const samples = 10; // Reduced from 15 for better performance
-      const maxFlowParticles = 3; // Reduced from 5
       
-      // Animate flow along connection
-      connection.flowPhase += connection.flowSpeed;
-      if (connection.flowPhase > Math.PI * 2) {
-        connection.flowPhase -= Math.PI * 2;
-      }
-      
-      for (let i = 0; i < maxFlowParticles; i++) {
-        const offset = (i / maxFlowParticles) * Math.PI * 2;
-        const flowPosition = (Math.sin(connection.flowPhase + offset) + 1) / 2;
-        
-        // Draw flow particles
-        const position = getPositionAlongPath(connection, flowPosition);
-        
-        // Skip if outside viewport
-        if (!isWithinExtendedViewport(position.x, position.y, 0)) {
-          continue;
-        }
-        
-        const particleSize = connection.width * 0.7; // Reduced particle size
-        
-        ctx.fillStyle = 'rgba(219, 234, 254, 0.5)';
-        ctx.beginPath();
-        ctx.arc(position.x, position.y, particleSize, 0, Math.PI * 2);
-        ctx.fill();
+      for (let i = 0; i < nodesToAdd; i++) {
+        createNewTravelingNode();
       }
     }
   }
   
-  /**
-   * Draw all branches with adaptive complexity
-   */
-  function drawBranches() {
-    // Skip branches on very low performance
-    if (isVeryLowPerformance) return;
-    
-    neurons.forEach(neuron => {
-      if (!isWithinExtendedViewport(neuron.x, neuron.y, 100)) return;
-      
-      neuron.branches.forEach(branch => {
-        // Draw branch base path
-        ctx.strokeStyle = config.connectionColor;
-        ctx.lineWidth = branch.width;
-        
-        ctx.beginPath();
-        ctx.moveTo(branch.startX, branch.startY);
-        
-        // Determine end point based on control points or direct angle
-        const endX = branch.controlPoints.length > 0 
-          ? branch.controlPoints[branch.controlPoints.length - 1].x 
-          : branch.startX + Math.cos(branch.flowPhase) * branch.length;
-          
-        const endY = branch.controlPoints.length > 0
-          ? branch.controlPoints[branch.controlPoints.length - 1].y
-          : branch.startY + Math.sin(branch.flowPhase) * branch.length;
-        
-        // Draw curve with control points
-        if (branch.controlPoints.length === 1) {
-          ctx.quadraticCurveTo(
-            branch.controlPoints[0].x,
-            branch.controlPoints[0].y,
-            endX, endY
-          );
-        } else if (branch.controlPoints.length >= 2) {
-          // Use multiple control points
-          ctx.bezierCurveTo(
-            branch.controlPoints[0].x,
-            branch.controlPoints[0].y,
-            branch.controlPoints[1].x,
-            branch.controlPoints[1].y,
-            endX, endY
-          );
-        } else {
-          ctx.lineTo(endX, endY);
-        }
-        
-        ctx.stroke();
-      });
-    });
-  }
-  
-  /**
-   * Main animation render loop with performance optimizations
-   */
-  function render(timestamp: number) {
-    // Calculate time between frames for consistent animation
-    if (!lastFrameTime) lastFrameTime = timestamp;
-    const deltaTime = timestamp - lastFrameTime;
-    
-    // Skip frames if browser is struggling to maintain framerate
-    if (isVeryLowPerformance && frameCount % 2 !== 0) {
-      // Only update FPS counter on skipped frames
-      updateFps(timestamp);
-      animationFrameId = requestAnimationFrame(render);
-      frameCount++;
+  // Draw organic branches with performance optimization
+  function drawBranches(neuron: Neuron, timestamp: number) {
+    // Skip if neuron is not within extended viewport
+    if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
       return;
     }
     
-    // Clear canvas
+    neuron.branches.forEach(branch => {
+      // Update flow phase
+      branch.flowPhase += 0.002;
+      if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
+      
+      // Draw branch as a bezier curve
+      ctx.strokeStyle = config.connectionColor;
+      ctx.lineWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
+      
+      ctx.beginPath();
+      ctx.moveTo(branch.startX, branch.startY);
+      
+      if (branch.controlPoints.length === 1) {
+        // Quadratic curve with one control point
+        ctx.quadraticCurveTo(
+          branch.controlPoints[0].x, 
+          branch.controlPoints[0].y,
+          branch.startX + Math.cos(branch.flowPhase) * branch.length,
+          branch.startY + Math.sin(branch.flowPhase) * branch.length
+        );
+      } else if (branch.controlPoints.length >= 2) {
+        // Cubic curve with two control points
+        ctx.bezierCurveTo(
+          branch.controlPoints[0].x,
+          branch.controlPoints[0].y,
+          branch.controlPoints[1].x,
+          branch.controlPoints[1].y,
+          branch.startX + Math.cos(branch.flowPhase * 0.5) * branch.length,
+          branch.startY + Math.sin(branch.flowPhase * 0.5) * branch.length
+        );
+      }
+      
+      ctx.stroke();
+    });
+  }
+  
+  // Draw a connection with organic, flowing path, with performance optimizations
+  function drawConnection(connection: Connection, timestamp: number) {
+    const { source, target } = connection;
+    
+    // Skip if both endpoints are outside the extended viewport
+    if (!isWithinExtendedViewport(source.x, source.y) && 
+        !isWithinExtendedViewport(target.x, target.y)) {
+      return;
+    }
+    
+    // Skip if connection distance exceeds maximum allowed distance
+    const connectionDistance = calculateDistance(
+      source.x, source.y, target.x, target.y
+    );
+    if (connectionDistance > config.maxDistanceForAnimation * 1.5) {
+      return;
+    }
+    
+    // Update flow phase - continue animation even for offscreen connections
+    connection.flowPhase += connection.flowSpeed;
+    if (connection.flowPhase > Math.PI * 2) connection.flowPhase -= Math.PI * 2;
+    
+    const { width, controlPoints } = connection;
+    
+    // Draw connection path
+    ctx.strokeStyle = config.connectionColor;
+    ctx.lineWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2); // Pulsing width
+    
+    ctx.beginPath();
+    ctx.moveTo(source.x, source.y);
+    
+    if (controlPoints.length === 0) {
+      // Simple line
+      ctx.lineTo(target.x, target.y);
+    } else if (controlPoints.length === 1) {
+      // Quadratic curve
+      ctx.quadraticCurveTo(
+        controlPoints[0].x, 
+        controlPoints[0].y, 
+        target.x, 
+        target.y
+      );
+    } else if (controlPoints.length === 2) {
+      // Cubic curve
+      ctx.bezierCurveTo(
+        controlPoints[0].x,
+        controlPoints[0].y,
+        controlPoints[1].x,
+        controlPoints[1].y,
+        target.x,
+        target.y
+      );
+    } else {
+      // Complex path with multiple control points
+      for (let i = 0; i < controlPoints.length; i++) {
+        const point = controlPoints[i];
+        
+        // Add slight movement to points for flowing effect
+        // Reduce movement amplitude if in low performance mode
+        const animationScale = isLowPerformance ? 0.5 : 1.5;
+        const offsetX = Math.sin(connection.flowPhase + i * 0.7) * width * animationScale;
+        const offsetY = Math.cos(connection.flowPhase + i * 0.7) * width * animationScale;
+        
+        if (i === 0) {
+          ctx.quadraticCurveTo(
+            point.x + offsetX,
+            point.y + offsetY,
+            (point.x + (i + 1 < controlPoints.length ? controlPoints[i + 1].x : target.x)) / 2,
+            (point.y + (i + 1 < controlPoints.length ? controlPoints[i + 1].y : target.y)) / 2
+          );
+        } else if (i < controlPoints.length - 1) {
+          ctx.quadraticCurveTo(
+            point.x + offsetX,
+            point.y + offsetY,
+            (point.x + controlPoints[i + 1].x) / 2,
+            (point.y + controlPoints[i + 1].y) / 2
+          );
+        } else {
+          ctx.quadraticCurveTo(
+            point.x + offsetX,
+            point.y + offsetY,
+            target.x,
+            target.y
+          );
+        }
+      }
+    }
+    
+    ctx.stroke();
+  }
+  
+  /**
+   * Calculate position along a bezier curve with multiple control points
+   * Enhanced for more accurate path following
+   */
+  function getPositionAlongPath(connection: Connection, t: number): Point {
+    // Clamp t between 0 and 1 to prevent out-of-bounds errors
+    t = Math.max(0, Math.min(1, t));
+    
+    const { source, target, controlPoints } = connection;
+    
+    if (controlPoints.length === 0) {
+      // Linear interpolation
+      return {
+        x: source.x + (target.x - source.x) * t,
+        y: source.y + (target.y - source.y) * t
+      };
+    } else if (controlPoints.length === 1) {
+      // Quadratic bezier
+      const mt = 1 - t;
+      return {
+        x: mt * mt * source.x + 2 * mt * t * controlPoints[0].x + t * t * target.x,
+        y: mt * mt * source.y + 2 * mt * t * controlPoints[0].y + t * t * target.y
+      };
+    } else if (controlPoints.length === 2) {
+      // Cubic bezier
+      const mt = 1 - t;
+      return {
+        x: mt * mt * mt * source.x + 3 * mt * mt * t * controlPoints[0].x + 
+           3 * mt * t * t * controlPoints[1].x + t * t * t * target.x,
+        y: mt * mt * mt * source.y + 3 * mt * mt * t * controlPoints[0].y + 
+           3 * mt * t * t * controlPoints[1].y + t * t * t * target.y
+      };
+    } else {
+      // For paths with more control points, use De Casteljau's algorithm
+      // This is a simplified approach for the complex path
+      const segment = Math.min(Math.floor(t * controlPoints.length), controlPoints.length - 1);
+      const segmentT = (t * controlPoints.length) % 1;
+      
+      const p0 = segment === 0 ? source : controlPoints[segment - 1];
+      const p1 = controlPoints[segment];
+      const p2 = segment === controlPoints.length - 1 ? target : controlPoints[segment + 1];
+      
+      // Quadratic bezier within the segment
+      const mt = 1 - segmentT;
+      return {
+        x: mt * mt * p0.x + 2 * mt * segmentT * p1.x + segmentT * segmentT * p2.x,
+        y: mt * mt * p0.y + 2 * mt * segmentT * p1.y + segmentT * segmentT * p2.y
+      };
+    }
+  }
+  
+  // Main render function with performance monitoring and optimization
+  function render(timestamp: number) {
+    // Update FPS counter and performance metrics
+    updateFps(timestamp);
+    
+    // First completely clear the canvas to prevent trail artifacts between theme changes
     ctx.fillStyle = config.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Draw connections first (behind neurons)
+    // Now apply the semi-transparent overlay for the trail effect
+    // Use a more transparent effect if performance is low
+    ctx.fillStyle = theme === 'dark' 
+      ? `rgba(2, 8, 23, ${isLowPerformance ? 0.5 : 0.3})` // Adjust transparency based on performance
+      : `rgba(255, 255, 255, ${isLowPerformance ? 0.5 : 0.3})`;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Draw connections
     neurons.forEach(neuron => {
+      // Draw branches first, so they appear behind
+      drawBranches(neuron, timestamp);
+      
+      // Draw connections only if at least one end is in viewport
       neuron.connections.forEach(connection => {
         drawConnection(connection, timestamp);
       });
     });
     
-    // Draw branches if performance allows
-    if (!isVeryLowPerformance) {
-      drawBranches();
-    }
-    
-    // Draw neurons
-    neurons.forEach(neuron => {
-      drawNeuron(neuron);
-    });
-    
-    // Update and draw traveling nodes
+    // Update and draw traveling nodes with timestamp for delta time calculation
     updateAndDrawTravelingNodes(timestamp);
     
-    // Pulse effect with interval management
+    // Draw neurons on top
+    neurons.forEach(drawNeuron);
+    
+    // Apply occasional random pulses to neurons
     if (timestamp - lastPulseTime > config.pulseInterval) {
-      // Find visible neurons for pulsing
-      const visibleNeurons = neurons.filter(n => 
-        isWithinExtendedViewport(n.x, n.y) && 
-        Math.random() < (isLowPerformance ? 0.3 : 0.5)
-      );
+      // Find neurons that are within viewport to pulse
+      const visibleNeurons = neurons.filter(n => isWithinExtendedViewport(n.x, n.y));
       
-      // Pulse some random visible neurons
+      // Randomly pulse a visible neuron
       if (visibleNeurons.length > 0) {
-        const neuronCount = isLowPerformance ? 1 : Math.min(3, visibleNeurons.length);
-        for (let i = 0; i < neuronCount; i++) {
-          const idx = Math.floor(Math.random() * visibleNeurons.length);
-          visibleNeurons[idx].pulseStrength = 1;
-          visibleNeurons.splice(idx, 1);
-        }
+        const randomNeuron = visibleNeurons[Math.floor(Math.random() * visibleNeurons.length)];
+        randomNeuron.pulseStrength = 1;
       }
-      
       lastPulseTime = timestamp;
     }
     
-    // Update performance metrics
-    updateFps(timestamp);
+    // Update last frame time for next delta calculation
     lastFrameTime = timestamp;
     
-    // Continue animation loop
+    // Continue animation
     animationFrameId = requestAnimationFrame(render);
   }
   
-  // Initialize the network
-  function initialize() {
+  // Initialize and start animation
+  function init() {
+    // Fully clear the canvas with the current theme background color first
+    ctx.fillStyle = config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Initialize FPS counter
+    lastFpsUpdate = performance.now();
+    frameCount = 0;
+    
     initializeNeurons();
-    createConnections();
     createBranches();
+    createConnections();
     initializeTravelingNodes();
-    
-    lastFrameTime = 0;
-    lastPulseTime = 0;
-    
-    // Start animation loop
+    lastFrameTime = performance.now(); // Initialize last frame time
     animationFrameId = requestAnimationFrame(render);
   }
   
-  // Initialize the network
-  initialize();
+  // Start the animation
+  init();
   
   // Return cleanup function
-  return function cleanup() {
-    if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
-    }
-    
-    // Clear any pending timeouts
-    if (adaptiveQualityTimeout) {
-      clearTimeout(adaptiveQualityTimeout);
-    }
+  return () => {
+    cancelAnimationFrame(animationFrameId);
   };
 }
