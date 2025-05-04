@@ -37,7 +37,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
     // Using consistent speeds instead of random values for smoother animation
-    travelingNodeSpeedFactor: 0.0004, // Fixed speed factor (distance-independent)
+    travelingNodeSpeedFactor: 0.002, // Fixed speed factor (distance-independent)
     travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
     nodeSamples: 1000, // How many points to sample for precise path following
     
@@ -306,7 +306,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           controlPoints,
           length,
           width: (0.5 + Math.random() * 1), // Increased width by 25% (from base width)
-          flowPhase: Math.random() * Math.PI * 2 // Random initial phase
+          flowPhase: Math.random() * Math.PI * 0.01 // Random initial phase
         });
       }
     });
