@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -16,19 +15,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         ? 'rgba(219, 234, 254, 0.3)' // Light blue core for dark mode
         : 'rgba(29, 78, 216, 0.25)' // Darker blue core for light mode for better contrast
     },
+    // Updated to solid colors matching the app's font aesthetic
     connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.09)' 
-      : 'rgba(59, 130, 246, 0.09)', // Slightly more transparent for light mode
+      ? '#8E9196' // Medium gray for dark mode - matches font color
+      : '#555555', // Darker gray for light mode - complements font
     
-    // Cylindrical effect settings
+    // Cylindrical effect settings - updated for solid look
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.09)' : 'rgba(190, 227, 248, 0.1)',
-      shadowColor: theme === 'dark' ? 'rgba(30, 64, 124, 0.2)' : 'rgba(30, 64, 124, 0.1)',
-      highlightWidth: 0.3,  // Percentage of the total width for highlight
-      shadowWidth: 0.3,     // Percentage of the total width for shadow
+      // Highlight and shadow adjusted to create a solid appearance
+      highlightColor: theme === 'dark' ? '#AAADB0' : '#8A898C', // Light gray highlight
+      shadowColor: theme === 'dark' ? '#555555' : '#333333', // Dark gray shadow
+      highlightWidth: 0.2,  // Reduced for more subtle effect
+      shadowWidth: 0.2,     // Reduced for more subtle effect
     },
     
-    // Organic parameters with increased spacing (35% more)
+    // Keep existing organic parameters with increased spacing (35% more)
     neuronCount: 20, // Reduced count for less visual clutter
     minConnections: 2, // Reduced for less clutter
     maxConnections: 6, // Reduced for less clutter
@@ -41,6 +42,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     pulseInterval: 300000, // Increased interval for slower pace
     glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
     neuronSize: { min: 3, max: 8 },
+    
+    // Traveling node colors - updated to match solid appearance
+    travelingNodeColor: theme === 'dark' ? '#9F9EA1' : '#8A898C', // Silver gray for nodes
     
     // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
@@ -599,21 +603,23 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       
       // Only render if within viewport and if we haven't exceeded our performance budget
       // Draw traveling node
-      ctx.fillStyle = config.connectionColor;
+      ctx.fillStyle = config.travelingNodeColor; // Use the new solid color
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
       ctx.fill();
       
       // Only add glow effect if performance is good
       if (!isLowPerformance) {
-        // Add small glow effect to traveling node
+        // Add small glow effect to traveling node - with solid color
         const nodeGlow = ctx.createRadialGradient(
           node.x, node.y, node.width * 0.5,
           node.x, node.y, node.width * 2
         );
         
-        nodeGlow.addColorStop(0, 'rgba(59, 130, 246, 0.3)');
-        nodeGlow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+        // Use semi-transparent versions of the solid color for the glow
+        const nodeColor = config.travelingNodeColor;
+        nodeGlow.addColorStop(0, nodeColor + '99'); // 60% opacity
+        nodeGlow.addColorStop(1, nodeColor + '00'); // 0% opacity
         
         ctx.fillStyle = nodeGlow;
         ctx.beginPath();
@@ -639,17 +645,16 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
    * Draw a path with cylindrical effect (highlighting and shadows)
    * Used for both branches and connections
    * Enhanced to ensure all curves are perfectly smooth with no sharp angles
+   * Updated to use solid colors for a more cohesive look with the app's font
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
     
     const { cylindricalEffect } = config;
     
-    // Enhanced approach for smoother curve rendering that eliminates all sharp angles
-    
-    // Draw the main cylindrical path with improved smoothing
+    // Draw the main cylindrical path with solid color
     ctx.lineWidth = width;
-    ctx.strokeStyle = config.connectionColor;
+    ctx.strokeStyle = config.connectionColor; // Using the solid color
     ctx.lineCap = 'round';  // Rounded ends for smoother appearance
     ctx.lineJoin = 'round'; // Rounded joins to eliminate sharp corners
     
@@ -736,9 +741,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Skip complex effects in low performance mode
     if (isLowPerformance) return;
     
-    // Draw highlight (top of cylinder) with same smooth curve approach
+    // Draw highlight (top of cylinder) with solid color
     ctx.lineWidth = width * cylindricalEffect.highlightWidth;
-    ctx.strokeStyle = cylindricalEffect.highlightColor;
+    ctx.strokeStyle = cylindricalEffect.highlightColor; // Solid highlight color
     
     ctx.beginPath();
     // Apply the same enhanced curve drawing logic for the highlight
@@ -798,10 +803,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     ctx.stroke();
     
-    // Draw shadow (bottom of cylinder) with same smooth curve approach
+    // Draw shadow (bottom of cylinder) with solid color
     // Slight offset for 3D effect while maintaining the same smooth curvature
     ctx.lineWidth = width * cylindricalEffect.shadowWidth;
-    ctx.strokeStyle = cylindricalEffect.shadowColor;
+    ctx.strokeStyle = cylindricalEffect.shadowColor; // Solid shadow color
     
     // Create shadow path with slight offset for 3D effect
     const shadowPath = path.map(p => ({
@@ -1001,7 +1006,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       // For paths with more control points, use enhanced de Casteljau algorithm
       // This provides pixel-perfect positioning along the curve for any number of control points
       
-      // Create points array including source, all control points, and target
+      // Create points array including start and end points
       const points = [
         { x: source.x, y: source.y },
         ...controlPoints,
