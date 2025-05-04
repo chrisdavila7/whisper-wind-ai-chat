@@ -29,7 +29,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     branchLength: { min: 30, max: 120 },
     
     // Animation settings
-    flowSpeed: 0.7,
+    flowSpeed: 0.007,
     pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
     neuronSize: { min: 3, max: 8 },
