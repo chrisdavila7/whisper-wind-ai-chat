@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -19,6 +18,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     connectionColor: theme === 'dark' 
       ? 'rgba(59, 130, 246, 0.4)' 
       : 'rgba(59, 130, 246, 0.3)', // Slightly more transparent for light mode
+    
+    // Cylindrical effect settings
+    cylindricalEffect: {
+      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.4)' : 'rgba(190, 227, 248, 0.5)',
+      shadowColor: theme === 'dark' ? 'rgba(30, 64, 124, 0.6)' : 'rgba(30, 64, 124, 0.5)',
+      highlightWidth: 0.3,  // Percentage of the total width for highlight
+      shadowWidth: 0.3,     // Percentage of the total width for shadow
+    },
     
     // Organic parameters with increased spacing (35% more)
     neuronCount: 20, // Reduced count for less visual clutter
@@ -306,7 +313,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           controlPoints,
           length,
           width: (0.5 + Math.random() * 1), // Increased width by 25% (from base width)
-          flowPhase: Math.random() * Math.PI * 0.01 // Random initial phase
+          // Updated to match connection flow animation instead of spin animation
+          flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
+          flowPhase: Math.random() * Math.PI * 2
         });
       }
     });
@@ -390,7 +399,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               target: target,
               width: 0.5 + Math.random() * 4,
               controlPoints,
-              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
+              flowSpeed: config.flowSpeed * (0.7 + Math.random() * 5),
               flowPhase: Math.random() * Math.PI * 2
             };
             
@@ -604,7 +613,64 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Draw organic branches with performance optimization
+  /**
+   * Draw a path with cylindrical effect (highlighting and shadows)
+   * Used for both branches and connections
+   */
+  function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
+    if (path.length < 2) return;
+    
+    // Draw the base path
+    ctx.lineWidth = width;
+    ctx.strokeStyle = config.connectionColor;
+    ctx.lineCap = 'round'; // Rounded ends for smoother appearance
+    
+    // Create gradient for cylindrical effect
+    const { cylindricalEffect } = config;
+    
+    // Draw the main path
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x, path[i].y);
+    }
+    ctx.stroke();
+    
+    // Skip complex effects in low performance mode
+    if (isLowPerformance) return;
+    
+    // Draw highlight (top of cylinder)
+    ctx.lineWidth = width * cylindricalEffect.highlightWidth;
+    ctx.strokeStyle = cylindricalEffect.highlightColor;
+    ctx.beginPath();
+    ctx.moveTo(path[0].x, path[0].y);
+    for (let i = 1; i < path.length; i++) {
+      ctx.lineTo(path[i].x, path[i].y);
+    }
+    ctx.stroke();
+    
+    // Draw shadow (bottom of cylinder)
+    ctx.lineWidth = width * cylindricalEffect.shadowWidth;
+    ctx.strokeStyle = cylindricalEffect.shadowColor;
+    
+    // Offset the shadow slightly for 3D effect
+    const shadowPath = path.map(p => ({
+      x: p.x + width * 0.2,
+      y: p.y + width * 0.2
+    }));
+    
+    ctx.beginPath();
+    ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
+    for (let i = 1; i < shadowPath.length; i++) {
+      ctx.lineTo(shadowPath[i].x, shadowPath[i].y);
+    }
+    ctx.stroke();
+    
+    // Reset line cap
+    ctx.lineCap = 'butt';
+  }
+  
+  // Draw organic branches with performance optimization and cylindrical effect
   function drawBranches(neuron: Neuron, timestamp: number) {
     // Skip if neuron is not within extended viewport
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
@@ -612,42 +678,33 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
     
     neuron.branches.forEach(branch => {
-      // Update flow phase
-      branch.flowPhase += 0.002;
+      // Update flow phase using same animation as connections
+      branch.flowPhase += branch.flowSpeed;
       if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
       
-      // Draw branch as a bezier curve
-      ctx.strokeStyle = config.connectionColor;
-      ctx.lineWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
+      // Prepare path points for cylindrical drawing
+      const pathPoints: Point[] = [{ x: branch.startX, y: branch.startY }];
       
-      ctx.beginPath();
-      ctx.moveTo(branch.startX, branch.startY);
+      // Add control points to the path
+      branch.controlPoints.forEach(point => {
+        pathPoints.push(point);
+      });
       
-      if (branch.controlPoints.length === 1) {
-        // Quadratic curve with one control point
-        ctx.quadraticCurveTo(
-          branch.controlPoints[0].x, 
-          branch.controlPoints[0].y,
-          branch.startX + Math.cos(branch.flowPhase) * branch.length,
-          branch.startY + Math.sin(branch.flowPhase) * branch.length
-        );
-      } else if (branch.controlPoints.length >= 2) {
-        // Cubic curve with two control points
-        ctx.bezierCurveTo(
-          branch.controlPoints[0].x,
-          branch.controlPoints[0].y,
-          branch.controlPoints[1].x,
-          branch.controlPoints[1].y,
-          branch.startX + Math.cos(branch.flowPhase * 0.5) * branch.length,
-          branch.startY + Math.sin(branch.flowPhase * 0.5) * branch.length
-        );
-      }
+      // Get end point with a slight flow animation (less circular, more like connections)
+      const endPoint = {
+        // Animate endpoint with subtle waviness instead of circular motion
+        x: branch.startX + Math.cos(branch.flowPhase * 0.2) * branch.length * 0.05 + branch.length * 0.95,
+        y: branch.startY + Math.sin(branch.flowPhase * 0.2) * branch.length * 0.05
+      };
+      pathPoints.push(endPoint);
       
-      ctx.stroke();
+      // Draw using the cylindrical path function with pulsing width
+      const pulsingWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
+      drawCylindricalPath(pathPoints, pulsingWidth, branch.flowPhase);
     });
   }
   
-  // Draw a connection with organic, flowing path, with performance optimizations
+  // Draw a connection with organic, flowing path, with performance optimizations and cylindrical effect
   function drawConnection(connection: Connection, timestamp: number) {
     const { source, target } = connection;
     
@@ -671,71 +728,35 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     const { width, controlPoints } = connection;
     
-    // Draw connection path
-    ctx.strokeStyle = config.connectionColor;
-    ctx.lineWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2); // Pulsing width
-    
-    ctx.beginPath();
-    ctx.moveTo(source.x, source.y);
+    // Prepare path points for cylindrical drawing
+    const pathPoints: Point[] = [{ x: source.x, y: source.y }];
     
     if (controlPoints.length === 0) {
       // Simple line
-      ctx.lineTo(target.x, target.y);
-    } else if (controlPoints.length === 1) {
-      // Quadratic curve
-      ctx.quadraticCurveTo(
-        controlPoints[0].x, 
-        controlPoints[0].y, 
-        target.x, 
-        target.y
-      );
-    } else if (controlPoints.length === 2) {
-      // Cubic curve
-      ctx.bezierCurveTo(
-        controlPoints[0].x,
-        controlPoints[0].y,
-        controlPoints[1].x,
-        controlPoints[1].y,
-        target.x,
-        target.y
-      );
+      pathPoints.push({ x: target.x, y: target.y });
     } else {
-      // Complex path with multiple control points
-      for (let i = 0; i < controlPoints.length; i++) {
-        const point = controlPoints[i];
-        
-        // Add slight movement to points for flowing effect
+      // Add control points with slight animation for flowing effect
+      // Calculate animated control points
+      controlPoints.forEach((point, i) => {
         // Reduce movement amplitude if in low performance mode
         const animationScale = isLowPerformance ? 0.5 : 1.5;
         const offsetX = Math.sin(connection.flowPhase + i * 0.7) * width * animationScale;
         const offsetY = Math.cos(connection.flowPhase + i * 0.7) * width * animationScale;
         
-        if (i === 0) {
-          ctx.quadraticCurveTo(
-            point.x + offsetX,
-            point.y + offsetY,
-            (point.x + (i + 1 < controlPoints.length ? controlPoints[i + 1].x : target.x)) / 2,
-            (point.y + (i + 1 < controlPoints.length ? controlPoints[i + 1].y : target.y)) / 2
-          );
-        } else if (i < controlPoints.length - 1) {
-          ctx.quadraticCurveTo(
-            point.x + offsetX,
-            point.y + offsetY,
-            (point.x + controlPoints[i + 1].x) / 2,
-            (point.y + controlPoints[i + 1].y) / 2
-          );
-        } else {
-          ctx.quadraticCurveTo(
-            point.x + offsetX,
-            point.y + offsetY,
-            target.x,
-            target.y
-          );
-        }
-      }
+        // Add animated control point to path
+        pathPoints.push({
+          x: point.x + offsetX,
+          y: point.y + offsetY
+        });
+      });
+      
+      // Add target point
+      pathPoints.push({ x: target.x, y: target.y });
     }
     
-    ctx.stroke();
+    // Draw using the cylindrical path function with pulsing width
+    const pulsingWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2);
+    drawCylindricalPath(pathPoints, pulsingWidth, connection.flowPhase);
   }
   
   /**

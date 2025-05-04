@@ -20,7 +20,8 @@ export interface Branch {
   // Length and thickness
   length: number;
   width: number;
-  // Animation phase
+  // Animation properties - updated to match connection animations
+  flowSpeed: number;
   flowPhase: number;
 }
 
