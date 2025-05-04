@@ -9,20 +9,20 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.07)' // Blue base for dark mode
-        : 'rgba(59, 130, 246, 0.06)', // Slightly more visible blue for light mode
+        ? 'rgba(59, 130, 246, 0.3)' // Blue base for dark mode
+        : 'rgba(59, 130, 246, 0.2)', // Slightly more visible blue for light mode
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.09)' // Light blue core for dark mode
-        : 'rgba(29, 78, 216, 0.085)' // Darker blue core for light mode for better contrast
+        ? 'rgba(219, 234, 254, 0.5)' // Light blue core for dark mode
+        : 'rgba(29, 78, 216, 0.45)' // Darker blue core for light mode for better contrast
     },
     connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.04)' 
-      : 'rgba(59, 130, 246, 0.03)', // Slightly more transparent for light mode
+      ? 'rgba(59, 130, 246, 0.2)' 
+      : 'rgba(59, 130, 246, 0.1)', // Slightly more transparent for light mode
     
     // Cylindrical effect settings
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.04)' : 'rgba(190, 227, 248, 0.05)',
-      shadowColor: theme === 'dark' ? 'rgba(30, 64, 124, 0.06)' : 'rgba(30, 64, 124, 0.05)',
+      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.2)' : 'rgba(190, 227, 248, 0.3)',
+      shadowColor: theme === 'dark' ? 'rgba(30, 64, 124, 0.4)' : 'rgba(30, 64, 124, 0.3)',
       highlightWidth: 0.3,  // Percentage of the total width for highlight
       shadowWidth: 0.3,     // Percentage of the total width for shadow
     },
