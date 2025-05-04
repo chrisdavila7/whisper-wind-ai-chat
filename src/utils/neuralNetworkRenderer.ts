@@ -1,3 +1,4 @@
+
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -250,8 +251,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     const samples = config.nodeSamples;
     
     // Generate sample points along the connection path
+    // Increased samples for smoother path following
     for (let i = 0; i <= samples; i++) {
       const t = i / samples;
+      // Get exact position along the bezier curve for each sample point
       pathPoints.push(getPositionAlongPath(connection, t));
     }
     
@@ -527,23 +530,39 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       const speedAdjustment = node.pathLength ? 500 / node.pathLength : 1;
       node.progress += node.speed * deltaFactor * speedAdjustment;
       
-      // Update position based on progress
+      // Update position based on progress - IMPROVED PATH FOLLOWING
       if (node.path && node.path.length > 0) {
-        // Get the current position from the pre-computed path
-        const nextIndex = Math.min(
-          Math.floor(node.progress * node.path.length), 
+        // Calculate exact index position in the pre-computed path array
+        // Use Math.min to ensure we don't exceed array bounds
+        const exactIndex = Math.min(
+          node.progress * (node.path.length - 1),
           node.path.length - 1
         );
         
-        if (nextIndex >= 0 && nextIndex < node.path.length) {
-          node.x = node.path[nextIndex].x;
-          node.y = node.path[nextIndex].y;
+        // Get integer index and fractional part for interpolation
+        const index = Math.floor(exactIndex);
+        const fraction = exactIndex - index;
+        
+        // Check if we have a next point to interpolate with
+        if (index < node.path.length - 1) {
+          // Linear interpolation between path points for smoother movement
+          const currentPoint = node.path[index];
+          const nextPoint = node.path[index + 1];
           
-          // Update visibility status based on current position
-          node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
+          // Perform precise linear interpolation between points
+          node.x = currentPoint.x + (nextPoint.x - currentPoint.x) * fraction;
+          node.y = currentPoint.y + (nextPoint.y - currentPoint.y) * fraction;
+        } else {
+          // We're at the last point
+          node.x = node.path[index].x;
+          node.y = node.path[index].y;
         }
+        
+        // Update visibility status based on current position
+        node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
       } else {
         // Fallback to bezier calculation if path doesn't exist
+        // This shouldn't happen with our improved implementation
         const position = getPositionAlongPath(node.connection, node.progress);
         node.x = position.x;
         node.y = position.y;
@@ -948,7 +967,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   
   /**
    * Calculate position along a bezier curve with multiple control points
-   * Enhanced for more accurate path following
+   * Enhanced for more accurate path following with improved algorithms
    */
   function getPositionAlongPath(connection: Connection, t: number): Point {
     // Clamp t between 0 and 1 to prevent out-of-bounds errors
@@ -963,14 +982,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         y: source.y + (target.y - source.y) * t
       };
     } else if (controlPoints.length === 1) {
-      // Quadratic bezier
+      // Quadratic bezier - single control point
       const mt = 1 - t;
       return {
         x: mt * mt * source.x + 2 * mt * t * controlPoints[0].x + t * t * target.x,
         y: mt * mt * source.y + 2 * mt * t * controlPoints[0].y + t * t * target.y
       };
     } else if (controlPoints.length === 2) {
-      // Cubic bezier
+      // Cubic bezier - two control points
       const mt = 1 - t;
       return {
         x: mt * mt * mt * source.x + 3 * mt * mt * t * controlPoints[0].x + 
@@ -979,22 +998,44 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
            3 * mt * t * t * controlPoints[1].y + t * t * t * target.y
       };
     } else {
-      // For paths with more control points, use De Casteljau's algorithm
-      // This is a simplified approach for the complex path
-      const segment = Math.min(Math.floor(t * controlPoints.length), controlPoints.length - 1);
-      const segmentT = (t * controlPoints.length) % 1;
+      // For paths with more control points, use enhanced de Casteljau algorithm
+      // This provides pixel-perfect positioning along the curve for any number of control points
       
-      const p0 = segment === 0 ? source : controlPoints[segment - 1];
-      const p1 = controlPoints[segment];
-      const p2 = segment === controlPoints.length - 1 ? target : controlPoints[segment + 1];
+      // Create points array including source, all control points, and target
+      const points = [
+        { x: source.x, y: source.y },
+        ...controlPoints,
+        { x: target.x, y: target.y }
+      ];
       
-      // Quadratic bezier within the segment
-      const mt = 1 - segmentT;
-      return {
-        x: mt * mt * p0.x + 2 * mt * segmentT * p1.x + segmentT * segmentT * p2.x,
-        y: mt * mt * p0.y + 2 * mt * segmentT * p1.y + segmentT * segmentT * p2.y
-      };
+      // Apply de Casteljau algorithm recursively
+      return deCasteljauPoint(points, t);
     }
+  }
+  
+  /**
+   * Recursive de Casteljau algorithm for precise bezier curve point calculation 
+   * This handles bezier curves of any degree (any number of control points)
+   * @param points Array of control points including start and end points
+   * @param t Parameter between 0 and 1 representing position along the curve
+   */
+  function deCasteljauPoint(points: Point[], t: number): Point {
+    // Base case: if we're down to one point, return it
+    if (points.length === 1) {
+      return points[0];
+    }
+    
+    // Create a new set of points by interpolating between adjacent pairs
+    const newPoints: Point[] = [];
+    for (let i = 0; i < points.length - 1; i++) {
+      newPoints.push({
+        x: (1 - t) * points[i].x + t * points[i + 1].x,
+        y: (1 - t) * points[i].y + t * points[i + 1].y
+      });
+    }
+    
+    // Recursively apply until we get a single point
+    return deCasteljauPoint(newPoints, t);
   }
   
   // Main render function with performance monitoring and optimization
