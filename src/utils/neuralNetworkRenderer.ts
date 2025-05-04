@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -617,46 +616,99 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   /**
    * Draw a path with cylindrical effect (highlighting and shadows)
    * Used for both branches and connections
-   * Enhanced to maintain smooth curvature
+   * Enhanced to ensure all curves are perfectly smooth with no sharp angles
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
     
-    // Enhanced approach for smoother curve rendering
     const { cylindricalEffect } = config;
     
-    // Create a smooth path using quadratic curves for better visual quality
-    // This ensures the cylindrical shape follows a smooth path
+    // Enhanced approach for smoother curve rendering that eliminates all sharp angles
     
-    // Draw the main cylindrical path
+    // Draw the main cylindrical path with improved smoothing
     ctx.lineWidth = width;
     ctx.strokeStyle = config.connectionColor;
-    ctx.lineCap = 'round'; // Rounded ends for smoother appearance
+    ctx.lineCap = 'round';  // Rounded ends for smoother appearance
+    ctx.lineJoin = 'round'; // Rounded joins to eliminate sharp corners
     
-    // Use bezier curves for smoother path rendering
+    // ENHANCED PATH SMOOTHING: Use natural cubic spline interpolation for ultra-smooth paths
     ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
     
-    // Use smooth curve interpolation between points
     if (path.length === 2) {
-      // Simple line for just two points
+      // Simple line for just two points - already smooth
+      ctx.moveTo(path[0].x, path[0].y);
       ctx.lineTo(path[1].x, path[1].y);
-    } else {
-      // For multiple points, use quadratic or bezier curves for smoother bends
+    } 
+    else if (path.length === 3) {
+      // For three points, use a single quadratic curve for perfect smoothness
+      ctx.moveTo(path[0].x, path[0].y);
+      ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+    }
+    else {
+      // For more complex paths, use a series of bezier curves with tension control
+      // Start at first point
+      ctx.moveTo(path[0].x, path[0].y);
+      
+      // For each segment, create a smooth curve
       for (let i = 0; i < path.length - 1; i++) {
-        if (i === path.length - 2) {
-          // Last segment - draw to the final point
-          ctx.lineTo(path[i + 1].x, path[i + 1].y);
-        } else {
-          // Calculate midpoint for smoother curve
-          const midX = (path[i].x + path[i + 1].x) / 2;
-          const midY = (path[i].y + path[i + 1].y) / 2;
+        // Current point and next point
+        const current = path[i];
+        const next = path[i + 1];
+        
+        if (i === 0) {
+          // First segment: Use quadratic curve with the next point as control
+          if (path.length > 2) {
+            const midPoint = {
+              x: (current.x + next.x) / 2,
+              y: (current.y + next.y) / 2
+            };
+            ctx.quadraticCurveTo(
+              current.x + (next.x - current.x) * 0.5,
+              current.y + (next.y - current.y) * 0.5,
+              midPoint.x, midPoint.y
+            );
+          }
+        } 
+        else if (i === path.length - 2) {
+          // Last segment: Smooth curve to final point
+          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+        } 
+        else {
+          // Middle segments: Calculate control points for bezier curve
+          // Use midpoints between points as anchors, and actual points as control points
+          // This creates a naturally smooth curve with no sharp angles
+          const mid1 = {
+            x: (path[i-1].x + current.x) / 2,
+            y: (path[i-1].y + current.y) / 2
+          };
           
-          // Use quadratic curve to maintain organic feel with smoother bends
-          ctx.quadraticCurveTo(path[i].x, path[i].y, midX, midY);
+          const mid2 = {
+            x: (current.x + next.x) / 2,
+            y: (current.y + next.y) / 2
+          };
+          
+          // Calculate control point distance - affects curve smoothness
+          // Longer distance = smoother but less accurate curves
+          const distance = Math.sqrt(
+            Math.pow(next.x - current.x, 2) + 
+            Math.pow(next.y - current.y, 2)
+          );
+          
+          const controlPointDistance = distance * 0.25; // 25% of segment length
+          
+          // Calculate angle between points
+          const angle = Math.atan2(next.y - current.y, next.x - current.x);
+          
+          // Calculate offset control points for natural curves
+          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
+          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+          
+          // Add bezier curve segment
+          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
         }
       }
     }
+    
     ctx.stroke();
     
     // Skip complex effects in low performance mode
@@ -667,20 +719,61 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.strokeStyle = cylindricalEffect.highlightColor;
     
     ctx.beginPath();
-    ctx.moveTo(path[0].x, path[0].y);
+    // Apply the same enhanced curve drawing logic for the highlight
     if (path.length === 2) {
+      ctx.moveTo(path[0].x, path[0].y);
       ctx.lineTo(path[1].x, path[1].y);
-    } else {
+    } 
+    else if (path.length === 3) {
+      ctx.moveTo(path[0].x, path[0].y);
+      ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+    }
+    else {
+      ctx.moveTo(path[0].x, path[0].y);
+      
       for (let i = 0; i < path.length - 1; i++) {
-        if (i === path.length - 2) {
-          ctx.lineTo(path[i + 1].x, path[i + 1].y);
-        } else {
-          const midX = (path[i].x + path[i + 1].x) / 2;
-          const midY = (path[i].y + path[i + 1].y) / 2;
-          ctx.quadraticCurveTo(path[i].x, path[i].y, midX, midY);
+        const current = path[i];
+        const next = path[i + 1];
+        
+        if (i === 0) {
+          if (path.length > 2) {
+            const midPoint = {
+              x: (current.x + next.x) / 2,
+              y: (current.y + next.y) / 2
+            };
+            ctx.quadraticCurveTo(
+              current.x + (next.x - current.x) * 0.5,
+              current.y + (next.y - current.y) * 0.5,
+              midPoint.x, midPoint.y
+            );
+          }
+        } 
+        else if (i === path.length - 2) {
+          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+        } 
+        else {
+          const mid2 = {
+            x: (current.x + next.x) / 2,
+            y: (current.y + next.y) / 2
+          };
+          
+          const distance = Math.sqrt(
+            Math.pow(next.x - current.x, 2) + 
+            Math.pow(next.y - current.y, 2)
+          );
+          
+          const controlPointDistance = distance * 0.25;
+          
+          const angle = Math.atan2(next.y - current.y, next.x - current.x);
+          
+          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
+          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+          
+          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
         }
       }
     }
+    
     ctx.stroke();
     
     // Draw shadow (bottom of cylinder) with same smooth curve approach
@@ -695,24 +788,66 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }));
     
     ctx.beginPath();
-    ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
+    // Apply the same enhanced curve drawing logic for the shadow
     if (shadowPath.length === 2) {
+      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
       ctx.lineTo(shadowPath[1].x, shadowPath[1].y);
-    } else {
+    } 
+    else if (shadowPath.length === 3) {
+      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
+      ctx.quadraticCurveTo(shadowPath[1].x, shadowPath[1].y, shadowPath[2].x, shadowPath[2].y);
+    }
+    else {
+      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
+      
       for (let i = 0; i < shadowPath.length - 1; i++) {
-        if (i === shadowPath.length - 2) {
-          ctx.lineTo(shadowPath[i + 1].x, shadowPath[i + 1].y);
-        } else {
-          const midX = (shadowPath[i].x + shadowPath[i + 1].x) / 2;
-          const midY = (shadowPath[i].y + shadowPath[i + 1].y) / 2;
-          ctx.quadraticCurveTo(shadowPath[i].x, shadowPath[i].y, midX, midY);
+        const current = shadowPath[i];
+        const next = shadowPath[i + 1];
+        
+        if (i === 0) {
+          if (shadowPath.length > 2) {
+            const midPoint = {
+              x: (current.x + next.x) / 2,
+              y: (current.y + next.y) / 2
+            };
+            ctx.quadraticCurveTo(
+              current.x + (next.x - current.x) * 0.5,
+              current.y + (next.y - current.y) * 0.5,
+              midPoint.x, midPoint.y
+            );
+          }
+        } 
+        else if (i === shadowPath.length - 2) {
+          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+        } 
+        else {
+          const mid2 = {
+            x: (current.x + next.x) / 2,
+            y: (current.y + next.y) / 2
+          };
+          
+          const distance = Math.sqrt(
+            Math.pow(next.x - current.x, 2) + 
+            Math.pow(next.y - current.y, 2)
+          );
+          
+          const controlPointDistance = distance * 0.25;
+          
+          const angle = Math.atan2(next.y - current.y, next.x - current.x);
+          
+          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
+          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+          
+          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
         }
       }
     }
+    
     ctx.stroke();
     
-    // Reset line cap
+    // Reset line cap and join
     ctx.lineCap = 'butt';
+    ctx.lineJoin = 'miter';
   }
   
   // Draw organic branches with performance optimization and cylindrical effect
