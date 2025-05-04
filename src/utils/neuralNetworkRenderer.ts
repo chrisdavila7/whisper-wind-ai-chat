@@ -761,3 +761,320 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
         } 
         else {
+          // Middle segments: Use midpoint-to-midpoint curves with proper control points
+          const mid1 = {
+            x: (path[i-1].x + current.x) / 2,
+            y: (path[i-1].y + current.y) / 2
+          };
+          
+          const mid2 = {
+            x: (current.x + next.x) / 2,
+            y: (current.y + next.y) / 2
+          };
+          
+          // Use control points that follow the direction of the curve for smoother bends
+          const cpX = current.x;
+          const cpY = current.y;
+          
+          ctx.quadraticCurveTo(cpX, cpY, mid2.x, mid2.y);
+        }
+      }
+      
+      ctx.stroke();
+      
+      // STEP 3: Draw overlay effects for cylindrical appearance
+      if (!isLowPerformance) {
+        // Highlight side (thin bright line)
+        ctx.lineWidth = width * cylindricalEffect.highlightWidth;
+        ctx.strokeStyle = cylindricalEffect.highlightColor;
+        ctx.beginPath();
+        
+        // Use the same path drawing logic
+        if (path.length === 2) {
+          ctx.moveTo(path[0].x, path[0].y);
+          ctx.lineTo(path[1].x, path[1].y);
+        } 
+        else if (path.length === 3) {
+          ctx.moveTo(path[0].x, path[0].y);
+          ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+        }
+        else {
+          // Same complex curve logic as above
+          ctx.moveTo(path[0].x, path[0].y);
+          
+          for (let i = 0; i < path.length - 1; i++) {
+            const current = path[i];
+            const next = path[i + 1];
+            
+            if (i === 0) {
+              if (path.length > 2) {
+                const midPoint = {
+                  x: (current.x + next.x) / 2,
+                  y: (current.y + next.y) / 2
+                };
+                ctx.quadraticCurveTo(
+                  current.x + (next.x - current.x) * 0.5,
+                  current.y + (next.y - current.y) * 0.5,
+                  midPoint.x, midPoint.y
+                );
+              }
+            } 
+            else if (i === path.length - 2) {
+              ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+            } 
+            else {
+              const mid1 = {
+                x: (path[i-1].x + current.x) / 2,
+                y: (path[i-1].y + current.y) / 2
+              };
+              
+              const mid2 = {
+                x: (current.x + next.x) / 2,
+                y: (current.y + next.y) / 2
+              };
+              
+              const cpX = current.x;
+              const cpY = current.y;
+              
+              ctx.quadraticCurveTo(cpX, cpY, mid2.x, mid2.y);
+            }
+          }
+        }
+        
+        ctx.stroke();
+        
+        // Shadow side (thin dark line)
+        ctx.lineWidth = width * cylindricalEffect.shadowWidth;
+        ctx.strokeStyle = cylindricalEffect.shadowColor;
+        ctx.beginPath();
+        
+        // Use the same path drawing logic again
+        if (path.length === 2) {
+          ctx.moveTo(path[0].x, path[0].y);
+          ctx.lineTo(path[1].x, path[1].y);
+        } 
+        else if (path.length === 3) {
+          ctx.moveTo(path[0].x, path[0].y);
+          ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+        }
+        else {
+          // Same complex curve logic as above
+          ctx.moveTo(path[0].x, path[0].y);
+          
+          for (let i = 0; i < path.length - 1; i++) {
+            const current = path[i];
+            const next = path[i + 1];
+            
+            if (i === 0) {
+              if (path.length > 2) {
+                const midPoint = {
+                  x: (current.x + next.x) / 2,
+                  y: (current.y + next.y) / 2
+                };
+                ctx.quadraticCurveTo(
+                  current.x + (next.x - current.x) * 0.5,
+                  current.y + (next.y - current.y) * 0.5,
+                  midPoint.x, midPoint.y
+                );
+              }
+            } 
+            else if (i === path.length - 2) {
+              ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+            } 
+            else {
+              const mid1 = {
+                x: (path[i-1].x + current.x) / 2,
+                y: (path[i-1].y + current.y) / 2
+              };
+              
+              const mid2 = {
+                x: (current.x + next.x) / 2,
+                y: (current.y + next.y) / 2
+              };
+              
+              const cpX = current.x;
+              const cpY = current.y;
+              
+              ctx.quadraticCurveTo(cpX, cpY, mid2.x, mid2.y);
+            }
+          }
+        }
+        
+        ctx.stroke();
+      }
+    }
+  }
+  
+  // Get position along a curved path defined by control points
+  function getPositionAlongPath(conn: Connection, t: number): Point {
+    const { source, target, controlPoints } = conn;
+    
+    // Linear interpolation for straight lines (0 control points) or t at extremes
+    if (controlPoints.length === 0 || t <= 0) {
+      return { x: source.x, y: source.y };
+    }
+    
+    if (t >= 1) {
+      return { x: target.x, y: target.y };
+    }
+    
+    // Quadratic bezier for 1 control point
+    if (controlPoints.length === 1) {
+      const cp = controlPoints[0];
+      const x = Math.pow(1 - t, 2) * source.x + 2 * (1 - t) * t * cp.x + Math.pow(t, 2) * target.x;
+      const y = Math.pow(1 - t, 2) * source.y + 2 * (1 - t) * t * cp.y + Math.pow(t, 2) * target.y;
+      return { x, y };
+    }
+    
+    // For multiple control points, use De Casteljau's algorithm
+    // to calculate a point on the bezier curve defined by these points
+    const points = [
+      { x: source.x, y: source.y },
+      ...controlPoints,
+      { x: target.x, y: target.y }
+    ];
+    
+    // Apply De Casteljau's algorithm iteratively until we get one point
+    return deCasteljau(points, t);
+  }
+  
+  // Implementation of De Casteljau's algorithm for bezier curves
+  function deCasteljau(points: Point[], t: number): Point {
+    if (points.length === 1) {
+      return points[0];
+    }
+    
+    const newPoints: Point[] = [];
+    for (let i = 0; i < points.length - 1; i++) {
+      newPoints.push({
+        x: (1 - t) * points[i].x + t * points[i + 1].x,
+        y: (1 - t) * points[i].y + t * points[i + 1].y
+      });
+    }
+    
+    return deCasteljau(newPoints, t);
+  }
+  
+  function drawBranches(now: number) {
+    neurons.forEach(neuron => {
+      if (!isWithinExtendedViewport(neuron.x, neuron.y, config.viewportMargin * 3)) {
+        return; // Skip rendering branches for off-screen neurons
+      }
+      
+      neuron.branches.forEach(branch => {
+        // Calculate points along the branch's curve
+        const points: Point[] = [
+          { x: branch.startX, y: branch.startY },
+          ...branch.controlPoints
+        ];
+        
+        // Draw cylindrical branch with glow effect
+        drawCylindricalPath(points, branch.width, branch.flowPhase + now * branch.flowSpeed);
+      });
+    });
+  }
+  
+  function drawConnections(now: number) {
+    neurons.forEach(neuron => {
+      // Skip if the neuron is way off screen with margin
+      if (!isWithinExtendedViewport(neuron.x, neuron.y, config.viewportMargin * 2)) {
+        return;
+      }
+      
+      neuron.connections.forEach(connection => {
+        // Skip if end point is also out of view
+        if (!isWithinExtendedViewport(connection.target.x, connection.target.y, config.viewportMargin * 2)) {
+          return;
+        }
+        
+        // Collect points along connection's curve
+        const points: Point[] = [
+          { x: connection.source.x, y: connection.source.y },
+          ...connection.controlPoints,
+          { x: connection.target.x, y: connection.target.y }
+        ];
+        
+        // Draw cylindrical connection with animated glow based on flow phase
+        drawCylindricalPath(points, connection.width, connection.flowPhase + now * connection.flowSpeed);
+      });
+    });
+  }
+  
+  function pulse(timestamp: number) {
+    // Only pulse periodically
+    if (timestamp - lastPulseTime < config.pulseInterval) {
+      return;
+    }
+    
+    // Find visible neurons for pulsing
+    const visibleNeurons = neurons.filter(n => 
+      isWithinExtendedViewport(n.x, n.y, config.viewportMargin)
+    );
+    
+    if (visibleNeurons.length === 0) return;
+    
+    // Select a random visible neuron to pulse
+    const neuronToPulse = visibleNeurons[
+      Math.floor(Math.random() * visibleNeurons.length)
+    ];
+    
+    neuronToPulse.pulseStrength = 1; // Start the pulse effect
+    lastPulseTime = timestamp; // Update the last pulse time
+  }
+  
+  function animate(timestamp: number) {
+    // Handle first frame case
+    if (!lastFrameTime) lastFrameTime = timestamp;
+    
+    // Clear the canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Optional: Fill with background color first
+    ctx.fillStyle = config.backgroundColor;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Measure and update FPS
+    updateFps(timestamp);
+    
+    // Draw all connections first (they're drawn behind neurons)
+    drawConnections(timestamp);
+    
+    // Draw all branches
+    drawBranches(timestamp);
+    
+    // Draw all neurons
+    neurons.forEach(drawNeuron);
+    
+    // Try periodic pulsing
+    pulse(timestamp);
+    
+    // Update and draw traveling nodes
+    updateAndDrawTravelingNodes(timestamp);
+    
+    // Update lastFrameTime for next animation frame
+    lastFrameTime = timestamp;
+    
+    // Request next frame
+    animationFrameId = requestAnimationFrame(animate);
+  }
+  
+  // Initialize neural network
+  function initializeNetwork() {
+    initializeNeurons();
+    createConnections();
+    createBranches();
+    initializeTravelingNodes();
+    
+    // Start the animation loop
+    animationFrameId = requestAnimationFrame(animate);
+  }
+  
+  // Initialize the neural network
+  initializeNetwork();
+  
+  // Return cleanup function
+  return function cleanup() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+  };
+}
