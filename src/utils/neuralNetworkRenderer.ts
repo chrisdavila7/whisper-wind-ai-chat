@@ -9,11 +9,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.3)' // Blue base for dark mode
-        : 'rgba(59, 130, 246, 0.2)', // Slightly more visible blue for light mode
+        ? 'rgba(59, 130, 246, 0.007)' // Blue base for dark mode
+        : 'rgba(59, 130, 246, 0.006)', // Slightly more visible blue for light mode
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.5)' // Light blue core for dark mode
-        : 'rgba(29, 78, 216, 0.45)' // Darker blue core for light mode for better contrast
+        ? 'rgba(219, 234, 254, 0.009)' // Light blue core for dark mode
+        : 'rgba(29, 78, 216, 0.0085)' // Darker blue core for light mode for better contrast
     },
     connectionColor: theme === 'dark' 
       ? 'rgba(59, 130, 246, 0.4)' 
