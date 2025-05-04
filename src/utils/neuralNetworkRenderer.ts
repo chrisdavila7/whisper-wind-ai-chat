@@ -29,7 +29,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     branchLength: { min: 30, max: 120 },
     
     // Animation settings
-    flowSpeed: 0.00007,
+    flowSpeed: 0.000007,
     pulseInterval: 3000, // Increased interval for slower pace
     glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
     neuronSize: { min: 3, max: 8 },
@@ -37,7 +37,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
     // Using consistent speeds instead of random values for smoother animation
-    travelingNodeSpeedFactor: 0.004, // Fixed speed factor (distance-independent)
+    travelingNodeSpeedFactor: 0.0004, // Fixed speed factor (distance-independent)
     travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
     nodeSamples: 1000, // How many points to sample for precise path following
     
