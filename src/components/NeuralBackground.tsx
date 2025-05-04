@@ -66,15 +66,20 @@ const NeuralBackground = () => {
         style={{
           background: theme === 'dark' 
             ? 'linear-gradient(172deg, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117, #0d1117, #0d1117)'
-            : 'linear-gradient(172deg, #accbee 10%, #e7f0fd 30%, #d3e4fd 50%, #f1f0fb 70%, #ffffff 90%)',
+            : 'linear-gradient(172deg, #33C3F0 0%, #accbee 20%, #e7f0fd 40%, #d3e4fd 60%, #f1f0fb 80%, #FFFFFF 100%)',
           backgroundSize: '100% 100%',
-          opacity: 0.7,
+          // Increased opacity for better visibility in light mode
+          opacity: theme === 'dark' ? 0.7 : 0.85,
         }}
       />
       <canvas 
         ref={canvasRef}
         className="w-full h-full"
-        style={{ pointerEvents: 'none', opacity: 0.8 }}
+        style={{ 
+          pointerEvents: 'none', 
+          // Adjusted opacity to complement the background gradient
+          opacity: theme === 'dark' ? 0.8 : 0.7
+        }}
       />
     </div>
   );
