@@ -9,11 +9,11 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.7)' // Blue base for dark mode
-        : 'rgba(59, 130, 246, 0.6)', // Slightly more visible blue for light mode
+        ? 'rgba(59, 130, 246, 0.5)' // Blue base for dark mode
+        : 'rgba(59, 130, 246, 0.4)', // Slightly more visible blue for light mode
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.9)' // Light blue core for dark mode
-        : 'rgba(29, 78, 216, 0.85)' // Darker blue core for light mode for better contrast
+        ? 'rgba(219, 234, 254, 0.7)' // Light blue core for dark mode
+        : 'rgba(29, 78, 216, 0.65)' // Darker blue core for light mode for better contrast
     },
     connectionColor: theme === 'dark' 
       ? 'rgba(59, 130, 246, 0.4)' 
@@ -44,7 +44,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
     // Using consistent speeds instead of random values for smoother animation
-    travelingNodeSpeedFactor: 0.0002, // Fixed speed factor (distance-independent)
+    travelingNodeSpeedFactor: 0.002, // Fixed speed factor (distance-independent)
     travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
     nodeSamples: 1000, // How many points to sample for precise path following
     
