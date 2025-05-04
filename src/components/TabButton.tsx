@@ -12,7 +12,7 @@ const TabButton: React.FC<TabButtonProps> = ({
   isOpen,
   className
 }) => {
-  return <button onClick={onClick} className={cn("absolute top-4 left-4 z-0 flex items-center justify-center my-[825px] px-3.5 py-1.5 rounded-l-none bg-ai-primary text-white transition-transform duration-300 shadow-md font-merriweather", isOpen ? "-translate-x-full" : "translate-x-0", className)} aria-label="Toggle side panel">
+  return <button onClick={onClick} className={cn("absolute top-4 left-4 z-30 flex items-center justify-center mz-20 my-[825px] px-3.5 py-1.5 rounded-l-none bg-ai-primary text-white transition-transform duration-300 shadow-md font-merriweather", isOpen ? "-translate-x-full" : "translate-x-0", className)} aria-label="Toggle side panel">
       <Menu className="h-5 w-5 mx-0 ml-[-4px]" />
     </button>;
 };
