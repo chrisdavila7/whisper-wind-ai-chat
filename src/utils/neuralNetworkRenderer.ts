@@ -27,6 +27,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       shadowWidth: 0.3,     // Percentage of the total width for shadow
     },
     
+    // New blur effect settings for connectors and branches
+    blurEffect: {
+      enabled: true,
+      blurAmount: 3,  // Subtle blur amount in pixels
+      glowColor: theme === 'dark' ? 'rgba(59, 130, 246, 0.12)' : 'rgba(59, 130, 246, 0.18)', // Subtle glow color
+      glowWidth: 1.2, // How much wider the glow is compared to the line
+    },
+    
     // Organic parameters with increased spacing (35% more)
     neuronCount: 20, // Reduced count for less visual clutter
     minConnections: 2, // Reduced for less clutter
@@ -177,7 +185,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
   }
   
-  // Initialize traveling nodes with performance considerations
   function initializeTravelingNodes() {
     travelingNodes = [];
     
@@ -312,9 +319,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           startY: neuron.y,
           controlPoints,
           length,
-          // Increased width by 2x (from 0.5-3 range to 1-6 range)
-          width: (1 + Math.random() * 6), // NOTE: 2x increase from previous (0.5 + Math.random() * 3)
-          // Updated to match connection flow animation instead of spin animation
+          width: (1 + Math.random() * 6), 
           flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.8),
           flowPhase: Math.random() * Math.PI * 2
         });
@@ -398,8 +403,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               id: neuron.connections.length,
               source: neuron,
               target: target,
-              // Increased width by 2x (from 0.5-6 range to 1-12 range)
-              width: 1 + Math.random() * 12, // NOTE: 2x increase from previous (0.5 + Math.random() * 6)
+              width: 1 + Math.random() * 12, 
               controlPoints,
               flowSpeed: config.flowSpeed * (0.7 + Math.random() * 7),
               flowPhase: Math.random() * Math.PI * 2
@@ -441,8 +445,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             id: neuron.connections.length,
             source: neuron,
             target: target,
-            // Increased width by 2x (from 0.5-4 range to 1-8 range)
-            width: 1 + Math.random() * 8, // NOTE: 2x increase from previous (0.5 + Math.random() * 4)
+            width: 1 + Math.random() * 8, 
             controlPoints,
             flowSpeed: config.flowSpeed * (0.7 + Math.random() * 5),
             flowPhase: Math.random() * Math.PI * 2
@@ -620,15 +623,96 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
    * Draw a path with cylindrical effect (highlighting and shadows)
    * Used for both branches and connections
    * Enhanced to ensure all curves are perfectly smooth with no sharp angles
+   * Now with blur effect for subtle glow
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
     
-    const { cylindricalEffect } = config;
+    const { cylindricalEffect, blurEffect } = config;
     
-    // Enhanced approach for smoother curve rendering that eliminates all sharp angles
+    // Apply blur effect if enabled and performance is good
+    const applyBlur = blurEffect.enabled && !isLowPerformance;
     
-    // Draw the main cylindrical path with improved smoothing
+    // STEP 1: Draw the glow layer first (if blur effect is enabled)
+    if (applyBlur) {
+      // Save the current context state to restore later
+      ctx.save();
+      
+      // Set blur effect using shadow - more efficient than filter:blur
+      ctx.shadowBlur = blurEffect.blurAmount;
+      ctx.shadowColor = blurEffect.glowColor;
+      
+      // Draw wider path for glow effect
+      ctx.lineWidth = width * blurEffect.glowWidth;
+      ctx.strokeStyle = blurEffect.glowColor;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      
+      // Draw the same path with blur
+      ctx.beginPath();
+      
+      // Use the same path drawing logic as the main path
+      if (path.length === 2) {
+        ctx.moveTo(path[0].x, path[0].y);
+        ctx.lineTo(path[1].x, path[1].y);
+      } 
+      else if (path.length === 3) {
+        ctx.moveTo(path[0].x, path[0].y);
+        ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+      }
+      else {
+        ctx.moveTo(path[0].x, path[0].y);
+        
+        for (let i = 0; i < path.length - 1; i++) {
+          const current = path[i];
+          const next = path[i + 1];
+          
+          if (i === 0) {
+            if (path.length > 2) {
+              const midPoint = {
+                x: (current.x + next.x) / 2,
+                y: (current.y + next.y) / 2
+              };
+              ctx.quadraticCurveTo(
+                current.x + (next.x - current.x) * 0.5,
+                current.y + (next.y - current.y) * 0.5,
+                midPoint.x, midPoint.y
+              );
+            }
+          } 
+          else if (i === path.length - 2) {
+            ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
+          } 
+          else {
+            const mid2 = {
+              x: (current.x + next.x) / 2,
+              y: (current.y + next.y) / 2
+            };
+            
+            const distance = Math.sqrt(
+              Math.pow(next.x - current.x, 2) + 
+              Math.pow(next.y - current.y, 2)
+            );
+            
+            const controlPointDistance = distance * 0.25;
+            
+            const angle = Math.atan2(next.y - current.y, next.x - current.x);
+            
+            const cp1x = current.x + Math.cos(angle) * controlPointDistance;
+            const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+            
+            ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
+          }
+        }
+      }
+      
+      ctx.stroke();
+      
+      // Restore context to remove shadow/blur effect for subsequent drawings
+      ctx.restore();
+    }
+    
+    // STEP 2: Draw the main cylindrical path with improved smoothing
     ctx.lineWidth = width;
     ctx.strokeStyle = config.connectionColor;
     ctx.lineCap = 'round';  // Rounded ends for smoother appearance
@@ -677,402 +761,3 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
         } 
         else {
-          // Middle segments: Calculate control points for bezier curve
-          // Use midpoints between points as anchors, and actual points as control points
-          // This creates a naturally smooth curve with no sharp angles
-          const mid1 = {
-            x: (path[i-1].x + current.x) / 2,
-            y: (path[i-1].y + current.y) / 2
-          };
-          
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
-          
-          // Calculate control point distance - affects curve smoothness
-          // Longer distance = smoother but less accurate curves
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
-          );
-          
-          const controlPointDistance = distance * 0.25; // 25% of segment length
-          
-          // Calculate angle between points
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
-          
-          // Calculate offset control points for natural curves
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
-          
-          // Add bezier curve segment
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
-        }
-      }
-    }
-    
-    ctx.stroke();
-    
-    // Skip complex effects in low performance mode
-    if (isLowPerformance) return;
-    
-    // Draw highlight (top of cylinder) with same smooth curve approach
-    ctx.lineWidth = width * cylindricalEffect.highlightWidth;
-    ctx.strokeStyle = cylindricalEffect.highlightColor;
-    
-    ctx.beginPath();
-    // Apply the same enhanced curve drawing logic for the highlight
-    if (path.length === 2) {
-      ctx.moveTo(path[0].x, path[0].y);
-      ctx.lineTo(path[1].x, path[1].y);
-    } 
-    else if (path.length === 3) {
-      ctx.moveTo(path[0].x, path[0].y);
-      ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
-    }
-    else {
-      ctx.moveTo(path[0].x, path[0].y);
-      
-      for (let i = 0; i < path.length - 1; i++) {
-        const current = path[i];
-        const next = path[i + 1];
-        
-        if (i === 0) {
-          if (path.length > 2) {
-            const midPoint = {
-              x: (current.x + next.x) / 2,
-              y: (current.y + next.y) / 2
-            };
-            ctx.quadraticCurveTo(
-              current.x + (next.x - current.x) * 0.5,
-              current.y + (next.y - current.y) * 0.5,
-              midPoint.x, midPoint.y
-            );
-          }
-        } 
-        else if (i === path.length - 2) {
-          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
-        } 
-        else {
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
-          
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
-          );
-          
-          const controlPointDistance = distance * 0.25;
-          
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
-          
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
-          
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
-        }
-      }
-    }
-    
-    ctx.stroke();
-    
-    // Draw shadow (bottom of cylinder) with same smooth curve approach
-    // Slight offset for 3D effect while maintaining the same smooth curvature
-    ctx.lineWidth = width * cylindricalEffect.shadowWidth;
-    ctx.strokeStyle = cylindricalEffect.shadowColor;
-    
-    // Create shadow path with slight offset for 3D effect
-    const shadowPath = path.map(p => ({
-      x: p.x + width * 0.2,
-      y: p.y + width * 0.2
-    }));
-    
-    ctx.beginPath();
-    // Apply the same enhanced curve drawing logic for the shadow
-    if (shadowPath.length === 2) {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
-      ctx.lineTo(shadowPath[1].x, shadowPath[1].y);
-    } 
-    else if (shadowPath.length === 3) {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
-      ctx.quadraticCurveTo(shadowPath[1].x, shadowPath[1].y, shadowPath[2].x, shadowPath[2].y);
-    }
-    else {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
-      
-      for (let i = 0; i < shadowPath.length - 1; i++) {
-        const current = shadowPath[i];
-        const next = shadowPath[i + 1];
-        
-        if (i === 0) {
-          if (shadowPath.length > 2) {
-            const midPoint = {
-              x: (current.x + next.x) / 2,
-              y: (current.y + next.y) / 2
-            };
-            ctx.quadraticCurveTo(
-              current.x + (next.x - current.x) * 0.5,
-              current.y + (next.y - current.y) * 0.5,
-              midPoint.x, midPoint.y
-            );
-          }
-        } 
-        else if (i === shadowPath.length - 2) {
-          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
-        } 
-        else {
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
-          
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
-          );
-          
-          const controlPointDistance = distance * 0.25;
-          
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
-          
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
-          
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
-        }
-      }
-    }
-    
-    ctx.stroke();
-    
-    // Reset line cap and join
-    ctx.lineCap = 'butt';
-    ctx.lineJoin = 'miter';
-  }
-  
-  // Draw organic branches with performance optimization and cylindrical effect
-  function drawBranches(neuron: Neuron, timestamp: number) {
-    // Skip if neuron is not within extended viewport
-    if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
-      return;
-    }
-    
-    neuron.branches.forEach(branch => {
-      // Update flow phase using same animation as connections
-      branch.flowPhase += branch.flowSpeed;
-      if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
-      
-      // Prepare path points for cylindrical drawing with smooth curvature
-      const pathPoints: Point[] = [{ x: neuron.x, y: neuron.y }]; // Start from neuron center
-      
-      // Add control points to maintain organic shape of branches
-      branch.controlPoints.forEach(point => {
-        pathPoints.push(point);
-      });
-      
-      // Add endpoint with subtle flow animation (matching connection style)
-      const endPoint = {
-        // Animate endpoint with subtle waviness instead of circular motion
-        x: branch.controlPoints.length > 0 
-          ? branch.controlPoints[branch.controlPoints.length - 1].x + Math.cos(branch.flowPhase * 0.2) * branch.width * 2
-          : branch.startX + Math.cos(branch.flowPhase * 0.2) * branch.length * 0.05 + branch.length * 0.95,
-        y: branch.controlPoints.length > 0
-          ? branch.controlPoints[branch.controlPoints.length - 1].y + Math.sin(branch.flowPhase * 0.2) * branch.width * 2
-          : branch.startY + Math.sin(branch.flowPhase * 0.2) * branch.length * 0.05
-      };
-      pathPoints.push(endPoint);
-      
-      // Draw using the cylindrical path function with pulsing width
-      const pulsingWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
-      drawCylindricalPath(pathPoints, pulsingWidth, branch.flowPhase);
-    });
-  }
-  
-  // Draw a connection with organic, flowing path, with performance optimizations and cylindrical effect
-  function drawConnection(connection: Connection, timestamp: number) {
-    const { source, target } = connection;
-    
-    // Skip if both endpoints are outside the extended viewport
-    if (!isWithinExtendedViewport(source.x, source.y) && 
-        !isWithinExtendedViewport(target.x, target.y)) {
-      return;
-    }
-    
-    // Skip if connection distance exceeds maximum allowed distance
-    const connectionDistance = calculateDistance(
-      source.x, source.y, target.x, target.y
-    );
-    if (connectionDistance > config.maxDistanceForAnimation * 1.5) {
-      return;
-    }
-    
-    // Update flow phase - continue animation even for offscreen connections
-    connection.flowPhase += connection.flowSpeed;
-    if (connection.flowPhase > Math.PI * 2) connection.flowPhase -= Math.PI * 2;
-    
-    const { width, controlPoints } = connection;
-    
-    // Prepare path points for cylindrical drawing with smooth curvature
-    const pathPoints: Point[] = [{ x: source.x, y: source.y }];
-    
-    if (controlPoints.length === 0) {
-      // Simple line
-      pathPoints.push({ x: target.x, y: target.y });
-    } else {
-      // Add control points with slight animation for flowing effect
-      // Calculate animated control points, preserving the original curvature
-      controlPoints.forEach((point, i) => {
-        // Reduce movement amplitude if in low performance mode
-        const animationScale = isLowPerformance ? 0.5 : 1.5;
-        const offsetX = Math.sin(connection.flowPhase + i * 0.7) * width * animationScale;
-        const offsetY = Math.cos(connection.flowPhase + i * 0.7) * width * animationScale;
-        
-        // Add animated control point to path, preserving the original organic curve
-        pathPoints.push({
-          x: point.x + offsetX,
-          y: point.y + offsetY
-        });
-      });
-      
-      // Add target point
-      pathPoints.push({ x: target.x, y: target.y });
-    }
-    
-    // Draw using the cylindrical path function with pulsing width
-    const pulsingWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2);
-    drawCylindricalPath(pathPoints, pulsingWidth, connection.flowPhase);
-  }
-  
-  /**
-   * Calculate position along a bezier curve with multiple control points
-   * Enhanced for more accurate path following
-   */
-  function getPositionAlongPath(connection: Connection, t: number): Point {
-    // Clamp t between 0 and 1 to prevent out-of-bounds errors
-    t = Math.max(0, Math.min(1, t));
-    
-    const { source, target, controlPoints } = connection;
-    
-    if (controlPoints.length === 0) {
-      // Linear interpolation
-      return {
-        x: source.x + (target.x - source.x) * t,
-        y: source.y + (target.y - source.y) * t
-      };
-    } else if (controlPoints.length === 1) {
-      // Quadratic bezier
-      const mt = 1 - t;
-      return {
-        x: mt * mt * source.x + 2 * mt * t * controlPoints[0].x + t * t * target.x,
-        y: mt * mt * source.y + 2 * mt * t * controlPoints[0].y + t * t * target.y
-      };
-    } else if (controlPoints.length === 2) {
-      // Cubic bezier
-      const mt = 1 - t;
-      return {
-        x: mt * mt * mt * source.x + 3 * mt * mt * t * controlPoints[0].x + 
-           3 * mt * t * t * controlPoints[1].x + t * t * t * target.x,
-        y: mt * mt * mt * source.y + 3 * mt * mt * t * controlPoints[0].y + 
-           3 * mt * t * t * controlPoints[1].y + t * t * t * target.y
-      };
-    } else {
-      // For paths with more control points, use De Casteljau's algorithm
-      // This is a simplified approach for the complex path
-      const segment = Math.min(Math.floor(t * controlPoints.length), controlPoints.length - 1);
-      const segmentT = (t * controlPoints.length) % 1;
-      
-      const p0 = segment === 0 ? source : controlPoints[segment - 1];
-      const p1 = controlPoints[segment];
-      const p2 = segment === controlPoints.length - 1 ? target : controlPoints[segment + 1];
-      
-      // Quadratic bezier within the segment
-      const mt = 1 - segmentT;
-      return {
-        x: mt * mt * p0.x + 2 * mt * segmentT * p1.x + segmentT * segmentT * p2.x,
-        y: mt * mt * p0.y + 2 * mt * segmentT * p1.y + segmentT * segmentT * p2.y
-      };
-    }
-  }
-  
-  // Main render function with performance monitoring and optimization
-  function render(timestamp: number) {
-    // Update FPS counter and performance metrics
-    updateFps(timestamp);
-    
-    // First completely clear the canvas to prevent trail artifacts between theme changes
-    ctx.fillStyle = config.backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Now apply the semi-transparent overlay for the trail effect
-    // Use a more transparent effect if performance is low
-    ctx.fillStyle = theme === 'dark' 
-      ? `rgba(2, 8, 23, ${isLowPerformance ? 0.5 : 0.3})` // Adjust transparency based on performance
-      : `rgba(255, 255, 255, ${isLowPerformance ? 0.5 : 0.3})`;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Draw connections
-    neurons.forEach(neuron => {
-      // Draw branches first, so they appear behind
-      drawBranches(neuron, timestamp);
-      
-      // Draw connections only if at least one end is in viewport
-      neuron.connections.forEach(connection => {
-        drawConnection(connection, timestamp);
-      });
-    });
-    
-    // Update and draw traveling nodes with timestamp for delta time calculation
-    updateAndDrawTravelingNodes(timestamp);
-    
-    // Draw neurons on top
-    neurons.forEach(drawNeuron);
-    
-    // Apply occasional random pulses to neurons
-    if (timestamp - lastPulseTime > config.pulseInterval) {
-      // Find neurons that are within viewport to pulse
-      const visibleNeurons = neurons.filter(n => isWithinExtendedViewport(n.x, n.y));
-      
-      // Randomly pulse a visible neuron
-      if (visibleNeurons.length > 0) {
-        const randomNeuron = visibleNeurons[Math.floor(Math.random() * visibleNeurons.length)];
-        randomNeuron.pulseStrength = 1;
-      }
-      lastPulseTime = timestamp;
-    }
-    
-    // Update last frame time for next delta calculation
-    lastFrameTime = timestamp;
-    
-    // Continue animation
-    animationFrameId = requestAnimationFrame(render);
-  }
-  
-  // Initialize and start animation
-  function init() {
-    // Fully clear the canvas with the current theme background color first
-    ctx.fillStyle = config.backgroundColor;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Initialize FPS counter
-    lastFpsUpdate = performance.now();
-    frameCount = 0;
-    
-    initializeNeurons();
-    createBranches();
-    createConnections();
-    initializeTravelingNodes();
-    lastFrameTime = performance.now(); // Initialize last frame time
-    animationFrameId = requestAnimationFrame(render);
-  }
-  
-  // Start the animation
-  init();
-  
-  // Return cleanup function
-  return () => {
-    cancelAnimationFrame(animationFrameId);
-  };
-}
