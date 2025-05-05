@@ -40,7 +40,7 @@ const NeuralBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     
     // Clear the canvas completely when theme changes
-    ctx.fillStyle = theme === 'dark' ? '#020817' : '#FFFFFF';
+    ctx.fillStyle = theme === 'dark' ? '#0f172a' : '#FFFFFF'; // Updated to a richer dark blue
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // If we haven't created the animation in the resize function,
@@ -65,11 +65,10 @@ const NeuralBackground = () => {
         className="absolute top-0 left-0 w-full h-full"
         style={{
           background: theme === 'dark' 
-            ? 'linear-gradient(173deg, #ccccff 10%, #ccccff 20%, #ccccff 10%, #0d1117, #0d1117, #0d1117, #0d1117)'
-            : 'linear-gradient(173deg, #33C3F0 10%, #accbee 20%, #e7f0fd 40%, #d3e4fd 60%, #f1f0fb 80%, #f1f0fb 80%, #ffffff 100%)',
+            ? 'linear-gradient(173deg, #1e293b 0%, #0f172a 40%, #020617 100%)' // Modern dark gradient
+            : 'linear-gradient(173deg, #e0f2fe 0%, #f0f9ff 40%, #ffffff 100%)', // Modern light gradient
           backgroundSize: '100% 100%',
-          // Increased opacity for better visibility in light mode
-          opacity: theme === 'dark' ? 0.7 : 0.85,
+          opacity: 1, // Full opacity for better visibility and modern look
         }}
       />
       <canvas 
@@ -77,8 +76,7 @@ const NeuralBackground = () => {
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          // Adjusted opacity to complement the background gradient
-          opacity: theme === 'dark' ? 0.8 : 0.7
+          opacity: 0.8 // Consistent opacity for both themes
         }}
       />
     </div>

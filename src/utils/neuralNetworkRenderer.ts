@@ -1,27 +1,28 @@
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
- * Draws and animates an organic neural network on a canvas
+ * Draws and animates an organic neural network on a canvas with a modern, minimalistic style
  */
 export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
   const config = {
-    backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
+    // Modern color palette
+    backgroundColor: theme === 'dark' ? '#0f172a' : '#FFFFFF', // Rich dark blue / clean white
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.1)' // Keep transparent blue for base
-        : 'rgba(59, 130, 246, 0.9)', // Keep transparent blue for light mode
+        ? 'rgba(99, 102, 241, 0.08)' // Modern indigo with low opacity for base
+        : 'rgba(99, 102, 241, 0.06)', 
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.6)' // INCREASED opacity from 0.3 to 0.6 for better visibility
-        : 'rgba(29, 78, 216, 0.5)'   // INCREASED opacity from 0.25 to 0.5 for better visibility
+        ? 'rgba(165, 180, 252, 0.6)' // Brighter indigo core with good visibility
+        : 'rgba(79, 70, 229, 0.45)'  // Deeper indigo for light mode
     },
     connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.09)' // Keep original transparent color
-      : 'rgba(59, 130, 246, 0.09)', // Keep original transparent color
+      ? 'rgba(99, 102, 241, 0.12)' // Indigo for connections with subtle opacity
+      : 'rgba(99, 102, 241, 0.12)',
     
-    // Keep original semi-transparent cylindrical effect colors
+    // Refined cylindrical effect
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.09)' : 'rgba(190, 227, 248, 0.1)',
+      highlightColor: theme === 'dark' ? 'rgba(165, 180, 252, 0.12)' : 'rgba(165, 180, 252, 0.15)',
       highlightWidth: 0.3,  // Percentage of the total width for highlight
     },
     
@@ -33,14 +34,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     maxBranches: 5,
     branchLength: { min: 30, max: 120 },
     
-    // Animation settings
+    // Animation settings - keep existing values
     flowSpeed: 0.0005,
     pulseInterval: 300000,
     glowIntensity: theme === 'dark' ? 0.7 : 0.5,
     
-    // SIGNIFICANTLY increase core size with larger scaling factor
+    // Maintain the large core size
     neuronSize: { min: 3, max: 8 }, // Keep original outer size
-    neuronCoreScale: 5.0, // INCREASED from 3.0 to 5.0 to make cores 5x bigger
+    neuronCoreScale: 5.0, // Maintain the 5x bigger cores
     
     // Keep traveling node settings
     travelingNodeCount: 7,
@@ -48,7 +49,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     travelingNodeGlowDuration: 8000,
     nodeSamples: 1000,
     
-    // Performance optimization settings
+    // Performance optimization settings - keep existing
     maxDistanceForAnimation: 1500,
     performanceThreshold: 50,
     viewportMargin: 100,
@@ -456,14 +457,14 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Draw a neuron with glow effect
+  // Draw a neuron with modern glow effect
   function drawNeuron(neuron: Neuron) {
     // Performance optimization: Only render neurons that are within viewport or close enough
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
       return; // Skip rendering entirely if too far from view
     }
 
-    // Draw glow if neuron is pulsing
+    // Draw glow if neuron is pulsing - modernized glow effect
     if (neuron.pulseStrength > 0) {
       const glowRadius = neuron.size * 4;
       const glow = ctx.createRadialGradient(
@@ -472,15 +473,16 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       );
       
       const baseAlpha = neuron.pulseStrength * config.glowIntensity;
-      glow.addColorStop(0, `rgba(59, 130, 246, ${baseAlpha})`);
-      glow.addColorStop(1, 'rgba(59, 130, 246, 0)');
+      // Use the modern indigo color for glow
+      glow.addColorStop(0, `rgba(99, 102, 241, ${baseAlpha})`);
+      glow.addColorStop(1, 'rgba(99, 102, 241, 0)');
 
       // Save context state
       ctx.save();
 
-      // Apply blur via shadow
-      ctx.shadowBlur = glowRadius * 1;  // Adjust for stronger/weaker blur
-      ctx.shadowColor = `rgba(59, 130, 246, ${baseAlpha})`;
+      // Apply blur via shadow for a modern soft glow
+      ctx.shadowBlur = glowRadius * 1.2;  // Slightly increased blur for softer edges
+      ctx.shadowColor = `rgba(99, 102, 241, ${baseAlpha})`;
 
       ctx.fillStyle = glow;
       ctx.beginPath();
@@ -491,24 +493,23 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ctx.restore();
     }
     
-    // Draw neuron body with original size
+    // Draw neuron body with original size but modern color
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw inner core - now 5x bigger relative to the neuron's normal proportion
-    // The core will now fill almost the entire neuron body
+    // Draw inner core - maintain 5x bigger relative to the neuron's normal proportion
     const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 2);
     
-    // ADDED: Draw a slightly larger halo around the core for more prominence
+    // Draw a subtle halo around the core for a modern luminous effect
     const haloSize = coreSize * 1.15;
-    ctx.fillStyle = 'rgba(219, 234, 254, 0.2)'; // Very subtle halo
+    ctx.fillStyle = theme === 'dark' ? 'rgba(165, 180, 252, 0.2)' : 'rgba(79, 70, 229, 0.15)';
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, haloSize, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw the core with increased opacity for more visibility
+    // Draw the core with modern color
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, coreSize, 0, Math.PI * 2);
@@ -646,10 +647,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * IMPROVED: Draw a path with ultra-smooth curves using advanced techniques
-   * This is a completely rewritten function that addresses visual artifacts
-   * by using better curve interpolation and anti-aliasing techniques
-   * MODIFIED: Reverted back to semi-transparent colors for connections
+   * MODERNIZED: Draw a path with ultra-smooth curves using advanced techniques
+   * Updated with more minimalist color palette while maintaining the same functionality
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
@@ -663,7 +662,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // 1. MAIN PATH - Draw with slightly increased width to avoid gaps
     ctx.lineWidth = width * 1.02; // Slightly wider to prevent hairline cracks
-    ctx.strokeStyle = config.connectionColor; // Reverted to semi-transparent color
+    ctx.strokeStyle = config.connectionColor; // Modern semi-transparent color
     
     // Begin main path
     ctx.beginPath();
@@ -748,9 +747,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Skip complex effects in low performance mode
     if (isLowPerformance) return;
     
-    // 2. HIGHLIGHT LAYER - Draw cylindrical highlights
+    // 2. HIGHLIGHT LAYER - Draw cylindrical highlights with modern color
     ctx.lineWidth = width * cylindricalEffect.highlightWidth;
-    ctx.strokeStyle = cylindricalEffect.highlightColor; // Reverted to semi-transparent color
+    ctx.strokeStyle = cylindricalEffect.highlightColor; // Modern highlight color
     
     // Apply slight vertical offset for top highlight
     const highlightOffset = width * 0.15;
@@ -1006,9 +1005,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Now apply the semi-transparent overlay for the trail effect
-    // Use a more transparent effect if performance is low
+    // Use a more modern, cleaner transparency effect
     ctx.fillStyle = theme === 'dark' 
-      ? `rgba(2, 8, 23, ${isLowPerformance ? 0.5 : 0.3})` // Adjust transparency based on performance
+      ? `rgba(15, 23, 42, ${isLowPerformance ? 0.5 : 0.3})` // Modern dark blue
       : `rgba(255, 255, 255, ${isLowPerformance ? 0.5 : 0.3})`;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
