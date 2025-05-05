@@ -124,6 +124,7 @@ export function useChat() {
     error,
     sendMessage,
     stopStreaming,
-    clearMessages
+    clearMessages,
+    setMessages // Expose setMessages for loading from database
   };
 }
