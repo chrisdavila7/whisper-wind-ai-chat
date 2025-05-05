@@ -499,7 +499,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // Draw inner core - now 5x bigger relative to the neuron's normal proportion
     // The core will now fill almost the entire neuron body
-    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.5);
+    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 2);
     
     // ADDED: Draw a slightly larger halo around the core for more prominence
     const haloSize = coreSize * 1.15;
