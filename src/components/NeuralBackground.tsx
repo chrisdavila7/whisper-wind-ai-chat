@@ -40,7 +40,8 @@ const NeuralBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     
     // Clear the canvas completely when theme changes
-    ctx.fillStyle = theme === 'dark' ? '#1A1F2C' : '#F6F7F9'; // Flatter background colors
+    // Use flatter background colors that blend well with the content
+    ctx.fillStyle = theme === 'dark' ? '#121420' : '#f8f9fa'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // If we haven't created the animation in the resize function,
@@ -65,8 +66,8 @@ const NeuralBackground = () => {
         className="absolute top-0 left-0 w-full h-full"
         style={{
           background: theme === 'dark' 
-            ? '#1A1F2C' // Flat dark background
-            : '#F6F7F9', // Flat light background
+            ? '#121420' // Flat dark background
+            : '#f8f9fa', // Flat light background
           opacity: 1,
         }}
       />
@@ -75,7 +76,7 @@ const NeuralBackground = () => {
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 0.7 // Slightly reduced opacity for a more subtle look
+          opacity: 0.8 // Slightly increased opacity for better visibility
         }}
       />
     </div>

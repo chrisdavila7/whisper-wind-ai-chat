@@ -6,24 +6,25 @@ import { Neuron, Connection, Branch, Point } from '../types/neural';
 export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
   const config = {
-    // Flat, modern color palette
-    backgroundColor: theme === 'dark' ? '#1A1F2C' : '#F6F7F9',
+    // Flat, modern color palette with improved transparency
+    backgroundColor: theme === 'dark' ? '#121420' : '#f8f9fa',
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(129, 140, 248, 0.06)' // Flat indigo with low opacity for base
-        : 'rgba(129, 140, 248, 0.04)', 
+        ? 'rgba(129, 140, 248, 0.04)' // Very subtle base for flat look
+        : 'rgba(129, 140, 248, 0.02)', 
       core: theme === 'dark'
-        ? 'rgba(129, 140, 248, 0.5)' // Flat indigo core with good visibility
-        : 'rgba(99, 102, 241, 0.4)'  // Slightly muted for light mode
+        ? 'rgba(129, 140, 248, 0.35)' // Reduced opacity for flatter look
+        : 'rgba(99, 102, 241, 0.3)'   // Reduced opacity for light mode
     },
+    // Significantly reduced connection opacity to prevent visible overlaps
     connectionColor: theme === 'dark' 
-      ? 'rgba(129, 140, 248, 0.15)' // Flat indigo for connections
-      : 'rgba(129, 140, 248, 0.1)',
+      ? 'rgba(129, 140, 248, 0.08)' // Much more transparent for flat look
+      : 'rgba(129, 140, 248, 0.06)',
     
-    // Simplified flat style - removed cylindrical effect
+    // Remove cylindrical effect for flatter appearance
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(129, 140, 248, 0.08)' : 'rgba(129, 140, 248, 0.06)',
-      highlightWidth: 0.25,  // Thinner highlight for a flatter look
+      highlightColor: 'transparent', // Disable highlight for flat appearance
+      highlightWidth: 0,            // No highlight width
     },
     
     // Keep organic parameters with increased spacing
@@ -35,15 +36,15 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     branchLength: { min: 30, max: 120 },
     
     // Animation settings - slightly reduced for a more subtle effect
-    flowSpeed: 0.0004,
+    flowSpeed: 0.0003, // Slightly slower for more subtle flow
     pulseInterval: 300000,
-    glowIntensity: theme === 'dark' ? 0.5 : 0.4, // Reduced glow for flatter look
+    glowIntensity: theme === 'dark' ? 0.4 : 0.3, // Further reduced glow for flatter look
     
     // Maintain the large core size
     neuronSize: { min: 3, max: 8 }, // Keep original outer size
     neuronCoreScale: 5.0, // Maintain the 5x bigger cores
     
-    // Keep traveling node settings
+    // Keep traveling node settings but make them more subtle
     travelingNodeCount: 7,
     travelingNodeSpeedFactor: 0.002,
     travelingNodeGlowDuration: 8000,
@@ -281,7 +282,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Create branches for neurons
+  // Create branches for neurons with reduced opacity
   function createBranches() {
     neurons.forEach(neuron => {
       const branchCount = config.minBranches + Math.floor(Math.random() * (config.maxBranches - config.minBranches + 1));
@@ -315,9 +316,9 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           startY: neuron.y,
           controlPoints,
           length,
-          // Increased width by 2x (from 0.5-3 range to 1-6 range)
-          width: (1 + Math.random() * 6), // NOTE: 2x increase from previous (0.5 + Math.random() * 3)
-          // Updated to match connection flow animation instead of spin animation
+          // Maintain width but with transparency handled by color
+          width: (1 + Math.random() * 6),
+          // Updated to match connection flow animation
           flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.8),
           flowPhase: Math.random() * Math.PI * 2
         });
@@ -325,7 +326,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Create connections between neurons with better 360° coverage
+  // Create connections between neurons with reduced opacity
   function createConnections() {
     // First ensure each neuron has at least minConnections
     neurons.forEach(neuron => {
@@ -401,8 +402,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
               id: neuron.connections.length,
               source: neuron,
               target: target,
-              // Increased width by 2x (from 0.5-6 range to 1-12 range)
-              width: 1 + Math.random() * 12, // NOTE: 2x increase from previous (0.5 + Math.random() * 6)
+              // Maintain width but with transparency handled by color
+              width: 1 + Math.random() * 12,
               controlPoints,
               flowSpeed: config.flowSpeed * (0.7 + Math.random() * 7),
               flowPhase: Math.random() * Math.PI * 2
@@ -444,8 +445,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             id: neuron.connections.length,
             source: neuron,
             target: target,
-            // Increased width by 2x (from 0.5-4 range to 1-8 range)
-            width: 1 + Math.random() * 8, // NOTE: 2x increase from previous (0.5 + Math.random() * 4)
+            // Maintain width but with transparency handled by color
+            width: 1 + Math.random() * 8,
             controlPoints,
             flowSpeed: config.flowSpeed * (0.7 + Math.random() * 5),
             flowPhase: Math.random() * Math.PI * 2
@@ -473,8 +474,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       );
       
       const baseAlpha = neuron.pulseStrength * config.glowIntensity;
-      // Use the flat indigo color for glow
-      glow.addColorStop(0, `rgba(129, 140, 248, ${baseAlpha})`);
+      // Use the flat indigo color for glow with reduced opacity
+      glow.addColorStop(0, `rgba(129, 140, 248, ${baseAlpha * 0.8})`);
       glow.addColorStop(1, 'rgba(129, 140, 248, 0)');
 
       ctx.fillStyle = glow;
@@ -483,7 +484,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ctx.fill();
     }
     
-    // Draw neuron body with original size but flat color
+    // Draw neuron body with flat color and reduced opacity
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
@@ -629,7 +630,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * Draw a path with a flat, modern style
+   * Draw a path with a flat, modern style and reduced opacity for overlaps
    */
   function drawFlatPath(path: Point[], width: number) {
     if (path.length < 2) return;
@@ -639,7 +640,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.lineJoin = 'round';
     ctx.miterLimit = 1;
     
-    // Draw main path
+    // Draw main path with significantly reduced opacity
     ctx.lineWidth = width;
     ctx.strokeStyle = config.connectionColor;
     
@@ -718,7 +719,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.lineJoin = 'miter';
   }
   
-  // Draw organic branches with flat style
+  // Draw organic branches with flat style and reduced opacity
   function drawBranches(neuron: Neuron, timestamp: number) {
     // Skip if neuron is not within extended viewport
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
@@ -755,7 +756,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Draw a connection with a flat, modern style
+  // Draw a connection with a flat, modern style and reduced opacity
   function drawConnection(connection: Connection, timestamp: number) {
     const { source, target } = connection;
     
@@ -891,8 +892,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Now apply the semi-transparent overlay for the trail effect
     // Use a flatter, cleaner transparency effect
     ctx.fillStyle = theme === 'dark' 
-      ? `rgba(26, 31, 44, ${isLowPerformance ? 0.5 : 0.4})` // Flat dark blue
-      : `rgba(246, 247, 249, ${isLowPerformance ? 0.5 : 0.4})`; // Flat light gray
+      ? `rgba(18, 20, 32, ${isLowPerformance ? 0.4 : 0.3})` // Flatter dark blue with lower opacity
+      : `rgba(248, 249, 250, ${isLowPerformance ? 0.4 : 0.3})`; // Flatter light gray with lower opacity
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Draw connections
