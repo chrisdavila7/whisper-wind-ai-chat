@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -20,12 +19,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ? 'rgba(59, 130, 246, 0.09)' 
       : 'rgba(59, 130, 246, 0.09)', // Slightly more transparent for light mode
     
-    // Cylindrical effect settings
+    // Cylindrical effect settings - removed shadow settings, keeping only highlight
     cylindricalEffect: {
       highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.09)' : 'rgba(190, 227, 248, 0.1)',
-      shadowColor: theme === 'dark' ? 'rgba(30, 64, 124, 0.2)' : 'rgba(30, 64, 124, 0.1)',
       highlightWidth: 0.3,  // Percentage of the total width for highlight
-      shadowWidth: 0.3,     // Percentage of the total width for shadow
     },
     
     // Organic parameters with increased spacing (35% more)
@@ -639,6 +636,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
    * IMPROVED: Draw a path with ultra-smooth curves using advanced techniques
    * This is a completely rewritten function that addresses visual artifacts
    * by using better curve interpolation and anti-aliasing techniques
+   * MODIFIED: Removed shadow layer to simplify rendering
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
@@ -807,83 +805,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
             cp1x - highlightOffset, cp1y - highlightOffset,
             cp2x - highlightOffset, cp2y - highlightOffset,
             p2.x - highlightOffset, p2.y - highlightOffset
-          );
-        }
-      }
-    }
-    
-    ctx.stroke();
-    
-    // 3. SHADOW LAYER - Draw cylindrical shadows
-    ctx.lineWidth = width * cylindricalEffect.shadowWidth;
-    ctx.strokeStyle = cylindricalEffect.shadowColor;
-    
-    // Apply slight vertical offset for bottom shadow
-    const shadowOffset = width * 0.15;
-    
-    ctx.beginPath();
-    
-    // Apply same curve drawing logic with shadow offset
-    if (path.length === 2) {
-      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
-      ctx.lineTo(path[1].x + shadowOffset, path[1].y + shadowOffset);
-    } 
-    else if (path.length === 3) {
-      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
-      ctx.quadraticCurveTo(
-        path[1].x + shadowOffset, path[1].y + shadowOffset, 
-        path[2].x + shadowOffset, path[2].y + shadowOffset
-      );
-    }
-    else {
-      // Apply the same approach for complex paths with shadow offset
-      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
-      
-      for (let i = 0; i < path.length - 1; i++) {
-        if (i === 0) {
-          const p0 = path[i];
-          const p1 = path[i+1];
-          
-          const cp1x = p0.x + (p1.x - p0.x) / 3;
-          const cp1y = p0.y + (p1.y - p0.y) / 3;
-          
-          const midX = (p0.x + p1.x) / 2;
-          const midY = (p0.y + p1.y) / 2;
-          
-          ctx.quadraticCurveTo(
-            cp1x + shadowOffset, cp1y + shadowOffset, 
-            midX + shadowOffset, midY + shadowOffset
-          );
-        }
-        else if (i === path.length - 2) {
-          const p1 = path[i];
-          const p2 = path[i+1];
-          
-          const cp1x = p1.x + (p2.x - p1.x) / 3;
-          const cp1y = p1.y + (p2.y - p1.y) / 3;
-          
-          ctx.quadraticCurveTo(
-            cp1x + shadowOffset, cp1y + shadowOffset, 
-            p2.x + shadowOffset, p2.y + shadowOffset
-          );
-        }
-        else {
-          const p0 = path[i-1] || path[i];
-          const p1 = path[i];
-          const p2 = path[i+1];
-          const p3 = path[i+2] || p2;
-          
-          const tension = 0.5;
-          
-          const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
-          const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
-          const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
-          const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
-          
-          ctx.bezierCurveTo(
-            cp1x + shadowOffset, cp1y + shadowOffset,
-            cp2x + shadowOffset, cp2y + shadowOffset,
-            p2.x + shadowOffset, p2.y + shadowOffset
           );
         }
       }
