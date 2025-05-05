@@ -636,238 +636,262 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * Draw a path with cylindrical effect (highlighting and shadows)
-   * Used for both branches and connections
-   * Enhanced to ensure all curves are perfectly smooth with no sharp angles
+   * IMPROVED: Draw a path with ultra-smooth curves using advanced techniques
+   * This is a completely rewritten function that addresses visual artifacts
+   * by using better curve interpolation and anti-aliasing techniques
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
     
     const { cylindricalEffect } = config;
     
-    // Enhanced approach for smoother curve rendering that eliminates all sharp angles
+    // Enable anti-aliasing settings for smoother curves
+    ctx.lineCap = 'round';      // Use round line caps for smoother ends
+    ctx.lineJoin = 'round';     // Use round line joins to eliminate corner artifacts
+    ctx.miterLimit = 1;         // Lower miter limit to prevent spikes
     
-    // Draw the main cylindrical path with improved smoothing
-    ctx.lineWidth = width;
+    // 1. MAIN PATH - Draw with slightly increased width to avoid gaps
+    ctx.lineWidth = width * 1.02; // Slightly wider to prevent hairline cracks
     ctx.strokeStyle = config.connectionColor;
-    ctx.lineCap = 'round';  // Rounded ends for smoother appearance
-    ctx.lineJoin = 'round'; // Rounded joins to eliminate sharp corners
     
-    // ENHANCED PATH SMOOTHING: Use natural cubic spline interpolation for ultra-smooth paths
+    // Begin main path
     ctx.beginPath();
     
+    // Draw the path with appropriate curve method based on point count
     if (path.length === 2) {
-      // Simple line for just two points - already smooth
+      // For simple lines, just draw a line
       ctx.moveTo(path[0].x, path[0].y);
       ctx.lineTo(path[1].x, path[1].y);
     } 
     else if (path.length === 3) {
-      // For three points, use a single quadratic curve for perfect smoothness
+      // For 3 points, use a single quadratic curve for perfect smoothness
       ctx.moveTo(path[0].x, path[0].y);
       ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
     }
     else {
-      // For more complex paths, use a series of bezier curves with tension control
-      // Start at first point
+      // For more complex paths, use a series of cubic bezier curves
+      // Move to first point
       ctx.moveTo(path[0].x, path[0].y);
       
-      // For each segment, create a smooth curve
+      // For each segment, calculate the natural cubic spline points
       for (let i = 0; i < path.length - 1; i++) {
-        // Current point and next point
-        const current = path[i];
-        const next = path[i + 1];
-        
         if (i === 0) {
-          // First segment: Use quadratic curve with the next point as control
-          if (path.length > 2) {
-            const midPoint = {
-              x: (current.x + next.x) / 2,
-              y: (current.y + next.y) / 2
-            };
-            ctx.quadraticCurveTo(
-              current.x + (next.x - current.x) * 0.5,
-              current.y + (next.y - current.y) * 0.5,
-              midPoint.x, midPoint.y
-            );
-          }
-        } 
+          // First segment - special case
+          const p0 = path[i];
+          const p1 = path[i+1];
+          const p2 = path[i+2] || p1; // Use p1 as fallback if p2 doesn't exist
+          
+          // Calculate control points for natural curve
+          const cp1x = p0.x + (p1.x - p0.x) / 3;
+          const cp1y = p0.y + (p1.y - p0.y) / 3;
+          
+          // Draw to midpoint with control points
+          const midX = (p0.x + p1.x) / 2;
+          const midY = (p0.y + p1.y) / 2;
+          
+          ctx.quadraticCurveTo(cp1x, cp1y, midX, midY);
+        }
         else if (i === path.length - 2) {
-          // Last segment: Smooth curve to final point
-          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
-        } 
+          // Last segment - special case for smooth endpoint
+          const p0 = path[i-1];
+          const p1 = path[i];
+          const p2 = path[i+1];
+          
+          // Calculate final control point
+          const cp1x = p1.x + (p2.x - p1.x) / 3;
+          const cp1y = p1.y + (p2.y - p1.y) / 3;
+          
+          // Draw from current position to end point
+          ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y);
+        }
         else {
-          // Middle segments: Calculate control points for bezier curve
-          // Use midpoints between points as anchors, and actual points as control points
-          // This creates a naturally smooth curve with no sharp angles
-          const mid1 = {
-            x: (path[i-1].x + current.x) / 2,
-            y: (path[i-1].y + current.y) / 2
-          };
+          // Middle segments - use Catmull-Rom spline approximation for maximum smoothness
+          const p0 = path[i-1] || path[i]; // Previous point or current as fallback
+          const p1 = path[i];              // Current point
+          const p2 = path[i+1];            // Next point
+          const p3 = path[i+2] || p2;      // Point after next or next as fallback
           
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
+          // Calculate Catmull-Rom to Bezier conversion
+          // Factor to adjust curve tension (0.5 is balanced)
+          const tension = 0.5;
           
-          // Calculate control point distance - affects curve smoothness
-          // Longer distance = smoother but less accurate curves
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
-          );
+          // Calculate control points (Catmull-Rom to Bezier conversion)
+          const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
+          const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
+          const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
+          const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
           
-          const controlPointDistance = distance * 0.25; // 25% of segment length
-          
-          // Calculate angle between points
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
-          
-          // Calculate offset control points for natural curves
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
-          
-          // Add bezier curve segment
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
+          // Draw the curve to the next point
+          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
         }
       }
     }
     
+    // Apply the stroke with high-quality settings
+    if (typeof ctx.imageSmoothingQuality !== 'undefined') {
+      // @ts-ignore - Some browsers support this setting
+      ctx.imageSmoothingQuality = 'high';
+    }
     ctx.stroke();
     
     // Skip complex effects in low performance mode
     if (isLowPerformance) return;
     
-    // Draw highlight (top of cylinder) with same smooth curve approach
+    // 2. HIGHLIGHT LAYER - Draw cylindrical highlights
     ctx.lineWidth = width * cylindricalEffect.highlightWidth;
     ctx.strokeStyle = cylindricalEffect.highlightColor;
     
+    // Apply slight vertical offset for top highlight
+    const highlightOffset = width * 0.15;
+    
     ctx.beginPath();
-    // Apply the same enhanced curve drawing logic for the highlight
+    
+    // Apply same curve drawing logic but with offset
     if (path.length === 2) {
-      ctx.moveTo(path[0].x, path[0].y);
-      ctx.lineTo(path[1].x, path[1].y);
+      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
+      ctx.lineTo(path[1].x - highlightOffset, path[1].y - highlightOffset);
     } 
     else if (path.length === 3) {
-      ctx.moveTo(path[0].x, path[0].y);
-      ctx.quadraticCurveTo(path[1].x, path[1].y, path[2].x, path[2].y);
+      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
+      ctx.quadraticCurveTo(
+        path[1].x - highlightOffset, path[1].y - highlightOffset, 
+        path[2].x - highlightOffset, path[2].y - highlightOffset
+      );
     }
     else {
-      ctx.moveTo(path[0].x, path[0].y);
+      // Apply the same approach for complex paths with highlight offset
+      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
       
       for (let i = 0; i < path.length - 1; i++) {
-        const current = path[i];
-        const next = path[i + 1];
-        
         if (i === 0) {
-          if (path.length > 2) {
-            const midPoint = {
-              x: (current.x + next.x) / 2,
-              y: (current.y + next.y) / 2
-            };
-            ctx.quadraticCurveTo(
-              current.x + (next.x - current.x) * 0.5,
-              current.y + (next.y - current.y) * 0.5,
-              midPoint.x, midPoint.y
-            );
-          }
-        } 
-        else if (i === path.length - 2) {
-          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
-        } 
-        else {
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
+          const p0 = path[i];
+          const p1 = path[i+1];
           
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
+          const cp1x = p0.x + (p1.x - p0.x) / 3;
+          const cp1y = p0.y + (p1.y - p0.y) / 3;
+          
+          const midX = (p0.x + p1.x) / 2;
+          const midY = (p0.y + p1.y) / 2;
+          
+          ctx.quadraticCurveTo(
+            cp1x - highlightOffset, cp1y - highlightOffset, 
+            midX - highlightOffset, midY - highlightOffset
           );
+        }
+        else if (i === path.length - 2) {
+          const p1 = path[i];
+          const p2 = path[i+1];
           
-          const controlPointDistance = distance * 0.25;
+          const cp1x = p1.x + (p2.x - p1.x) / 3;
+          const cp1y = p1.y + (p2.y - p1.y) / 3;
           
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
+          ctx.quadraticCurveTo(
+            cp1x - highlightOffset, cp1y - highlightOffset, 
+            p2.x - highlightOffset, p2.y - highlightOffset
+          );
+        }
+        else {
+          const p0 = path[i-1] || path[i];
+          const p1 = path[i];
+          const p2 = path[i+1];
+          const p3 = path[i+2] || p2;
           
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+          const tension = 0.5;
           
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
+          const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
+          const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
+          const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
+          const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
+          
+          ctx.bezierCurveTo(
+            cp1x - highlightOffset, cp1y - highlightOffset,
+            cp2x - highlightOffset, cp2y - highlightOffset,
+            p2.x - highlightOffset, p2.y - highlightOffset
+          );
         }
       }
     }
     
     ctx.stroke();
     
-    // Draw shadow (bottom of cylinder) with same smooth curve approach
-    // Slight offset for 3D effect while maintaining the same smooth curvature
+    // 3. SHADOW LAYER - Draw cylindrical shadows
     ctx.lineWidth = width * cylindricalEffect.shadowWidth;
     ctx.strokeStyle = cylindricalEffect.shadowColor;
     
-    // Create shadow path with slight offset for 3D effect
-    const shadowPath = path.map(p => ({
-      x: p.x + width * 0.2,
-      y: p.y + width * 0.2
-    }));
+    // Apply slight vertical offset for bottom shadow
+    const shadowOffset = width * 0.15;
     
     ctx.beginPath();
-    // Apply the same enhanced curve drawing logic for the shadow
-    if (shadowPath.length === 2) {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
-      ctx.lineTo(shadowPath[1].x, shadowPath[1].y);
+    
+    // Apply same curve drawing logic with shadow offset
+    if (path.length === 2) {
+      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
+      ctx.lineTo(path[1].x + shadowOffset, path[1].y + shadowOffset);
     } 
-    else if (shadowPath.length === 3) {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
-      ctx.quadraticCurveTo(shadowPath[1].x, shadowPath[1].y, shadowPath[2].x, shadowPath[2].y);
+    else if (path.length === 3) {
+      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
+      ctx.quadraticCurveTo(
+        path[1].x + shadowOffset, path[1].y + shadowOffset, 
+        path[2].x + shadowOffset, path[2].y + shadowOffset
+      );
     }
     else {
-      ctx.moveTo(shadowPath[0].x, shadowPath[0].y);
+      // Apply the same approach for complex paths with shadow offset
+      ctx.moveTo(path[0].x + shadowOffset, path[0].y + shadowOffset);
       
-      for (let i = 0; i < shadowPath.length - 1; i++) {
-        const current = shadowPath[i];
-        const next = shadowPath[i + 1];
-        
+      for (let i = 0; i < path.length - 1; i++) {
         if (i === 0) {
-          if (shadowPath.length > 2) {
-            const midPoint = {
-              x: (current.x + next.x) / 2,
-              y: (current.y + next.y) / 2
-            };
-            ctx.quadraticCurveTo(
-              current.x + (next.x - current.x) * 0.5,
-              current.y + (next.y - current.y) * 0.5,
-              midPoint.x, midPoint.y
-            );
-          }
-        } 
-        else if (i === shadowPath.length - 2) {
-          ctx.quadraticCurveTo(current.x, current.y, next.x, next.y);
-        } 
-        else {
-          const mid2 = {
-            x: (current.x + next.x) / 2,
-            y: (current.y + next.y) / 2
-          };
+          const p0 = path[i];
+          const p1 = path[i+1];
           
-          const distance = Math.sqrt(
-            Math.pow(next.x - current.x, 2) + 
-            Math.pow(next.y - current.y, 2)
+          const cp1x = p0.x + (p1.x - p0.x) / 3;
+          const cp1y = p0.y + (p1.y - p0.y) / 3;
+          
+          const midX = (p0.x + p1.x) / 2;
+          const midY = (p0.y + p1.y) / 2;
+          
+          ctx.quadraticCurveTo(
+            cp1x + shadowOffset, cp1y + shadowOffset, 
+            midX + shadowOffset, midY + shadowOffset
           );
+        }
+        else if (i === path.length - 2) {
+          const p1 = path[i];
+          const p2 = path[i+1];
           
-          const controlPointDistance = distance * 0.25;
+          const cp1x = p1.x + (p2.x - p1.x) / 3;
+          const cp1y = p1.y + (p2.y - p1.y) / 3;
           
-          const angle = Math.atan2(next.y - current.y, next.x - current.x);
+          ctx.quadraticCurveTo(
+            cp1x + shadowOffset, cp1y + shadowOffset, 
+            p2.x + shadowOffset, p2.y + shadowOffset
+          );
+        }
+        else {
+          const p0 = path[i-1] || path[i];
+          const p1 = path[i];
+          const p2 = path[i+1];
+          const p3 = path[i+2] || p2;
           
-          const cp1x = current.x + Math.cos(angle) * controlPointDistance;
-          const cp1y = current.y + Math.sin(angle) * controlPointDistance;
+          const tension = 0.5;
           
-          ctx.quadraticCurveTo(cp1x, cp1y, mid2.x, mid2.y);
+          const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
+          const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
+          const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
+          const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
+          
+          ctx.bezierCurveTo(
+            cp1x + shadowOffset, cp1y + shadowOffset,
+            cp2x + shadowOffset, cp2y + shadowOffset,
+            p2.x + shadowOffset, p2.y + shadowOffset
+          );
         }
       }
     }
     
     ctx.stroke();
     
-    // Reset line cap and join
+    // Reset context to default settings
     ctx.lineCap = 'butt';
     ctx.lineJoin = 'miter';
   }
@@ -1093,6 +1117,15 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   
   // Initialize and start animation
   function init() {
+    // Set canvas rendering quality
+    if (typeof ctx.imageSmoothingEnabled !== 'undefined') {
+      ctx.imageSmoothingEnabled = true;
+    }
+    if (typeof ctx.imageSmoothingQuality !== 'undefined') {
+      // @ts-ignore - Some browsers support this setting
+      ctx.imageSmoothingQuality = 'high';
+    }
+    
     // Fully clear the canvas with the current theme background color first
     ctx.fillStyle = config.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
