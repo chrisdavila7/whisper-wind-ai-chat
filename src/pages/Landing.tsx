@@ -7,6 +7,7 @@ import { MessageSquare, MessageSquarePlus, LogIn, User } from 'lucide-react';
 import NeuralBackground from '@/components/NeuralBackground';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import ThemeToggle from '@/components/ThemeToggle';
 
 // Type for conversation data
 interface Conversation {
@@ -64,6 +65,12 @@ const Landing = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
       <NeuralBackground />
+      
+      {/* Theme Toggle - Added to top right */}
+      <div className="absolute top-4 right-4 z-10">
+        <ThemeToggle />
+      </div>
+      
       <div className="w-full max-w-4xl z-10 space-y-6">
         {/* Welcome Header */}
         <div className="text-center mb-8">
