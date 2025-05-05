@@ -494,12 +494,12 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Draw neuron body with original size
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
-    ctx.arc(neuron.x, neuron.y, neuron.size, 25, Math.PI * 2);
+    ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
     // Draw inner core - now 5x bigger relative to the neuron's normal proportion
     // The core will now fill almost the entire neuron body
-    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.05);
+    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.5);
     
     // ADDED: Draw a slightly larger halo around the core for more prominence
     const haloSize = coreSize * 1.15;
