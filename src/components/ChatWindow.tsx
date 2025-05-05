@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import MessageBubble from './MessageBubble';
 import ChatInput from './ChatInput';
@@ -56,6 +55,7 @@ const ChatWindow = ({ conversationId }: ChatWindowProps) => {
             id: msg.id,
             content: msg.content,
             role: msg.is_user ? 'user' : 'assistant',
+            timestamp: new Date(msg.created_at),
             isStreaming: false
           }));
           

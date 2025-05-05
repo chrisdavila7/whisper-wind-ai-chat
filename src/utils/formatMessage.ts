@@ -1,46 +1,23 @@
 
-import { Message } from "../types/message";
+import { v4 as uuidv4 } from 'uuid';
+import { Message, MessageRole } from '@/types/message';
 
-export function formatTimestamp(timestamp: Date): string {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: 'numeric',
-    hour12: true
-  }).format(timestamp);
-}
-
-export function generateMessageId(): string {
-  return Math.random().toString(36).substring(2, 11);
-}
-
-export function sanitizeInput(input: string): string {
-  return input.trim();
-}
-
-export function createSystemMessage(content: string): Message {
+export const createUserMessage = (content: string): Message => {
   return {
-    id: generateMessageId(),
-    role: 'system',
+    id: uuidv4(),
+    role: 'user',
     content,
     timestamp: new Date(),
+    isStreaming: false
   };
-}
+};
 
-export function createUserMessage(content: string): Message {
+export const createAssistantMessage = (content: string = ''): Message => {
   return {
-    id: generateMessageId(),
-    role: 'user',
-    content: sanitizeInput(content),
-    timestamp: new Date(),
-  };
-}
-
-export function createAssistantMessage(content: string = '', isStreaming: boolean = true): Message {
-  return {
-    id: generateMessageId(),
+    id: `temp-${uuidv4()}`,
     role: 'assistant',
     content,
     timestamp: new Date(),
-    isStreaming,
+    isStreaming: true
   };
-}
+};
