@@ -9,19 +9,19 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.1)' // Blue base for dark mode
-        : 'rgba(59, 130, 246, 0.9)', // Slightly more visible blue for light mode
+        ? 'rgba(59, 130, 246, 1)' // Blue base for dark mode - Changed opacity to 1
+        : 'rgba(59, 130, 246, 1)', // Blue for light mode - Changed opacity to 1
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.3)' // Light blue core for dark mode
-        : 'rgba(29, 78, 216, 0.25)' // Darker blue core for light mode for better contrast
+        ? 'rgba(219, 234, 254, 1)' // Light blue core for dark mode - Changed opacity to 1
+        : 'rgba(29, 78, 216, 1)' // Darker blue core for light mode - Changed opacity to 1
     },
     connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.09)' 
-      : 'rgba(59, 130, 246, 0.09)', // Slightly more transparent for light mode
+      ? 'rgba(59, 130, 246, 1)' // Changed opacity to 1
+      : 'rgba(59, 130, 246, 1)', // Changed opacity to 1
     
     // Cylindrical effect settings - removed shadow settings, keeping only highlight
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.09)' : 'rgba(190, 227, 248, 0.1)',
+      highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 1)' : 'rgba(190, 227, 248, 1)', // Changed opacity to 1
       highlightWidth: 0.3,  // Percentage of the total width for highlight
     },
     
@@ -37,7 +37,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     flowSpeed: 0.0005,
     pulseInterval: 300000, // Increased interval for slower pace
     glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
-    neuronSize: { min: 3, max: 8 },
+    neuronSize: { min: 15, max: 40 }, // 5x increase (original was min: 3, max: 8)
     
     // Traveling node settings - use fixed speed that's frame-rate independent
     travelingNodeCount: 7,
@@ -489,13 +489,13 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ctx.restore();
     }
     
-    // Draw neuron body
+    // Draw neuron body - 5x bigger by using the updated config.neuronSize
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw inner core
+    // Draw inner core - 5x bigger because neuron.size is 5x bigger
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size * 0.6, 0, Math.PI * 2);
@@ -636,7 +636,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
    * IMPROVED: Draw a path with ultra-smooth curves using advanced techniques
    * This is a completely rewritten function that addresses visual artifacts
    * by using better curve interpolation and anti-aliasing techniques
-   * MODIFIED: Removed shadow layer to simplify rendering
+   * MODIFIED: Removed shadow layer and increased opacity to 1 (not see-through)
    */
   function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
     if (path.length < 2) return;
@@ -650,7 +650,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // 1. MAIN PATH - Draw with slightly increased width to avoid gaps
     ctx.lineWidth = width * 1.02; // Slightly wider to prevent hairline cracks
-    ctx.strokeStyle = config.connectionColor;
+    ctx.strokeStyle = config.connectionColor; // Now fully opaque (opacity=1)
     
     // Begin main path
     ctx.beginPath();
@@ -737,7 +737,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // 2. HIGHLIGHT LAYER - Draw cylindrical highlights
     ctx.lineWidth = width * cylindricalEffect.highlightWidth;
-    ctx.strokeStyle = cylindricalEffect.highlightColor;
+    ctx.strokeStyle = cylindricalEffect.highlightColor; // Now fully opaque (opacity=1)
     
     // Apply slight vertical offset for top highlight
     const highlightOffset = width * 0.15;
@@ -946,7 +946,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       // For paths with more control points, use enhanced de Casteljau algorithm
       // This provides pixel-perfect positioning along the curve for any number of control points
       
-      // Create points array including source, all control points, and target
+      // Create points array including start and end points
       const points = [
         { x: source.x, y: source.y },
         ...controlPoints,
