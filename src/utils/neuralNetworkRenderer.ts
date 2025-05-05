@@ -300,7 +300,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           const segmentDistance = segmentPosition * length;
           
           // Add some random variance to the angle
-          const ctrlAngle = angle + (Math.random() * 0.8 - 0.3);
+          const ctrlAngle = angle + (Math.random() * 0.8 - 0.1);
           
           controlPoints.push({
             x: neuron.x + Math.cos(ctrlAngle) * segmentDistance,
@@ -499,7 +499,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     // Draw inner core - now 5x bigger relative to the neuron's normal proportion
     // The core will now fill almost the entire neuron body
-    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.95);
+    const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.05);
     
     // ADDED: Draw a slightly larger halo around the core for more prominence
     const haloSize = coreSize * 1.15;
