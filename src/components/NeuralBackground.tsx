@@ -2,7 +2,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { drawOrganicNeuralNetwork } from '../utils/neuralNetworkRenderer';
+import { drawMinimalistNeuralNetwork } from '../utils/neuralNetworkRenderer';
 import { useTheme } from '../contexts/ThemeContext';
 
 const NeuralBackground = () => {
@@ -30,8 +30,8 @@ const NeuralBackground = () => {
           cleanupRef.current = null;
         }
         
-        // Start a new animation
-        cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
+        // Start a new animation with the minimalist style
+        cleanupRef.current = drawMinimalistNeuralNetwork(canvas, ctx, theme);
       }
     };
     
@@ -40,14 +40,14 @@ const NeuralBackground = () => {
     window.addEventListener('resize', resizeCanvas);
     
     // Clear the canvas completely when theme changes
-    // Use flatter background colors that blend well with the content
-    ctx.fillStyle = theme === 'dark' ? '#121420' : '#f8f9fa'; 
+    // Use dark deep blue for dark theme and a lighter shade for light theme
+    ctx.fillStyle = theme === 'dark' ? '#0F1520' : '#EDF2F7'; 
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // If we haven't created the animation in the resize function,
     // start it here and store the cleanup function
     if (!cleanupRef.current) {
-      cleanupRef.current = drawOrganicNeuralNetwork(canvas, ctx, theme);
+      cleanupRef.current = drawMinimalistNeuralNetwork(canvas, ctx, theme);
     }
     
     // Cleanup function
@@ -66,8 +66,8 @@ const NeuralBackground = () => {
         className="absolute top-0 left-0 w-full h-full"
         style={{
           background: theme === 'dark' 
-            ? '#121420' // Flat dark background
-            : '#f8f9fa', // Flat light background
+            ? '#0F1520' // Deep dark blue background
+            : '#EDF2F7', // Light gray-blue background
           opacity: 1,
         }}
       />
@@ -76,7 +76,7 @@ const NeuralBackground = () => {
         className="w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 0.8 // Slightly increased opacity for better visibility
+          opacity: 1 // Full opacity for the minimalist style
         }}
       />
     </div>
