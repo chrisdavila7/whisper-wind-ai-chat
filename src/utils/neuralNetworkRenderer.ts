@@ -1,29 +1,29 @@
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
- * Draws and animates an organic neural network on a canvas with a modern, minimalistic style
+ * Draws and animates an organic neural network on a canvas with a flat, modern style
  */
 export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
   const config = {
-    // Modern color palette
-    backgroundColor: theme === 'dark' ? '#0f172a' : '#FFFFFF', // Rich dark blue / clean white
+    // Flat, modern color palette
+    backgroundColor: theme === 'dark' ? '#1A1F2C' : '#F6F7F9',
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(99, 102, 241, 0.08)' // Modern indigo with low opacity for base
-        : 'rgba(99, 102, 241, 0.06)', 
+        ? 'rgba(129, 140, 248, 0.06)' // Flat indigo with low opacity for base
+        : 'rgba(129, 140, 248, 0.04)', 
       core: theme === 'dark'
-        ? 'rgba(165, 180, 252, 0.6)' // Brighter indigo core with good visibility
-        : 'rgba(79, 70, 229, 0.45)'  // Deeper indigo for light mode
+        ? 'rgba(129, 140, 248, 0.5)' // Flat indigo core with good visibility
+        : 'rgba(99, 102, 241, 0.4)'  // Slightly muted for light mode
     },
     connectionColor: theme === 'dark' 
-      ? 'rgba(99, 102, 241, 0.12)' // Indigo for connections with subtle opacity
-      : 'rgba(99, 102, 241, 0.12)',
+      ? 'rgba(129, 140, 248, 0.15)' // Flat indigo for connections
+      : 'rgba(129, 140, 248, 0.1)',
     
-    // Refined cylindrical effect
+    // Simplified flat style - removed cylindrical effect
     cylindricalEffect: {
-      highlightColor: theme === 'dark' ? 'rgba(165, 180, 252, 0.12)' : 'rgba(165, 180, 252, 0.15)',
-      highlightWidth: 0.3,  // Percentage of the total width for highlight
+      highlightColor: theme === 'dark' ? 'rgba(129, 140, 248, 0.08)' : 'rgba(129, 140, 248, 0.06)',
+      highlightWidth: 0.25,  // Thinner highlight for a flatter look
     },
     
     // Keep organic parameters with increased spacing
@@ -34,10 +34,10 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     maxBranches: 5,
     branchLength: { min: 30, max: 120 },
     
-    // Animation settings - keep existing values
-    flowSpeed: 0.0005,
+    // Animation settings - slightly reduced for a more subtle effect
+    flowSpeed: 0.0004,
     pulseInterval: 300000,
-    glowIntensity: theme === 'dark' ? 0.7 : 0.5,
+    glowIntensity: theme === 'dark' ? 0.5 : 0.4, // Reduced glow for flatter look
     
     // Maintain the large core size
     neuronSize: { min: 3, max: 8 }, // Keep original outer size
@@ -457,43 +457,33 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     });
   }
   
-  // Draw a neuron with modern glow effect
+  // Draw a neuron with a flat, modern style
   function drawNeuron(neuron: Neuron) {
     // Performance optimization: Only render neurons that are within viewport or close enough
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
       return; // Skip rendering entirely if too far from view
     }
 
-    // Draw glow if neuron is pulsing - modernized glow effect
+    // Draw glow if neuron is pulsing - flatter glow effect
     if (neuron.pulseStrength > 0) {
-      const glowRadius = neuron.size * 4;
+      const glowRadius = neuron.size * 3;
       const glow = ctx.createRadialGradient(
         neuron.x, neuron.y, neuron.size * 0.5,
         neuron.x, neuron.y, glowRadius
       );
       
       const baseAlpha = neuron.pulseStrength * config.glowIntensity;
-      // Use the modern indigo color for glow
-      glow.addColorStop(0, `rgba(99, 102, 241, ${baseAlpha})`);
-      glow.addColorStop(1, 'rgba(99, 102, 241, 0)');
-
-      // Save context state
-      ctx.save();
-
-      // Apply blur via shadow for a modern soft glow
-      ctx.shadowBlur = glowRadius * 1.2;  // Slightly increased blur for softer edges
-      ctx.shadowColor = `rgba(99, 102, 241, ${baseAlpha})`;
+      // Use the flat indigo color for glow
+      glow.addColorStop(0, `rgba(129, 140, 248, ${baseAlpha})`);
+      glow.addColorStop(1, 'rgba(129, 140, 248, 0)');
 
       ctx.fillStyle = glow;
       ctx.beginPath();
       ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
       ctx.fill();
-
-      // Restore context state to prevent blur leaking into other elements
-      ctx.restore();
     }
     
-    // Draw neuron body with original size but modern color
+    // Draw neuron body with original size but flat color
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
@@ -502,14 +492,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Draw inner core - maintain 5x bigger relative to the neuron's normal proportion
     const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 2);
     
-    // Draw a subtle halo around the core for a modern luminous effect
-    const haloSize = coreSize * 1.15;
-    ctx.fillStyle = theme === 'dark' ? 'rgba(165, 180, 252, 0.2)' : 'rgba(79, 70, 229, 0.15)';
-    ctx.beginPath();
-    ctx.arc(neuron.x, neuron.y, haloSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw the core with modern color
+    // Draw the core with flat color
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, coreSize, 0, Math.PI * 2);
@@ -521,8 +504,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * Draw and update traveling nodes with enhanced path following and performance optimizations
-   * Uses pre-computed path points for more accurate curve following and handles nodes outside viewport
+   * Draw and update traveling nodes with path following and performance optimizations
    */
   function updateAndDrawTravelingNodes(timestamp: number) {
     // Calculate delta time for frame-rate independent movement
@@ -647,24 +629,21 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   }
   
   /**
-   * MODERNIZED: Draw a path with ultra-smooth curves using advanced techniques
-   * Updated with more minimalist color palette while maintaining the same functionality
+   * Draw a path with a flat, modern style
    */
-  function drawCylindricalPath(path: Point[], width: number, flowPhase: number) {
+  function drawFlatPath(path: Point[], width: number) {
     if (path.length < 2) return;
     
-    const { cylindricalEffect } = config;
+    // Enable anti-aliasing settings for smoother lines
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    ctx.miterLimit = 1;
     
-    // Enable anti-aliasing settings for smoother curves
-    ctx.lineCap = 'round';      // Use round line caps for smoother ends
-    ctx.lineJoin = 'round';     // Use round line joins to eliminate corner artifacts
-    ctx.miterLimit = 1;         // Lower miter limit to prevent spikes
+    // Draw main path
+    ctx.lineWidth = width;
+    ctx.strokeStyle = config.connectionColor;
     
-    // 1. MAIN PATH - Draw with slightly increased width to avoid gaps
-    ctx.lineWidth = width * 1.02; // Slightly wider to prevent hairline cracks
-    ctx.strokeStyle = config.connectionColor; // Modern semi-transparent color
-    
-    // Begin main path
+    // Begin path
     ctx.beginPath();
     
     // Draw the path with appropriate curve method based on point count
@@ -680,127 +659,36 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     }
     else {
       // For more complex paths, use a series of cubic bezier curves
-      // Move to first point
       ctx.moveTo(path[0].x, path[0].y);
       
-      // For each segment, calculate the natural cubic spline points
       for (let i = 0; i < path.length - 1; i++) {
         if (i === 0) {
-          // First segment - special case
+          // First segment
           const p0 = path[i];
           const p1 = path[i+1];
-          const p2 = path[i+2] || p1; // Use p1 as fallback if p2 doesn't exist
+          const p2 = path[i+2] || p1;
           
-          // Calculate control points for natural curve
           const cp1x = p0.x + (p1.x - p0.x) / 3;
           const cp1y = p0.y + (p1.y - p0.y) / 3;
           
-          // Draw to midpoint with control points
           const midX = (p0.x + p1.x) / 2;
           const midY = (p0.y + p1.y) / 2;
           
           ctx.quadraticCurveTo(cp1x, cp1y, midX, midY);
         }
         else if (i === path.length - 2) {
-          // Last segment - special case for smooth endpoint
+          // Last segment
           const p0 = path[i-1];
           const p1 = path[i];
           const p2 = path[i+1];
           
-          // Calculate final control point
           const cp1x = p1.x + (p2.x - p1.x) / 3;
           const cp1y = p1.y + (p2.y - p1.y) / 3;
           
-          // Draw from current position to end point
           ctx.quadraticCurveTo(cp1x, cp1y, p2.x, p2.y);
         }
         else {
-          // Middle segments - use Catmull-Rom spline approximation for maximum smoothness
-          const p0 = path[i-1] || path[i]; // Previous point or current as fallback
-          const p1 = path[i];              // Current point
-          const p2 = path[i+1];            // Next point
-          const p3 = path[i+2] || p2;      // Point after next or next as fallback
-          
-          // Calculate Catmull-Rom to Bezier conversion
-          // Factor to adjust curve tension (0.5 is balanced)
-          const tension = 0.5;
-          
-          // Calculate control points (Catmull-Rom to Bezier conversion)
-          const cp1x = p1.x + (p2.x - p0.x) * tension / 3;
-          const cp1y = p1.y + (p2.y - p0.y) * tension / 3;
-          const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
-          const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
-          
-          // Draw the curve to the next point
-          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
-        }
-      }
-    }
-    
-    // Apply the stroke with high-quality settings
-    if (typeof ctx.imageSmoothingQuality !== 'undefined') {
-      // @ts-ignore - Some browsers support this setting
-      ctx.imageSmoothingQuality = 'high';
-    }
-    ctx.stroke();
-    
-    // Skip complex effects in low performance mode
-    if (isLowPerformance) return;
-    
-    // 2. HIGHLIGHT LAYER - Draw cylindrical highlights with modern color
-    ctx.lineWidth = width * cylindricalEffect.highlightWidth;
-    ctx.strokeStyle = cylindricalEffect.highlightColor; // Modern highlight color
-    
-    // Apply slight vertical offset for top highlight
-    const highlightOffset = width * 0.15;
-    
-    ctx.beginPath();
-    
-    // Apply same curve drawing logic but with offset
-    if (path.length === 2) {
-      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
-      ctx.lineTo(path[1].x - highlightOffset, path[1].y - highlightOffset);
-    } 
-    else if (path.length === 3) {
-      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
-      ctx.quadraticCurveTo(
-        path[1].x - highlightOffset, path[1].y - highlightOffset, 
-        path[2].x - highlightOffset, path[2].y - highlightOffset
-      );
-    }
-    else {
-      // Apply the same approach for complex paths with highlight offset
-      ctx.moveTo(path[0].x - highlightOffset, path[0].y - highlightOffset);
-      
-      for (let i = 0; i < path.length - 1; i++) {
-        if (i === 0) {
-          const p0 = path[i];
-          const p1 = path[i+1];
-          
-          const cp1x = p0.x + (p1.x - p0.x) / 3;
-          const cp1y = p0.y + (p1.y - p0.y) / 3;
-          
-          const midX = (p0.x + p1.x) / 2;
-          const midY = (p0.y + p1.y) / 2;
-          
-          ctx.quadraticCurveTo(
-            cp1x - highlightOffset, cp1y - highlightOffset, 
-            midX - highlightOffset, midY - highlightOffset
-          );
-        }
-        else if (i === path.length - 2) {
-          const p1 = path[i];
-          const p2 = path[i+1];
-          
-          const cp1x = p1.x + (p2.x - p1.x) / 3;
-          const cp1y = p1.y + (p2.y - p1.y) / 3;
-          
-          ctx.quadraticCurveTo(
-            cp1x - highlightOffset, cp1y - highlightOffset, 
-            p2.x - highlightOffset, p2.y - highlightOffset
-          );
-        }
-        else {
+          // Middle segments
           const p0 = path[i-1] || path[i];
           const p1 = path[i];
           const p2 = path[i+1];
@@ -813,15 +701,16 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
           const cp2x = p2.x - (p3.x - p1.x) * tension / 3;
           const cp2y = p2.y - (p3.y - p1.y) * tension / 3;
           
-          ctx.bezierCurveTo(
-            cp1x - highlightOffset, cp1y - highlightOffset,
-            cp2x - highlightOffset, cp2y - highlightOffset,
-            p2.x - highlightOffset, p2.y - highlightOffset
-          );
+          ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, p2.x, p2.y);
         }
       }
     }
     
+    // Apply high-quality stroke
+    if (typeof ctx.imageSmoothingQuality !== 'undefined') {
+      // @ts-ignore
+      ctx.imageSmoothingQuality = 'high';
+    }
     ctx.stroke();
     
     // Reset context to default settings
@@ -829,7 +718,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     ctx.lineJoin = 'miter';
   }
   
-  // Draw organic branches with performance optimization and cylindrical effect
+  // Draw organic branches with flat style
   function drawBranches(neuron: Neuron, timestamp: number) {
     // Skip if neuron is not within extended viewport
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
@@ -841,7 +730,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       branch.flowPhase += branch.flowSpeed;
       if (branch.flowPhase > Math.PI * 2) branch.flowPhase -= Math.PI * 2;
       
-      // Prepare path points for cylindrical drawing with smooth curvature
+      // Prepare path points for drawing with smooth curvature
       const pathPoints: Point[] = [{ x: neuron.x, y: neuron.y }]; // Start from neuron center
       
       // Add control points to maintain organic shape of branches
@@ -849,9 +738,8 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
         pathPoints.push(point);
       });
       
-      // Add endpoint with subtle flow animation (matching connection style)
+      // Add endpoint with subtle flow animation
       const endPoint = {
-        // Animate endpoint with subtle waviness instead of circular motion
         x: branch.controlPoints.length > 0 
           ? branch.controlPoints[branch.controlPoints.length - 1].x + Math.cos(branch.flowPhase * 0.2) * branch.width * 2
           : branch.startX + Math.cos(branch.flowPhase * 0.2) * branch.length * 0.05 + branch.length * 0.95,
@@ -861,13 +749,13 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       };
       pathPoints.push(endPoint);
       
-      // Draw using the cylindrical path function with pulsing width
+      // Draw using the flat path function with pulsing width
       const pulsingWidth = branch.width * (0.8 + Math.sin(branch.flowPhase) * 0.2);
-      drawCylindricalPath(pathPoints, pulsingWidth, branch.flowPhase);
+      drawFlatPath(pathPoints, pulsingWidth);
     });
   }
   
-  // Draw a connection with organic, flowing path, with performance optimizations and cylindrical effect
+  // Draw a connection with a flat, modern style
   function drawConnection(connection: Connection, timestamp: number) {
     const { source, target } = connection;
     
@@ -891,7 +779,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     
     const { width, controlPoints } = connection;
     
-    // Prepare path points for cylindrical drawing with smooth curvature
+    // Prepare path points for flat drawing with smooth curvature
     const pathPoints: Point[] = [{ x: source.x, y: source.y }];
     
     if (controlPoints.length === 0) {
@@ -917,14 +805,13 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       pathPoints.push({ x: target.x, y: target.y });
     }
     
-    // Draw using the cylindrical path function with pulsing width
+    // Draw using the flat path function with pulsing width
     const pulsingWidth = width * (0.8 + Math.sin(connection.flowPhase) * 0.2);
-    drawCylindricalPath(pathPoints, pulsingWidth, connection.flowPhase);
+    drawFlatPath(pathPoints, pulsingWidth);
   }
   
   /**
    * Calculate position along a bezier curve with multiple control points
-   * Enhanced for more accurate path following with improved algorithms
    */
   function getPositionAlongPath(connection: Connection, t: number): Point {
     // Clamp t between 0 and 1 to prevent out-of-bounds errors
@@ -972,9 +859,6 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
   
   /**
    * Recursive de Casteljau algorithm for precise bezier curve point calculation 
-   * This handles bezier curves of any degree (any number of control points)
-   * @param points Array of control points including start and end points
-   * @param t Parameter between 0 and 1 representing position along the curve
    */
   function deCasteljauPoint(points: Point[], t: number): Point {
     // Base case: if we're down to one point, return it
@@ -1000,15 +884,15 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     // Update FPS counter and performance metrics
     updateFps(timestamp);
     
-    // First completely clear the canvas to prevent trail artifacts between theme changes
+    // First completely clear the canvas to prevent trail artifacts
     ctx.fillStyle = config.backgroundColor;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Now apply the semi-transparent overlay for the trail effect
-    // Use a more modern, cleaner transparency effect
+    // Use a flatter, cleaner transparency effect
     ctx.fillStyle = theme === 'dark' 
-      ? `rgba(15, 23, 42, ${isLowPerformance ? 0.5 : 0.3})` // Modern dark blue
-      : `rgba(255, 255, 255, ${isLowPerformance ? 0.5 : 0.3})`;
+      ? `rgba(26, 31, 44, ${isLowPerformance ? 0.5 : 0.4})` // Flat dark blue
+      : `rgba(246, 247, 249, ${isLowPerformance ? 0.5 : 0.4})`; // Flat light gray
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
     // Draw connections
@@ -1055,7 +939,7 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ctx.imageSmoothingEnabled = true;
     }
     if (typeof ctx.imageSmoothingQuality !== 'undefined') {
-      // @ts-ignore - Some browsers support this setting
+      // @ts-ignore
       ctx.imageSmoothingQuality = 'high';
     }
     
