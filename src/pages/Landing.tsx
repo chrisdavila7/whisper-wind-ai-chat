@@ -1,4 +1,3 @@
-
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
@@ -63,7 +62,8 @@ const Landing = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
+      {/* Neural Background - Ensure this is always rendered */}
       <NeuralBackground />
       
       {/* Theme Toggle - Added to top right */}
@@ -71,7 +71,8 @@ const Landing = () => {
         <ThemeToggle />
       </div>
       
-      <div className="w-full max-w-4xl z-10 space-y-6">
+      {/* Content Container - Use relative position and z-10 to ensure it's above the background */}
+      <div className="w-full max-w-4xl z-10 space-y-6 relative">
         {/* Welcome Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 dark:text-white sm:text-5xl mb-2">

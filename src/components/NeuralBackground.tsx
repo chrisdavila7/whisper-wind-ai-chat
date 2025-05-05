@@ -22,15 +22,19 @@ const NeuralBackground = () => {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
       
-      // Redraw on resize to fill the screen properly
+      // Clear previous animation
+      if (cleanupRef.current) {
+        cleanupRef.current();
+        cleanupRef.current = null;
+      }
+      
+      // Start new animation if canvas is visible
       if (canvas.width > 0 && canvas.height > 0) {
-        // Store the previous cleanup function if it exists
-        if (cleanupRef.current) {
-          cleanupRef.current();
-          cleanupRef.current = null;
-        }
+        // Fill with solid background color first
+        ctx.fillStyle = theme === 'dark' ? '#0F1520' : '#EDF2F7'; 
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
         
-        // Start a new animation with the minimalist style
+        // Initialize the neural network
         cleanupRef.current = drawMinimalistNeuralNetwork(canvas, ctx, theme);
       }
     };
@@ -39,18 +43,6 @@ const NeuralBackground = () => {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
     
-    // Clear the canvas completely when theme changes
-    // Use dark deep blue for dark theme and a lighter shade for light theme
-    ctx.fillStyle = theme === 'dark' ? '#0F1520' : '#EDF2F7'; 
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // If we haven't created the animation in the resize function,
-    // start it here and store the cleanup function
-    if (!cleanupRef.current) {
-      cleanupRef.current = drawMinimalistNeuralNetwork(canvas, ctx, theme);
-    }
-    
-    // Cleanup function
     return () => {
       window.removeEventListener('resize', resizeCanvas);
       if (cleanupRef.current) {
@@ -61,7 +53,7 @@ const NeuralBackground = () => {
   }, [theme]);
   
   return (
-    <div className="fixed top-0 left-0 w-full h-full -z-10">
+    <div className="fixed top-0 left-0 w-full h-full -z-10 overflow-hidden">
       <div 
         className="absolute top-0 left-0 w-full h-full"
         style={{
@@ -73,10 +65,10 @@ const NeuralBackground = () => {
       />
       <canvas 
         ref={canvasRef}
-        className="w-full h-full"
+        className="absolute top-0 left-0 w-full h-full"
         style={{ 
           pointerEvents: 'none', 
-          opacity: 1 // Full opacity for the minimalist style
+          opacity: 1 // Full opacity for the visualization
         }}
       />
     </div>

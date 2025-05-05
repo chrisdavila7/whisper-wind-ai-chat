@@ -3,54 +3,53 @@ import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
  * Draws a minimalist neural network on a canvas with a clean, modern style
- * that matches the reference image
  */
 export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, theme: 'light' | 'dark' = 'dark') {
   // Configuration
   const config = {
-    // Base colors - dark deep blue background with subtle blue connections
+    // Base colors
     backgroundColor: theme === 'dark' ? '#0F1520' : '#EDF2F7',
-    // Connection color - subtle blue with very low opacity to match reference
+    // Connection color - subtle blue with low opacity
     connectionColor: theme === 'dark' 
-      ? 'rgba(65, 90, 120, 0.4)' // Subtle blue with low opacity (dark mode)
-      : 'rgba(65, 90, 120, 0.3)', // Subtle blue with low opacity (light mode)
+      ? 'rgba(65, 90, 120, 0.2)' // Lower opacity for dark mode
+      : 'rgba(65, 90, 120, 0.15)', // Lower opacity for light mode
     
-    // Neuron colors - slightly brighter blue nodes
+    // Neuron colors - with flatter look
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(75, 100, 140, 0.8)' // Slightly brighter blue (dark mode)
-        : 'rgba(75, 100, 140, 0.6)', // Slightly brighter blue (light mode)
+        ? 'rgba(75, 100, 140, 0.5)' // Flatter blue (dark mode)
+        : 'rgba(75, 100, 140, 0.4)', // Flatter blue (light mode)
       core: theme === 'dark'
-        ? 'rgba(85, 110, 150, 0.9)' // Brighter center (dark mode)
-        : 'rgba(85, 110, 150, 0.7)', // Brighter center (light mode)
+        ? 'rgba(85, 110, 150, 0.6)' // Slightly darker center (dark mode)
+        : 'rgba(85, 110, 150, 0.5)', // Slightly darker center (light mode)
     },
     
     // Network structure parameters
-    neuronCount: 8, // Fewer neurons for the minimalist look
-    minConnections: 3,
-    maxConnections: 6,
+    neuronCount: 8, // Fewer neurons for minimalist look
+    minConnections: 2,
+    maxConnections: 5,
     
-    // No branches for this minimalist style
+    // No branches for minimalist style
     useBranches: false,
     
     // Animation settings
-    flowSpeed: 0.0002, // Slow, subtle flow
-    pulseInterval: 300000,
-    glowIntensity: 0.2, // Reduced glow
+    flowSpeed: 0.0001, // Very slow flow
+    pulseInterval: 4000, // Longer intervals between pulses
+    glowIntensity: 0.1, // Reduced glow for flat style
     
-    // Neuron size - larger neurons as per reference
-    neuronSize: { min: 12, max: 20 }, // Larger neurons
-    neuronCoreScale: 1.5, // Less contrast between core and outer
+    // Neuron size
+    neuronSize: { min: 10, max: 18 },
+    neuronCoreScale: 1.5, // Less contrast
     
-    // Traveling nodes - reduced for minimalist look
-    travelingNodeCount: 5,
-    travelingNodeSpeedFactor: 0.001, // Slower nodes
+    // Traveling nodes
+    travelingNodeCount: 3, // Fewer nodes for minimalist look
+    travelingNodeSpeedFactor: 0.0005, // Slower for subtle effect
     
-    // Line thickness - thicker lines as in reference
-    connectionWidth: { min: 1.5, max: 2.5 },
+    // Line thickness
+    connectionWidth: { min: 1, max: 2 },
     
     // Performance optimization
-    maxDistanceForAnimation: 1800,
+    maxDistanceForAnimation: 1500,
     performanceThreshold: 40,
     viewportMargin: 100,
     fpsUpdateInterval: 1000,
@@ -122,19 +121,18 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     }
   }
   
-  // Initialize neurons with spacing matching the reference image
+  // Initialize neurons with spacing
   function initializeNeurons() {
     neurons = [];
     
     // Create neurons in a grid-like pattern with some variation
-    // This pattern better matches the reference image
     for (let i = 0; i < config.neuronCount; i++) {
       // Use golden ratio for better distribution
       const goldenRatio = (1 + Math.sqrt(5)) / 2;
       const i_normalized = i / config.neuronCount;
       
       // Create a spiral-like pattern with more spacing
-      const angle = 2 * Math.PI * i_normalized * goldenRatio * 2; // Multiplied by 2 for wider spread
+      const angle = 2 * Math.PI * i_normalized * goldenRatio * 2;
       const distance = 0.3 + 0.5 * i_normalized; // Variable distance from center
       
       // Calculate position with more spacing around the edges
@@ -186,10 +184,12 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
   function createNewTravelingNode() {
     if (neurons.length === 0) return;
     
+    // Limit traveling nodes if performance is low
     if (isLowPerformance && travelingNodes.filter(n => n.active).length >= Math.max(2, Math.floor(config.travelingNodeCount / 2))) {
       return;
     }
     
+    // Find neurons with connections that are visible
     const neuronsWithConnections = neurons.filter(n => 
       n.connections.length > 0 && 
       isWithinExtendedViewport(n.x, n.y, config.viewportMargin * 2)
@@ -197,8 +197,10 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     
     if (neuronsWithConnections.length === 0) return;
     
+    // Pick a random source neuron
     const sourceNeuron = neuronsWithConnections[Math.floor(Math.random() * neuronsWithConnections.length)];
     
+    // Find viable connections within animation distance
     const viableConnections = sourceNeuron.connections.filter(conn => {
       const distance = calculateDistance(
         sourceNeuron.x, sourceNeuron.y, 
@@ -211,20 +213,29 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     
     if (viableConnections.length === 0) return;
     
+    // Pick a random connection
     const connection = viableConnections[Math.floor(Math.random() * viableConnections.length)];
     const targetNeuron = connection.target;
     
+    // Sample points along the path for smooth movement
     const pathPoints: Point[] = [];
     const samples = 100;
     
     for (let i = 0; i <= samples; i++) {
       const t = i / samples;
-      pathPoints.push(getPositionAlongPath(connection, t));
+      const position = getPositionAlongPath(connection, t);
+      if (position) { // Add null check here
+        pathPoints.push(position);
+      }
     }
+    
+    // Only proceed if we have valid path points
+    if (pathPoints.length < 2) return;
     
     const pathLength = calculatePathLength(pathPoints);
     
-    travelingNodes.push({
+    // Create the traveling node
+    const newNode = {
       x: sourceNeuron.x,
       y: sourceNeuron.y,
       sourceNeuron,
@@ -238,10 +249,12 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       pathIndex: 0,
       pathLength: pathLength,
       isWithinViewport: true,
-    });
+    };
+    
+    travelingNodes.push(newNode);
   }
   
-  // Create connections between neurons with the minimalist style from the reference
+  // Create connections between neurons with the minimalist style
   function createConnections() {
     neurons.forEach(neuron => {
       // Find potential targets
@@ -261,12 +274,12 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       const connectionCount = config.minConnections + 
         Math.floor(Math.random() * (config.maxConnections - config.minConnections + 1));
       
-      // Create smoother, more organic curves for connections like in reference
+      // Create smoother, more organic curves for connections
       for (let i = 0; i < Math.min(connectionCount, potentialTargets.length); i++) {
         const target = potentialTargets[i].neuron;
         const distance = potentialTargets[i].distance;
         
-        // Create smoother curves with more control points
+        // Create smoother curves with control points
         const controlPointCount = 2 + Math.floor(Math.random());
         const controlPoints: Point[] = [];
         
@@ -281,7 +294,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
           const perpX = -(target.y - neuron.y) / distance;
           const perpY = (target.x - neuron.x) / distance;
           
-          // Create more organic, wider curves as in reference
+          // Create more organic, wider curves
           const variance = (Math.random() * 0.3 + 0.1) * distance;
           
           controlPoints.push({
@@ -290,7 +303,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
           });
         }
         
-        // Thicker lines for the minimalist style
+        // Thinner lines for the minimalist style
         const width = config.connectionWidth.min + 
           Math.random() * (config.connectionWidth.max - config.connectionWidth.min);
         
@@ -309,7 +322,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     });
   }
   
-  // Draw a neuron with the clean, minimalist style from the reference
+  // Draw a neuron with a clean, minimalist style
   function drawNeuron(neuron: Neuron) {
     if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
       return;
@@ -333,14 +346,14 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       ctx.fill();
     }
     
-    // Draw neuron with flat, solid color as in reference
+    // Draw neuron with flat, solid color
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
     // Draw subtle inner core
-    const coreSize = neuron.size * config.neuronCoreScale;
+    const coreSize = neuron.size / config.neuronCoreScale;
     
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
@@ -353,7 +366,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
   }
   
   /**
-   * Draw and update traveling nodes
+   * Draw and update traveling nodes - with null checks to fix errors
    */
   function updateAndDrawTravelingNodes(timestamp: number) {
     const deltaTime = timestamp - lastFrameTime;
@@ -361,15 +374,20 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     
     let activeNodesInViewport = 0;
     
+    // Filter out any nodes with invalid paths before processing
+    travelingNodes = travelingNodes.filter(node => 
+      node.active && node.path && node.path.length > 1
+    );
+    
     for (let i = 0; i < travelingNodes.length; i++) {
       const node = travelingNodes[i];
-      if (!node.active) continue;
+      if (!node.active || !node.path || node.path.length < 2) continue;
       
       // Update progress
       const speedAdjustment = node.pathLength ? 500 / node.pathLength : 1;
       node.progress += node.speed * deltaFactor * speedAdjustment;
       
-      // Update position
+      // Update position using path points
       if (node.path && node.path.length > 0) {
         const exactIndex = Math.min(
           node.progress * (node.path.length - 1),
@@ -379,24 +397,32 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
         const index = Math.floor(exactIndex);
         const fraction = exactIndex - index;
         
-        if (index < node.path.length - 1) {
+        // Ensure we're not accessing invalid indices
+        if (index < node.path.length - 1 && index >= 0) {
           const currentPoint = node.path[index];
           const nextPoint = node.path[index + 1];
           
-          node.x = currentPoint.x + (nextPoint.x - currentPoint.x) * fraction;
-          node.y = currentPoint.y + (nextPoint.y - currentPoint.y) * fraction;
-        } else {
-          node.x = node.path[index].x;
-          node.y = node.path[index].y;
+          if (currentPoint && nextPoint) {
+            node.x = currentPoint.x + (nextPoint.x - currentPoint.x) * fraction;
+            node.y = currentPoint.y + (nextPoint.y - currentPoint.y) * fraction;
+          }
+        } else if (index >= 0 && index < node.path.length) {
+          const point = node.path[index];
+          if (point) {
+            node.x = point.x;
+            node.y = point.y;
+          }
         }
         
         node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
       } else {
+        // Use fallback method if path is invalid
         const position = getPositionAlongPath(node.connection, node.progress);
-        node.x = position.x;
-        node.y = position.y;
-        
-        node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
+        if (position) {
+          node.x = position.x;
+          node.y = position.y;
+          node.isWithinViewport = isWithinExtendedViewport(node.x, node.y);
+        }
       }
       
       // Check if node has reached target
@@ -407,6 +433,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
         
         node.active = false;
         
+        // Create a new node after delay
         const delay = isLowPerformance ? Math.random() * 2000 + 1000 : Math.random() * 1000;
         setTimeout(() => {
           createNewTravelingNode();
@@ -426,22 +453,6 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       ctx.beginPath();
       ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
       ctx.fill();
-      
-      // Subtle glow for traveling nodes
-      if (!isLowPerformance) {
-        const nodeGlow = ctx.createRadialGradient(
-          node.x, node.y, node.width * 0.5,
-          node.x, node.y, node.width * 2
-        );
-        
-        nodeGlow.addColorStop(0, 'rgba(85, 110, 150, 0.2)');
-        nodeGlow.addColorStop(1, 'rgba(85, 110, 150, 0)');
-        
-        ctx.fillStyle = nodeGlow;
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, node.width * 2, 0, Math.PI * 2);
-        ctx.fill();
-      }
     }
     
     // Add more nodes if needed and performance allows
@@ -458,7 +469,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
   }
   
   /**
-   * Draw a path with the clean, minimalist style from the reference
+   * Draw a path with the clean, minimalist style
    */
   function drawMinimalistPath(path: Point[], width: number) {
     if (path.length < 2) return;
@@ -587,12 +598,14 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
   }
   
   /**
-   * Calculate position along a bezier curve
+   * Calculate position along a bezier curve with safety checks
    */
-  function getPositionAlongPath(connection: Connection, t: number): Point {
+  function getPositionAlongPath(connection: Connection, t: number): Point | null {
     t = Math.max(0, Math.min(1, t));
     
     const { source, target, controlPoints } = connection;
+    
+    if (!source || !target) return null;
     
     if (controlPoints.length === 0) {
       return {
@@ -600,18 +613,25 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
         y: source.y + (target.y - source.y) * t
       };
     } else if (controlPoints.length === 1) {
+      const cp = controlPoints[0];
+      if (!cp) return null;
+      
       const mt = 1 - t;
       return {
-        x: mt * mt * source.x + 2 * mt * t * controlPoints[0].x + t * t * target.x,
-        y: mt * mt * source.y + 2 * mt * t * controlPoints[0].y + t * t * target.y
+        x: mt * mt * source.x + 2 * mt * t * cp.x + t * t * target.x,
+        y: mt * mt * source.y + 2 * mt * t * cp.y + t * t * target.y
       };
     } else if (controlPoints.length === 2) {
+      const cp1 = controlPoints[0];
+      const cp2 = controlPoints[1];
+      if (!cp1 || !cp2) return null;
+      
       const mt = 1 - t;
       return {
-        x: mt * mt * mt * source.x + 3 * mt * mt * t * controlPoints[0].x + 
-           3 * mt * t * t * controlPoints[1].x + t * t * t * target.x,
-        y: mt * mt * mt * source.y + 3 * mt * mt * t * controlPoints[0].y + 
-           3 * mt * t * t * controlPoints[1].y + t * t * t * target.y
+        x: mt * mt * mt * source.x + 3 * mt * mt * t * cp1.x + 
+           3 * mt * t * t * cp2.x + t * t * t * target.x,
+        y: mt * mt * mt * source.y + 3 * mt * mt * t * cp1.y + 
+           3 * mt * t * t * cp2.y + t * t * t * target.y
       };
     } else {
       const points = [
@@ -627,18 +647,27 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
   /**
    * De Casteljau algorithm for precise bezier curve calculation
    */
-  function deCasteljauPoint(points: Point[], t: number): Point {
+  function deCasteljauPoint(points: Point[], t: number): Point | null {
+    if (!points || points.length === 0) return null;
+    
     if (points.length === 1) {
       return points[0];
     }
     
     const newPoints: Point[] = [];
     for (let i = 0; i < points.length - 1; i++) {
+      const p1 = points[i];
+      const p2 = points[i + 1];
+      
+      if (!p1 || !p2) continue;
+      
       newPoints.push({
-        x: (1 - t) * points[i].x + t * points[i + 1].x,
-        y: (1 - t) * points[i].y + t * points[i + 1].y
+        x: (1 - t) * p1.x + t * p2.x,
+        y: (1 - t) * p1.y + t * p2.y
       });
     }
+    
+    if (newPoints.length === 0) return null;
     
     return deCasteljauPoint(newPoints, t);
   }
