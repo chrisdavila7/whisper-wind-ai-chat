@@ -9,51 +9,50 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
     backgroundColor: theme === 'dark' ? '#020817' : '#FFFFFF', // Background color based on theme
     neuronColor: {
       base: theme === 'dark' 
-        ? 'rgba(59, 130, 246, 0.1)' // Reverted back to original transparent blue for base
-        : 'rgba(59, 130, 246, 0.9)', // Reverted back to original transparent blue for light mode
+        ? 'rgba(59, 130, 246, 0.1)' // Keep transparent blue for base
+        : 'rgba(59, 130, 246, 0.9)', // Keep transparent blue for light mode
       core: theme === 'dark'
-        ? 'rgba(219, 234, 254, 0.3)' // Reverted back to original transparent core for dark mode
-        : 'rgba(29, 78, 216, 0.25)' // Reverted back to original transparent core for light mode
+        ? 'rgba(219, 234, 254, 0.6)' // INCREASED opacity from 0.3 to 0.6 for better visibility
+        : 'rgba(29, 78, 216, 0.5)'   // INCREASED opacity from 0.25 to 0.5 for better visibility
     },
     connectionColor: theme === 'dark' 
-      ? 'rgba(59, 130, 246, 0.09)' // Reverted back to original transparent color
-      : 'rgba(59, 130, 246, 0.09)', // Reverted back to original transparent color
+      ? 'rgba(59, 130, 246, 0.09)' // Keep original transparent color
+      : 'rgba(59, 130, 246, 0.09)', // Keep original transparent color
     
-    // Cylindrical effect settings - reverted back to original semi-transparent colors
+    // Keep original semi-transparent cylindrical effect colors
     cylindricalEffect: {
       highlightColor: theme === 'dark' ? 'rgba(190, 227, 248, 0.09)' : 'rgba(190, 227, 248, 0.1)',
       highlightWidth: 0.3,  // Percentage of the total width for highlight
     },
     
-    // Organic parameters with increased spacing (35% more)
-    neuronCount: 20, // Reduced count for less visual clutter
-    minConnections: 2, // Reduced for less clutter
-    maxConnections: 6, // Reduced for less clutter
+    // Keep organic parameters with increased spacing
+    neuronCount: 20,
+    minConnections: 2,
+    maxConnections: 6,
     minBranches: 2,
     maxBranches: 5,
     branchLength: { min: 30, max: 120 },
     
     // Animation settings
     flowSpeed: 0.0005,
-    pulseInterval: 300000, // Increased interval for slower pace
-    glowIntensity: theme === 'dark' ? 0.7 : 0.5, // Reduced glow intensity for light theme
+    pulseInterval: 300000,
+    glowIntensity: theme === 'dark' ? 0.7 : 0.5,
     
-    // Keep original neuron outer size, but increase core size by setting special scaling factor
-    neuronSize: { min: 3, max: 8 }, // Original size restored (not 5x bigger)
-    neuronCoreScale: 3.0, // The core of the neuron will be 5x bigger relative to its normal proportion
+    // SIGNIFICANTLY increase core size with larger scaling factor
+    neuronSize: { min: 3, max: 8 }, // Keep original outer size
+    neuronCoreScale: 5.0, // INCREASED from 3.0 to 5.0 to make cores 5x bigger
     
-    // Traveling node settings - use fixed speed that's frame-rate independent
+    // Keep traveling node settings
     travelingNodeCount: 7,
-    // Using consistent speeds instead of random values for smoother animation
-    travelingNodeSpeedFactor: 0.002, // Fixed speed factor (distance-independent)
-    travelingNodeGlowDuration: 8000, // How long the glow effect lasts in ms
-    nodeSamples: 1000, // How many points to sample for precise path following
+    travelingNodeSpeedFactor: 0.002,
+    travelingNodeGlowDuration: 8000,
+    nodeSamples: 1000,
     
     // Performance optimization settings
-    maxDistanceForAnimation: 1500, // Maximum distance in pixels to create animation nodes
-    performanceThreshold: 50, // FPS threshold below which we optimize further
-    viewportMargin: 100, // Extra margin around viewport to pre-load animations
-    fpsUpdateInterval: 1000, // How often to update the FPS counter (ms)
+    maxDistanceForAnimation: 1500,
+    performanceThreshold: 50,
+    viewportMargin: 100,
+    fpsUpdateInterval: 1000,
   };
 
   // State
@@ -492,16 +491,24 @@ export function drawOrganicNeuralNetwork(canvas: HTMLCanvasElement, ctx: CanvasR
       ctx.restore();
     }
     
-    // Draw neuron body - keep normal size
+    // Draw neuron body with original size
     ctx.fillStyle = config.neuronColor.base;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
     ctx.fill();
     
-    // Draw inner core - 5x bigger relative to the neuron's outer size
-    // Normally core is 0.6 of size, now it will be up to 3.0 times that (which is 5x original),
-    // but still contained within the neuron body if possible
+    // Draw inner core - now 5x bigger relative to the neuron's normal proportion
+    // The core will now fill almost the entire neuron body
     const coreSize = Math.min(neuron.size * config.neuronCoreScale, neuron.size * 0.95);
+    
+    // ADDED: Draw a slightly larger halo around the core for more prominence
+    const haloSize = coreSize * 1.15;
+    ctx.fillStyle = 'rgba(219, 234, 254, 0.2)'; // Very subtle halo
+    ctx.beginPath();
+    ctx.arc(neuron.x, neuron.y, haloSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw the core with increased opacity for more visibility
     ctx.fillStyle = config.neuronColor.core;
     ctx.beginPath();
     ctx.arc(neuron.x, neuron.y, coreSize, 0, Math.PI * 2);
