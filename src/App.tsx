@@ -1,4 +1,3 @@
-
 import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -8,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
+// import DebugMenu from "@/components/debug/DebugMenu";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -43,6 +43,7 @@ const App = () => {
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </BrowserRouter>
+              {/* {import.meta.env.DEV && <DebugMenu />} */}
             </TooltipProvider>
           </AuthProvider>
         </QueryClientProvider>

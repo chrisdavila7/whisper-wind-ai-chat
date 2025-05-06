@@ -1,4 +1,3 @@
-
 import { Neuron, Connection, Branch, Point } from '../types/neural';
 
 /**
@@ -18,14 +17,19 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     neuronColor: {
       base: theme === 'dark' 
         ? 'rgba(75, 100, 140, 0.5)' // Flatter blue (dark mode)
-        : 'rgba(75, 100, 140, 0.4)', // Flatter blue (light mode)
+        : 'rgba(75, 100, 140, 0.4)', // Flatter blue (light mode),
       core: theme === 'dark'
         ? 'rgba(85, 110, 150, 0.6)' // Slightly darker center (dark mode)
-        : 'rgba(85, 110, 150, 0.5)', // Slightly darker center (light mode)
+        : 'rgba(85, 110, 150, 0.5)', // Slightly darker center (light mode),
     },
     
+    // Arrival effect colors
+    arrivalGlowColor: theme === 'dark'
+      ? 'rgba(120, 160, 220, 0.7)' // Brighter blue for dark mode arrival
+      : 'rgba(100, 140, 200, 0.6)', // Brighter blue for light mode arrival
+    
     // Network structure parameters
-    neuronCount: 8, // Fewer neurons for minimalist look
+    neuronCount: 8, // Keep previous value
     minConnections: 2,
     maxConnections: 5,
     
@@ -35,24 +39,28 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     // Animation settings
     flowSpeed: 0.0001, // Very slow flow
     pulseInterval: 4000, // Longer intervals between pulses
-    glowIntensity: 0.1, // Reduced glow for flat style
+    glowIntensity: 0.2, // Increased glow intensity (doubled)
     
     // Neuron size
-    neuronSize: { min: 10, max: 18 },
+    neuronSize: { min: 10, max: 18 }, // Keep previous value
     neuronCoreScale: 1.5, // Less contrast
     
     // Traveling nodes
-    travelingNodeCount: 3, // Fewer nodes for minimalist look
-    travelingNodeSpeedFactor: 0.0005, // Slower for subtle effect
+    travelingNodeCount: 50,
+    travelingNodeSpeedFactor: 0.005,
+    arrivalEffectDuration: 500, // milliseconds for arrival effect
+    arrivalPulseIntensity: 7.5, // Reduced glow intensity (halved for less blur)
+    arrivalSizeFactor: 1.5, // How much bigger node gets on arrival pulse
     
     // Line thickness
-    connectionWidth: { min: 1, max: 2 },
+    connectionWidth: { min: 1, max: 2 }, // Keep previous value
     
     // Performance optimization
     maxDistanceForAnimation: 1500,
     performanceThreshold: 40,
     viewportMargin: 100,
     fpsUpdateInterval: 1000,
+    connectionCurvinessFactor: 0.3, // How much connections curve (0 = straight, 1 = more curve)
   };
 
   // State
@@ -85,6 +93,10 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     pathIndex?: number;
     pathLength?: number;
     isWithinViewport?: boolean;
+    
+    // Arrival state
+    isArriving?: boolean;
+    arrivalStartTime?: number;
   }
   
   /**
@@ -218,16 +230,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     const targetNeuron = connection.target;
     
     // Sample points along the path for smooth movement
-    const pathPoints: Point[] = [];
-    const samples = 100;
-    
-    for (let i = 0; i <= samples; i++) {
-      const t = i / samples;
-      const position = getPositionAlongPath(connection, t);
-      if (position) { // Add null check here
-        pathPoints.push(position);
-      }
-    }
+    const pathPoints: Point[] = calculatePathPoints(connection);
     
     // Only proceed if we have valid path points
     if (pathPoints.length < 2) return;
@@ -242,8 +245,8 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       targetNeuron,
       connection,
       progress: 0,
-      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.2),
-      width: connection.width * 0.8,
+      speed: config.travelingNodeSpeedFactor * (0.8 + Math.random() * 0.2), // Keep speed random
+      width: connection.width, // Make nodes exactly the width of the path
       active: true,
       path: pathPoints,
       pathIndex: 0,
@@ -254,115 +257,41 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     travelingNodes.push(newNode);
   }
   
-  // Create connections between neurons with the minimalist style
-  function createConnections() {
-    neurons.forEach(neuron => {
-      // Find potential targets
-      const potentialTargets = neurons
-        .filter(n => n.id !== neuron.id)
-        .map(n => ({
-          neuron: n,
-          distance: Math.sqrt(
-            Math.pow(n.x - neuron.x, 2) + 
-            Math.pow(n.y - neuron.y, 2)
-          )
-        }));
-      
-      potentialTargets.sort((a, b) => a.distance - b.distance);
-      
-      // Connect to nearest neurons for the minimalist design
-      const connectionCount = config.minConnections + 
-        Math.floor(Math.random() * (config.maxConnections - config.minConnections + 1));
-      
-      // Create smoother, more organic curves for connections
-      for (let i = 0; i < Math.min(connectionCount, potentialTargets.length); i++) {
-        const target = potentialTargets[i].neuron;
-        const distance = potentialTargets[i].distance;
-        
-        // Create smoother curves with control points
-        const controlPointCount = 2 + Math.floor(Math.random());
-        const controlPoints: Point[] = [];
-        
-        for (let j = 0; j < controlPointCount; j++) {
-          const t = (j + 1) / (controlPointCount + 1);
-          
-          // Create smoother, more organic curves
-          const baseX = neuron.x + (target.x - neuron.x) * t;
-          const baseY = neuron.y + (target.y - neuron.y) * t;
-          
-          // Calculate perpendicular vector for curve control
-          const perpX = -(target.y - neuron.y) / distance;
-          const perpY = (target.x - neuron.x) / distance;
-          
-          // Create more organic, wider curves
-          const variance = (Math.random() * 0.3 + 0.1) * distance;
-          
-          controlPoints.push({
-            x: baseX + perpX * variance,
-            y: baseY + perpY * variance
-          });
-        }
-        
-        // Thinner lines for the minimalist style
-        const width = config.connectionWidth.min + 
-          Math.random() * (config.connectionWidth.max - config.connectionWidth.min);
-        
-        const connection: Connection = {
-          id: neuron.connections.length,
-          source: neuron,
-          target: target,
-          width: width,
-          controlPoints,
-          flowSpeed: config.flowSpeed * (0.7 + Math.random() * 0.6),
-          flowPhase: Math.random() * Math.PI * 2
-        };
-        
-        neuron.connections.push(connection);
+  /**
+   * Calculate points along the connection path for traveling nodes.
+   */
+  function calculatePathPoints(connection: Connection): Point[] {
+    const points: Point[] = [];
+    const p0 = connection.source;
+    const p2 = connection.target;
+    const steps = 20; // Number of segments to approximate the curve
+
+    // Use the single control point for quadratic curve calculation
+    if (connection.controlPoints && connection.controlPoints.length > 0) {
+      const p1 = connection.controlPoints[0];
+
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const tInv = 1 - t;
+        const tInvSq = tInv * tInv;
+        const tSq = t * t;
+
+        // Quadratic Bezier formula: B(t) = (1-t)^2*P0 + 2*(1-t)*t*P1 + t^2*P2
+        const x = tInvSq * p0.x + 2 * tInv * t * p1.x + tSq * p2.x;
+        const y = tInvSq * p0.y + 2 * tInv * t * p1.y + tSq * p2.y;
+        points.push({ x, y });
       }
-    });
-  }
-  
-  // Draw a neuron with a clean, minimalist style
-  function drawNeuron(neuron: Neuron) {
-    if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
-      return;
+    } else {
+      // Fallback for straight line (if no control point somehow)
+      for (let i = 0; i <= steps; i++) {
+        const t = i / steps;
+        const x = p0.x + (p2.x - p0.x) * t;
+        const y = p0.y + (p2.y - p0.y) * t;
+        points.push({ x, y });
+      }
     }
 
-    // Draw subtle glow if neuron is pulsing
-    if (neuron.pulseStrength > 0) {
-      const glowRadius = neuron.size * 2;
-      const glow = ctx.createRadialGradient(
-        neuron.x, neuron.y, neuron.size * 0.5,
-        neuron.x, neuron.y, glowRadius
-      );
-      
-      const baseAlpha = neuron.pulseStrength * config.glowIntensity;
-      glow.addColorStop(0, `rgba(85, 110, 150, ${baseAlpha * 0.8})`);
-      glow.addColorStop(1, 'rgba(85, 110, 150, 0)');
-
-      ctx.fillStyle = glow;
-      ctx.beginPath();
-      ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
-      ctx.fill();
-    }
-    
-    // Draw neuron with flat, solid color
-    ctx.fillStyle = config.neuronColor.base;
-    ctx.beginPath();
-    ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Draw subtle inner core
-    const coreSize = neuron.size / config.neuronCoreScale;
-    
-    ctx.fillStyle = config.neuronColor.core;
-    ctx.beginPath();
-    ctx.arc(neuron.x, neuron.y, coreSize, 0, Math.PI * 2);
-    ctx.fill();
-    
-    // Reduce pulse strength
-    neuron.pulseStrength *= 0.95;
-    if (neuron.pulseStrength < 0.05) neuron.pulseStrength = 0;
+    return points;
   }
   
   /**
@@ -379,7 +308,7 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
       node.active && node.path && node.path.length > 1
     );
     
-    for (let i = 0; i < travelingNodes.length; i++) {
+    for (let i = travelingNodes.length - 1; i >= 0; i--) { // Iterate backwards for safe removal
       const node = travelingNodes[i];
       if (!node.active || !node.path || node.path.length < 2) continue;
       
@@ -403,8 +332,11 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
           const nextPoint = node.path[index + 1];
           
           if (currentPoint && nextPoint) {
-            node.x = currentPoint.x + (nextPoint.x - currentPoint.x) * fraction;
-            node.y = currentPoint.y + (nextPoint.y - currentPoint.y) * fraction;
+            let currentX = currentPoint.x + (nextPoint.x - currentPoint.x) * fraction;
+            let currentY = currentPoint.y + (nextPoint.y - currentPoint.y) * fraction;
+            
+            node.x = currentX;
+            node.y = currentY;
           }
         } else if (index >= 0 && index < node.path.length) {
           const point = node.path[index];
@@ -425,34 +357,69 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
         }
       }
       
-      // Check if node has reached target
-      if (node.progress >= 1) {
-        if (isWithinExtendedViewport(node.targetNeuron.x, node.targetNeuron.y)) {
-          node.targetNeuron.pulseStrength = 1;
-        }
-        
-        node.active = false;
-        
-        // Create a new node after delay
-        const delay = isLowPerformance ? Math.random() * 2000 + 1000 : Math.random() * 1000;
-        setTimeout(() => {
+      // --- Arrival Logic --- 
+      if (node.progress >= 1 && !node.isArriving) {
+        node.isArriving = true;
+        node.targetNeuron.pulseStrength = 1; // Trigger pulse on target neuron
+        node.arrivalStartTime = timestamp;
+        // Snap position exactly to target neuron
+        node.x = node.targetNeuron.x;
+        node.y = node.targetNeuron.y;
+        // Keep node active during arrival animation
+      } else if (node.isArriving && node.arrivalStartTime) {
+        const elapsed = timestamp - node.arrivalStartTime;
+        if (elapsed > config.arrivalEffectDuration) {
+          // Effect finished, deactivate and replace
+          node.active = false;
           createNewTravelingNode();
-        }, delay);
+          continue; // Skip drawing this frame
+        }
+      }
+      
+      // --- Drawing Logic --- 
+      // Check if node is within the *extended* viewport for drawing
+      const drawNode = isWithinExtendedViewport(node.x, node.y);
+      
+      if (drawNode) { // Only draw if within extended bounds
+        activeNodesInViewport++;
         
-        continue;
+        // Draw arrival effect or normal traveling node
+        if (node.isArriving && node.arrivalStartTime) {
+          const elapsed = timestamp - node.arrivalStartTime;
+          const pulse = Math.sin((elapsed / config.arrivalEffectDuration) * Math.PI); // 0 -> 1 -> 0
+          
+          ctx.shadowBlur = pulse * config.arrivalPulseIntensity;
+          ctx.shadowColor = config.arrivalGlowColor;
+          ctx.fillStyle = config.arrivalGlowColor; // Use glow color for the node itself too
+          
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.width * (1 + pulse * (config.arrivalSizeFactor - 1)), 0, Math.PI * 2);
+          ctx.fill();
+          
+          // Reset shadow
+          ctx.shadowBlur = 0;
+          ctx.shadowColor = 'transparent';
+          
+        } else {
+          // Draw normal traveling node
+          // Make node half as bright as the target neuron's base color
+          const targetNeuronColor = config.neuronColor.base;
+          const nodeColor = adjustRgbaAlpha(targetNeuronColor, 0.5); // Adjust alpha by 50%
+          ctx.fillStyle = nodeColor;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
+          ctx.fill();
+        }
       }
       
-      if (!node.isWithinViewport) {
-        continue;
+      // Deactivate and replace node if it moved far out of view (unless arriving)
+      if (!node.isWithinViewport && !node.isArriving && node.progress < 1) { 
+        const distance = calculateDistance(node.x, node.y, canvas.width / 2, canvas.height / 2);
+        if (distance > Math.max(canvas.width, canvas.height)) { // Check if very far
+          node.active = false;
+          createNewTravelingNode();
+        }
       }
-      
-      activeNodesInViewport++;
-      
-      // Draw traveling node - almost invisible in the minimalist design
-      ctx.fillStyle = config.connectionColor;
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, node.width, 0, Math.PI * 2);
-      ctx.fill();
     }
     
     // Add more nodes if needed and performance allows
@@ -634,42 +601,122 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
            3 * mt * t * t * cp2.y + t * t * t * target.y
       };
     } else {
-      const points = [
-        { x: source.x, y: source.y },
-        ...controlPoints,
-        { x: target.x, y: target.y }
-      ];
-      
-      return deCasteljauPoint(points, t);
+      return null;
     }
   }
   
   /**
-   * De Casteljau algorithm for precise bezier curve calculation
+   * Adjusts the alpha channel of an RGBA color string.
+   * @param rgbaColor The input color string (e.g., 'rgba(r, g, b, a)').
+   * @param factor The factor to multiply the alpha by (e.g., 0.5 for 50% alpha).
+   * @returns New RGBA color string with adjusted alpha.
    */
-  function deCasteljauPoint(points: Point[], t: number): Point | null {
-    if (!points || points.length === 0) return null;
-    
-    if (points.length === 1) {
-      return points[0];
+  function adjustRgbaAlpha(rgbaColor: string, factor: number): string {
+    const match = rgbaColor.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*(?:,\s*([\d.]+))?\)/i);
+    if (match) {
+      const r = match[1];
+      const g = match[2];
+      const b = match[3];
+      const a = match[4] !== undefined ? parseFloat(match[4]) : 1; // Default alpha to 1 if missing
+      const newAlpha = Math.max(0, Math.min(1, a * factor)); // Clamp alpha between 0 and 1
+      return `rgba(${r}, ${g}, ${b}, ${newAlpha.toFixed(3)})`;
+    }
+    return rgbaColor; // Return original if parsing fails
+  }
+  
+  // Create connections between neurons
+  function createConnections() {
+    for (let i = 0; i < neurons.length; i++) {
+      const neuron = neurons[i];
+      
+      // Randomly connect to other neurons
+      for (let j = 0; j < neurons.length; j++) {
+        if (i === j) continue;
+        
+        const otherNeuron = neurons[j];
+        
+        // Only connect if within a certain distance
+        const dx = otherNeuron.x - neuron.x;
+        const dy = otherNeuron.y - neuron.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance > config.maxDistanceForAnimation) continue;
+        
+        // Randomly decide whether to connect
+        if (Math.random() < 0.5) continue;
+        
+        // --- Generate single control point for quadratic curve ---
+        const midpointX = neuron.x + dx * 0.5;
+        const midpointY = neuron.y + dy * 0.5;
+        
+        // Perpendicular vector (normalized)
+        const perpX = -dy / distance;
+        const perpY = dx / distance;
+        
+        // Random offset distance
+        const offset = distance * config.connectionCurvinessFactor * (Math.random() - 0.5) * 2;
+        
+        const controlPoint: Point = {
+          x: midpointX + perpX * offset,
+          y: midpointY + perpY * offset,
+        };
+        
+        // Create a connection with a random width
+        const width = config.connectionWidth.min + Math.random() * (config.connectionWidth.max - config.connectionWidth.min);
+        
+        neuron.connections.push({
+          id: neuron.connections.length, // Add missing ID
+          source: neuron,
+          target: otherNeuron,
+          width,
+          controlPoints: [controlPoint], // Store single control point
+          flowPhase: 0,
+          flowSpeed: config.flowSpeed
+        });
+      }
+    }
+  }
+  
+  // Draw a neuron with a clean, minimalist style
+  function drawNeuron(neuron: Neuron) {
+    if (!isWithinExtendedViewport(neuron.x, neuron.y)) {
+      return;
+    }
+
+    // Draw subtle glow if neuron is pulsing
+    if (neuron.pulseStrength > 0) {
+      const glowRadius = neuron.size * 2;
+      const glow = ctx.createRadialGradient(
+        neuron.x, neuron.y, neuron.size * 0.5,
+        neuron.x, neuron.y, glowRadius
+      );
+      
+      const baseAlpha = neuron.pulseStrength * config.glowIntensity;
+      glow.addColorStop(0, `rgba(85, 110, 150, ${baseAlpha * 0.8})`);
+      glow.addColorStop(1, 'rgba(85, 110, 150, 0)');
+
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(neuron.x, neuron.y, glowRadius, 0, Math.PI * 2);
+      ctx.fill();
     }
     
-    const newPoints: Point[] = [];
-    for (let i = 0; i < points.length - 1; i++) {
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      
-      if (!p1 || !p2) continue;
-      
-      newPoints.push({
-        x: (1 - t) * p1.x + t * p2.x,
-        y: (1 - t) * p1.y + t * p2.y
-      });
-    }
+    // Draw neuron with flat, solid color
+    ctx.fillStyle = config.neuronColor.base;
+    ctx.beginPath();
+    ctx.arc(neuron.x, neuron.y, neuron.size, 0, Math.PI * 2);
+    ctx.fill();
     
-    if (newPoints.length === 0) return null;
+    // Draw subtle inner core
+    const coreSize = neuron.size / config.neuronCoreScale;
     
-    return deCasteljauPoint(newPoints, t);
+    ctx.fillStyle = config.neuronColor.core;
+    ctx.beginPath();
+    ctx.arc(neuron.x, neuron.y, coreSize, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Reduce pulse strength
+    neuron.pulseStrength *= 0.95;
+    if (neuron.pulseStrength < 0.05) neuron.pulseStrength = 0;
   }
   
   // Main render function
@@ -689,7 +736,26 @@ export function drawMinimalistNeuralNetwork(canvas: HTMLCanvasElement, ctx: Canv
     // Draw connections
     neurons.forEach(neuron => {
       neuron.connections.forEach(connection => {
-        drawConnection(connection, timestamp);
+        ctx.beginPath();
+        ctx.moveTo(connection.source.x, connection.source.y);
+        
+        if (connection.controlPoints && connection.controlPoints.length > 0) {
+          // Draw quadratic curve using the single control point
+          ctx.quadraticCurveTo(
+            connection.controlPoints[0].x,
+            connection.controlPoints[0].y,
+            connection.target.x,
+            connection.target.y
+          );
+        } else {
+          // Fallback to straight line if no control point
+          ctx.lineTo(connection.target.x, connection.target.y);
+        }
+        
+        // Style the connection line
+        ctx.strokeStyle = config.connectionColor; // Use the base color
+        ctx.lineWidth = connection.width;
+        ctx.stroke();
       });
     });
     

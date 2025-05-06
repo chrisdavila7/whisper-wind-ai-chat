@@ -73,17 +73,17 @@ export default {
           ring: 'hsl(var(--sidebar-ring))'
         },
         ai: {
-          primary: '#9b87f5',
-          secondary: '#6E59A5',
-          background: '#F1F0FB',
-          text: '#1A1F2C',
-          accent: '#8B5CF6',
+          primary: '#85A0C8', // Light blue, similar to neural network
+          secondary: '#5578A0', // Darker blue, similar to neural network
+          background: '#F8FAFC', // Light gray background
+          text: '#1A1F2C', // Keep dark text for good contrast
+          accent: '#6495ED', // Cornflower blue for accents
           dark: {
-            primary: '#ac9df8',
-            secondary: '#8e7fc0',
-            background: '#1A1F2C',
-            text: '#F1F0FB',
-            accent: '#9d75f8',
+            primary: '#6495ED', // Cornflower blue for dark mode
+            secondary: '#48769F', // Darker blue for dark mode
+            background: '#1A1F2C', // Dark background
+            text: '#F8FAFC', // Light text for dark mode
+            accent: '#85A0C8', // Light blue accent for dark mode
           }
         },
       },

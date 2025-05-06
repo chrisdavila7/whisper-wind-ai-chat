@@ -1,4 +1,3 @@
-
 import { createContext, useState, useEffect, useContext, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,6 +10,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signOut: () => Promise<void>;
   loading: boolean;
+  setDebugUser?: (user: User, session?: Partial<Session>) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -40,6 +40,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // --- Add Debug Function --- 
+  const setDebugUser = import.meta.env.DEV
+    ? (debugUser: User, debugSession?: Partial<Session>) => {
+        console.warn("AuthProvider: Setting debug user!");
+        const fakeSession: Session = {
+          access_token: 'debug-access-token',
+          token_type: 'bearer',
+          user: debugUser,
+          expires_in: 3600,
+          expires_at: Math.floor(Date.now() / 1000) + 3600,
+          refresh_token: 'debug-refresh-token',
+          ...(debugSession || {}), // Allow overriding parts of session if needed
+        };
+        setUser(debugUser);
+        setSession(fakeSession);
+        setLoading(false);
+      }
+    : undefined; // Function is undefined in production
+  // --- End Debug Function ---
 
   // Sign up with email and password
   const signUp = async (email: string, password: string) => {
@@ -117,8 +137,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  // Base context value
+  const contextValue: AuthContextType = {
+    session,
+    user,
+    signUp,
+    signIn,
+    signOut,
+    loading,
+  };
+
+  // Conditionally add debug function only in dev mode
+  if (import.meta.env.DEV && setDebugUser) {
+    contextValue.setDebugUser = setDebugUser;
+  }
+
   return (
-    <AuthContext.Provider value={{ session, user, signUp, signIn, signOut, loading }}>
+    <AuthContext.Provider value={contextValue}>
       {children}
     </AuthContext.Provider>
   );

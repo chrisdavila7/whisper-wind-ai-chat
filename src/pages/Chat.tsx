@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
@@ -99,35 +98,14 @@ const Chat = () => {
   }, [id, user, conversation, navigate, toast]);
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       <NeuralBackground />
-      
-      {/* Header with back button */}
-      <header className="p-4 z-10 relative">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate("/")}
-            className="flex items-center gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Back to Home
-          </Button>
-          
-          {conversation && (
-            <h1 className="text-lg font-medium truncate max-w-md">
-              {conversation.title}
-            </h1>
-          )}
-        </div>
-      </header>
-      
+
       {/* Chat content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 relative">
         {loading ? (
           <div className="flex items-center justify-center h-full">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-ai-primary"></div>
           </div>
         ) : (
           conversation && <ChatWindow key={conversation.id} conversationId={conversation.id} />

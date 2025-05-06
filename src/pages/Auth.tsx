@@ -59,7 +59,7 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center p-4">
       <NeuralBackground />
       <div className="w-full max-w-md z-10">
-        <Card className="border-gray-300 dark:border-gray-700 shadow-lg backdrop-blur-sm bg-white/70 dark:bg-slate-900/70">
+        <Card className="border-ai-primary dark:border-ai-primary shadow-lg backdrop-blur-sm bg-white/70 dark:bg-slate-900/70">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">
               {isLogin ? 'Welcome Back' : 'Create an Account'}
@@ -85,7 +85,7 @@ const Auth = () => {
                           type="email" 
                           {...field} 
                           disabled={loading}
-                          className="bg-white/50 dark:bg-slate-800/50"
+                          className="bg-ai-primary/10 dark:bg-ai-primary/20"
                         />
                       </FormControl>
                       <FormMessage />
@@ -104,7 +104,7 @@ const Auth = () => {
                           type="password" 
                           {...field} 
                           disabled={loading}
-                          className="bg-white/50 dark:bg-slate-800/50"
+                          className="bg-ai-primary/10 dark:bg-ai-primary/20"
                         />
                       </FormControl>
                       <FormMessage />

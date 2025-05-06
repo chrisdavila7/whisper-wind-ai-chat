@@ -16,7 +16,7 @@ const MessageBubble = ({ message, autoPlayTTS = false }: MessageBubbleProps) => 
     <div className={`flex w-full mb-4 ${isUser ? 'justify-end' : 'justify-start'} animate-fade-in font-merriweather`}>
       <div className={`relative max-w-[80%] md:max-w-[70%] px-4 py-3 rounded-15 ${
         isUser 
-          ? 'bg-gradient-to-r from-purple-400 to-purple-600 dark:from-ai-primary dark:to-ai-secondary text-white shadow-md dark:shadow-lg backdrop-blur-sm' 
+          ? 'bg-gradient-to-r from-ai-primary to-ai-secondary text-white shadow-md dark:shadow-lg backdrop-blur-sm' 
           : 'bg-white/90 dark:bg-gray-800/90 shadow-sm backdrop-blur-sm text-gray-800 dark:text-gray-200'
       } ${isUser ? 'rounded-tr-none' : 'rounded-tl-none'} border border-white/10 dark:border-white/5`}>
         {/* Header with role and timestamp */}

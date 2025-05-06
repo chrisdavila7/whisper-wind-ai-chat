@@ -86,7 +86,7 @@ const Landing = () => {
         {/* Main content section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Chat section */}
-          <Card className="backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-gray-300 dark:border-gray-700 shadow-lg">
+          <Card className="backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-ai-primary dark:border-ai-primary shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MessageSquare className="h-5 w-5" />
@@ -133,7 +133,7 @@ const Landing = () => {
           </Card>
 
           {/* Account section */}
-          <Card className="backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-gray-300 dark:border-gray-700 shadow-lg">
+          <Card className="backdrop-blur-sm bg-white/70 dark:bg-slate-900/70 border-ai-primary dark:border-ai-primary shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <User className="h-5 w-5" />
@@ -188,15 +188,15 @@ const Landing = () => {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-md">
+              <div className="p-4 bg-ai-primary/10 dark:bg-ai-primary/20 rounded-md">
                 <h3 className="font-medium mb-2">Natural Conversations</h3>
                 <p className="text-sm text-muted-foreground">Engage in human-like discussions with our advanced AI</p>
               </div>
-              <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-md">
+              <div className="p-4 bg-ai-primary/10 dark:bg-ai-primary/20 rounded-md">
                 <h3 className="font-medium mb-2">Conversation History</h3>
                 <p className="text-sm text-muted-foreground">Save and revisit your conversations anytime</p>
               </div>
-              <div className="p-4 bg-slate-100 dark:bg-slate-800 rounded-md">
+              <div className="p-4 bg-ai-primary/10 dark:bg-ai-primary/20 rounded-md">
                 <h3 className="font-medium mb-2">Seamless Experience</h3>
                 <p className="text-sm text-muted-foreground">Enjoy a beautiful interface that works across devices</p>
               </div>
